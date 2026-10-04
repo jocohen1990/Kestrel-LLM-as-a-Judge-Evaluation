@@ -10,11 +10,23 @@ import pytest
 from app.paths import CORPUS_DIR, GOLDEN_DIR
 from evals.dataset import DatasetError, load_golden
 
-GOLDEN_FILE = GOLDEN_DIR / "golden_v1.jsonl"
+GOLDEN_FILE = GOLDEN_DIR / "golden_v2.jsonl"
+GOLDEN_V1 = GOLDEN_DIR / "golden_v1.jsonl"
 
 
-def test_golden_dataset_loads_and_has_20_cases():
-    assert len(load_golden(GOLDEN_FILE)) == 20
+def test_golden_v2_loads_and_has_32_cases():
+    assert len(load_golden(GOLDEN_FILE)) == 32
+
+
+def test_v1_is_unchanged_and_still_loads():
+    # Old versions are frozen, so past results stay comparable.
+    assert len(load_golden(GOLDEN_V1)) == 20
+
+
+def test_v2_contains_every_v1_case_unchanged():
+    v2 = {c["id"]: c for c in load_golden(GOLDEN_FILE)}
+    for case in load_golden(GOLDEN_V1):
+        assert v2[case["id"]] == case
 
 
 def test_every_source_doc_exists_in_the_corpus():
@@ -26,7 +38,8 @@ def test_every_source_doc_exists_in_the_corpus():
 
 def test_dataset_covers_every_category():
     categories = {case["category"] for case in load_golden(GOLDEN_FILE)}
-    assert categories == {"numeric", "factual", "multi_hop", "out_of_scope"}
+    assert categories == {"numeric", "factual", "multi_hop", "out_of_scope",
+                          "calculation", "comparison", "false_premise", "ambiguous"}
 
 
 def test_loader_rejects_duplicate_ids(tmp_path):

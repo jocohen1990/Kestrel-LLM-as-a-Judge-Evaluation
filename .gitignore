@@ -2,4 +2,5 @@
 __pycache__/
 .pytest_cache/
 .venv/
-results/run_*.json
+# Timestamped history files; the *_latest.json copies are kept.
+results/*_2*.json

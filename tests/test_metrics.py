@@ -75,3 +75,37 @@ def test_refusing_an_answerable_question_fails():
     result = score_case(make_case(expected_numbers=[64]), "I don't know based on the provided documents.")
     assert not result.passed
     assert "refused" in result.reason
+
+
+# ---- Phase 2 additions -------------------------------------------------
+
+from evals.metrics import mentions_internals, refusal_is_exact  # noqa: E402
+
+REFUSAL_TEXT = "I don't know based on the provided documents."
+
+
+def test_must_include_any_accepts_any_listed_wording():
+    case = make_case(category="false_premise", must_include_any=["rose", "increased", "grew"])
+    assert score_case(case, "Revenue did not decline; it grew 19%.").passed
+    result = score_case(case, "Revenue declined because of fuel prices.")
+    assert not result.passed
+    assert "contains none of" in result.reason
+
+
+def test_refusal_is_exact():
+    assert refusal_is_exact(REFUSAL_TEXT, REFUSAL_TEXT)
+    assert refusal_is_exact("  " + REFUSAL_TEXT + "\n", REFUSAL_TEXT)        # whitespace is fine
+    assert refusal_is_exact(REFUSAL_TEXT.replace("'", "’"), REFUSAL_TEXT)
+    # The g020 answer from run 1: a refusal plus extra commentary.
+    assert not refusal_is_exact(REFUSAL_TEXT + "\n\nThe passages do not mention succession.", REFUSAL_TEXT)
+
+
+@pytest.mark.parametrize("answer, expected", [
+    ("According to the context, the segment contributed 62%.", True),       # g005 in run 1
+    ("Passage [2] says revenue was $116.0 million.", True),
+    ("The context passages confirm Dana Whitfield is CEO.", True),
+    ("Kestrel's revenue was $116.0 million.", False),
+    ("According to the Q2 2026 earnings release, EPS was $0.38.", False),   # citing a real doc is fine
+])
+def test_mentions_internals(answer, expected):
+    assert mentions_internals(answer) is expected

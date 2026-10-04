@@ -41,6 +41,30 @@ def _get_client():
     return _client
 
 
+# Models that answered "temperature is not supported" during this run.
+_NO_TEMPERATURE_MODELS: set[str] = set()
+
+
+def _rejects_temperature(exc: Exception) -> bool:
+    """Is this the API saying the model doesn't accept a temperature setting?
+
+    Checked by status code and message rather than by exception class, so
+    this file still doesn't need to import `anthropic` at the top.
+    """
+    status = getattr(exc, "status_code", None)
+    return status == 400 and "temperature" in str(exc).lower()
+
+
+def warmup(model: str | None = None) -> None:
+    """Make one tiny call before measuring anything.
+
+    The first request pays one-time costs (opening the network connection,
+    TLS handshake), so in run 1 the first question took 2.4s while the rest
+    took under 1.3s. Warming up keeps that setup cost out of the latency stats.
+    """
+    generate("Reply with OK.", "OK", model=model, max_tokens=5)
+
+
 def generate(system: str, user: str, model: str | None = None,
              max_tokens: int = 400, temperature: float = 0.0) -> LLMResponse:
     """Send one prompt to the model and return its reply plus metadata.
@@ -50,16 +74,29 @@ def generate(system: str, user: str, model: str | None = None,
     deterministic, which is exactly what the Phase 3 consistency tests probe.)
     """
     model = model or os.getenv("LLM_MODEL", DEFAULT_MODEL)
+    request = {
+        "model": model,
+        "max_tokens": max_tokens,
+        "system": system,
+        "messages": [{"role": "user", "content": user}],
+    }
+    # anthropic 1.x removed `temperature` from create(); extra_body still
+    # sends it. Some newer models reject it entirely, so for those we retry
+    # once without it and remember the model so later calls skip it.
+    if model not in _NO_TEMPERATURE_MODELS:
+        request["extra_body"] = {"temperature": temperature}
+
     start = time.perf_counter()
-    response = _get_client().messages.create(
-        model=model,
-        max_tokens=max_tokens,
-        # anthropic 1.x removed `temperature` from create(); extra_body still
-        # sends it. Newer models (Opus 4.7+) reject it, so drop it for those.
-        extra_body={"temperature": temperature},
-        system=system,
-        messages=[{"role": "user", "content": user}],
-    )
+    try:
+        response = _get_client().messages.create(**request)
+    except Exception as exc:
+        if "extra_body" in request and _rejects_temperature(exc):
+            _NO_TEMPERATURE_MODELS.add(model)
+            request.pop("extra_body")
+            start = time.perf_counter()   # don't count the failed attempt
+            response = _get_client().messages.create(**request)
+        else:
+            raise
     latency = time.perf_counter() - start
     text = "".join(block.text for block in response.content if block.type == "text")
     return LLMResponse(

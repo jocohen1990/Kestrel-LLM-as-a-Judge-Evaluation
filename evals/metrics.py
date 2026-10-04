@@ -78,17 +78,47 @@ def score_case(case: dict, answer: str) -> CaseResult:
     if refused:
         return CaseResult(False, "refused, but the answer is in the documents")
 
+    lowered = answer.lower()
     missing_numbers = [n for n in case["expected_numbers"] if not number_present(n, answer)]
-    missing_words = [w for w in case["must_include"] if w.lower() not in answer.lower()]
+    missing_words = [w for w in case["must_include"] if w.lower() not in lowered]
+    any_of = case.get("must_include_any", [])
+    missing_any = bool(any_of) and not any(phrase.lower() in lowered for phrase in any_of)
 
-    if missing_numbers or missing_words:
+    if missing_numbers or missing_words or missing_any:
         problems = []
         if missing_numbers:
             problems.append(f"missing numbers {missing_numbers}")
         if missing_words:
             problems.append(f"missing text {missing_words}")
+        if missing_any:
+            problems.append(f"contains none of {any_of}")
         return CaseResult(False, "; ".join(problems))
     return CaseResult(True, "all expected values present")
+
+
+def refusal_is_exact(answer: str, expected_refusal: str) -> bool:
+    """Strict instruction-following check: did the model refuse with EXACTLY
+    the wording the system prompt demanded, and nothing else?
+
+    The lenient `is_refusal` above answers "did it refuse?". This answers
+    "did it follow the formatting instruction?". In run 1, g020 passed the
+    first check and would have failed this one.
+    """
+    normalized = answer.strip().replace("’", "'")
+    return normalized == expected_refusal
+
+
+# Words that expose the pipeline's internals to an end user. A real user
+# never sees "the context" or "passage [2]", so answers shouldn't mention them.
+INTERNALS_PATTERN = re.compile(
+    r"\b(the context|context passages?|passages?\s*\[?\d*\]?|provided context)\b",
+    re.IGNORECASE,
+)
+
+
+def mentions_internals(answer: str) -> bool:
+    """True if the answer refers to the RAG machinery (e.g. "According to the context")."""
+    return bool(INTERNALS_PATTERN.search(answer))
 
 
 def retrieval_hit(case: dict, retrieved_sources: list[str]) -> bool | None:

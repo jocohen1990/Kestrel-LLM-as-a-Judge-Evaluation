@@ -15,7 +15,10 @@ REQUIRED_FIELDS = {
     "id", "category", "question", "expected_answer",
     "expected_numbers", "must_include", "source_docs",
 }
-VALID_CATEGORIES = {"numeric", "factual", "multi_hop", "out_of_scope"}
+VALID_CATEGORIES = {
+    "numeric", "factual", "multi_hop", "out_of_scope",            # v1
+    "calculation", "comparison", "false_premise", "ambiguous",    # added in v2
+}
 
 
 class DatasetError(ValueError):
@@ -30,6 +33,9 @@ def load_golden(path: Path) -> list[dict]:
         if not line.strip():
             continue
         case = json.loads(line)
+        # Optional field added in v2: the answer must contain AT LEAST ONE of
+        # these phrases. Defaulting it to [] keeps v1 files loadable.
+        case.setdefault("must_include_any", [])
 
         missing = REQUIRED_FIELDS - case.keys()
         if missing:
@@ -40,7 +46,8 @@ def load_golden(path: Path) -> list[dict]:
             raise DatasetError(f"Line {line_no}: duplicate id {case['id']!r}")
 
         # An answerable question needs at least one thing to check against.
-        if case["category"] != "out_of_scope" and not (case["expected_numbers"] or case["must_include"]):
+        checks = case["expected_numbers"] or case["must_include"] or case["must_include_any"]
+        if case["category"] != "out_of_scope" and not checks:
             raise DatasetError(f"Line {line_no}: {case['id']} has nothing to grade against")
 
         seen_ids.add(case["id"])

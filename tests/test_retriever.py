@@ -28,7 +28,7 @@ def test_chunks_carry_their_document_title():
 def test_retrieval_hit_rate_on_golden_set():
     retriever = Retriever(load_chunks(CORPUS_DIR))
     hits, misses = 0, []
-    answerable = [c for c in load_golden(GOLDEN_DIR / "golden_v1.jsonl") if c["source_docs"]]
+    answerable = [c for c in load_golden(GOLDEN_DIR / "golden_v2.jsonl") if c["source_docs"]]
 
     for case in answerable:
         sources = {chunk.doc for chunk in retriever.search(case["question"], k=K)}

@@ -11,6 +11,10 @@ from app.retriever import Retriever, load_chunks
 
 REFUSAL = "I don't know based on the provided documents."
 
+# Bump this whenever SYSTEM_PROMPT changes. It's saved with every eval run,
+# so a score change can always be traced to the prompt that caused it.
+PROMPT_VERSION = "v1"
+
 SYSTEM_PROMPT = f"""You are a financial research assistant for Kestrel Freight Analytics.
 Answer the user's question using ONLY the context passages provided.
 
