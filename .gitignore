@@ -1,0 +1,5 @@
+.env
+__pycache__/
+.pytest_cache/
+.venv/
+results/run_*.json
