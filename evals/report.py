@@ -36,6 +36,7 @@ def summarize(rows: list[dict]) -> dict:
         "pass_rate": round(passed / total, 3) if total else 0.0,
         "by_category": dict(by_category),
         "retrieval_hit_rate": rate([r["retrieval_hit"] for r in rows]),
+        "passage_hit_rate": rate([r.get("passage_hit") for r in rows]),
         # Phase 2 metrics. .get() keeps older result rows (without these keys) working.
         "refusal_exact_rate": rate([r.get("refusal_exact") for r in rows]),
         "internals_mention_rate": rate([r.get("mentions_internals") for r in rows]),

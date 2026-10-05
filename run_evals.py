@@ -1,9 +1,10 @@
 """Run the golden dataset through the RAG assistant and save a scorecard.
 
 Usage:
-    python run_evals.py                          # golden v2, with the LLM judge
+    python run_evals.py                          # golden v3, with the LLM judge
     python run_evals.py --no-judge               # rule-based graders only (cheaper)
     python run_evals.py --golden data/golden/golden_v1.jsonl
+    python run_evals.py --prompt v1              # compare against the original prompt
     python run_evals.py --model <model-name>     # evaluate a different assistant model
     python run_evals.py --judge-model <name>     # use a different judge
 
@@ -31,7 +32,7 @@ except ImportError:
 
 from app.llm import warmup
 from app.paths import GOLDEN_DIR, RESULTS_DIR
-from app.rag import PROMPT_VERSION, RagAssistant
+from app.rag import DEFAULT_PROMPT_VERSION, PROMPTS, RagAssistant
 from evals.dataset import load_golden
 from evals.judge import DEFAULT_JUDGE_MODEL, JUDGE_PROMPT_VERSION
 from evals.report import summarize
@@ -40,8 +41,10 @@ from evals.runner import evaluate_case
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run LLM evals against the golden dataset.")
-    parser.add_argument("--golden", default=GOLDEN_DIR / "golden_v2.jsonl", help="Golden dataset file")
+    parser.add_argument("--golden", default=GOLDEN_DIR / "golden_v3.jsonl", help="Golden dataset file")
     parser.add_argument("--model", default=None, help="Assistant model (defaults to app.llm.DEFAULT_MODEL)")
+    parser.add_argument("--prompt", default=DEFAULT_PROMPT_VERSION, choices=sorted(PROMPTS),
+                        help="Assistant prompt version (see app/rag.py)")
     parser.add_argument("--k", type=int, default=4, help="Passages to retrieve per question")
     parser.add_argument("--threshold", type=float, default=0.85,
                         help="Minimum rule-based pass rate")
@@ -71,7 +74,8 @@ def print_scorecard(run: dict) -> None:
     print(f"Rule/judge agreement: {fmt(s['rule_judge_agreement'])}")
     print(f"Exact refusals:       {fmt(s['refusal_exact_rate'])}")
     print(f"Mentions internals:   {fmt(s['internals_mention_rate'])}  (lower is better)")
-    print(f"Retrieval hit rate:   {fmt(s['retrieval_hit_rate'])}")
+    print(f"Retrieval (document): {fmt(s['retrieval_hit_rate'])}")
+    print(f"Retrieval (passage):  {fmt(s['passage_hit_rate'])}  (the stricter check)")
     print(f"Latency avg / p95:    {s['avg_latency_s']}s / {s['p95_latency_s']}s")
     print(f"Tokens in / out:      {s['total_input_tokens']} / {s['total_output_tokens']}")
     if s["judge_errors"]:
@@ -92,7 +96,7 @@ def check_gates(summary: dict, args) -> list[str]:
 def main() -> int:
     args = parse_args()
     cases = load_golden(args.golden)
-    assistant = RagAssistant(k=args.k, model=args.model)
+    assistant = RagAssistant(k=args.k, model=args.model, prompt_version=args.prompt)
     judge_model = None if args.no_judge else (
         args.judge_model or os.getenv("JUDGE_MODEL", DEFAULT_JUDGE_MODEL))
 
@@ -119,7 +123,7 @@ def main() -> int:
     run = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "model": rows[0]["model"] if rows else args.model,
-        "prompt_version": PROMPT_VERSION,
+        "prompt_version": args.prompt,
         "judge_model": judge_model,
         "judge_prompt_version": None if args.no_judge else JUDGE_PROMPT_VERSION,
         "golden_file": Path(args.golden).name,

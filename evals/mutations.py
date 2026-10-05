@@ -5,15 +5,24 @@ the test suite notices. Here we deliberately break the ANSWERS to check the
 GRADERS notice. Because we planted the error, we know the right verdict
 without any human labeling.
 
-Three mutation types:
-  * number_swap:    change a key figure ("$108.3 million" -> "$126.7 million").
-                    Should be judged incorrect AND unfaithful.
-  * false_claim:    keep the right answer but append a made-up fact.
-                    Should be judged unfaithful. The rule grader CAN'T catch
-                    this one, since the expected number is still there. This
-                    is the gap from run 1 that the judge exists to close.
-  * fabrication:    replace a correct refusal with a confident made-up answer.
-                    Should be judged incorrect AND unfaithful.
+Four mutation types:
+  * number_swap:  change the figure the question asks about
+                  ("$108.3 million" -> "$127.7 million").
+                  Should be judged incorrect AND unfaithful.
+  * detail_swap:  change a supporting figure the question did NOT ask about
+                  (the buyback amount in an answer about dividends).
+                  Should be judged unfaithful. The main answer is still
+                  right, so "correct" can stay true.
+  * false_claim:  keep the right answer but append a made-up fact.
+                  Should be judged unfaithful. The rule grader CAN'T catch
+                  this one, since the expected number is still there.
+  * fabrication:  replace a correct refusal with a confident made-up answer.
+                  Should be judged incorrect AND unfaithful.
+
+History: in the first mutation run, number_swap and detail_swap were one
+type that always expected "incorrect", and the swap could hit period labels
+("Q1" -> "Q2"). The judge flagged all 25 swaps as unfaithful, but 5 were
+scored as misses because of those two mistakes in this file.
 """
 import re
 import zlib
@@ -34,9 +43,13 @@ FABRICATED_ANSWER = "According to the filings, the figure was $123.4 million, up
 # What a correct judge should say about each mutation type.
 EXPECTED_VERDICTS = {
     "number_swap": {"correct": False, "faithful": False},
-    "false_claim": {"faithful": False},          # may still be "correct" overall
+    "detail_swap": {"faithful": False},          # main answer may still be correct
+    "false_claim": {"faithful": False},          # main answer may still be correct
     "fabrication": {"correct": False, "faithful": False},
 }
+
+# "Q1", "Q2 2026", "FY2025": a digit glued to a period label is a name, not a figure.
+PERIOD_LABEL = re.compile(r"(?:\bQ|\bFY)$", re.IGNORECASE)
 
 
 def _wrong_value_text(original: str) -> str:
@@ -44,32 +57,39 @@ def _wrong_value_text(original: str) -> str:
     value = float(original.replace(",", ""))
     wrong = value * 1.17 + 1
     decimals = len(original.split(".")[1]) if "." in original else 0
-    text = f"{wrong:,.{decimals}f}" if "," in original else f"{wrong:.{decimals}f}"
-    return text
+    return f"{wrong:,.{decimals}f}" if "," in original else f"{wrong:.{decimals}f}"
 
 
 def _is_year(number_text: str) -> bool:
     return bool(re.fullmatch(r"(19|20)\d\d", number_text))
 
 
-def swap_number(answer: str, expected_numbers: list[float]) -> str | None:
-    """Replace one key number in the answer with a wrong one.
+def _is_period_label(answer: str, match: re.Match) -> bool:
+    """True for the 1 in "Q1" or the 2025 in "FY2025"."""
+    return bool(PERIOD_LABEL.search(answer[:match.start()]))
 
-    Prefers a number the golden case expects (the "main" figure), then any
-    other non-year number. Returns None if the answer has nothing to swap.
+
+def swap_number(answer: str, expected_numbers: list[float]) -> tuple[str, bool] | None:
+    """Replace one number in the answer with a wrong one.
+
+    Returns (mutated_answer, is_key), where is_key says whether the swapped
+    number is one the golden case expects (the figure the question asks
+    for). Years and period labels are never swapped. Returns None if the
+    answer has no suitable number.
     """
-    matches = list(NUMBER_RE.finditer(answer))
     expected = set(expected_numbers)
+    candidates = [m for m in NUMBER_RE.finditer(answer)
+                  if not _is_year(m.group(0)) and not _is_period_label(answer, m)]
 
     def value(m):
         return float(m.group(0).replace(",", ""))
 
-    target = next((m for m in matches if value(m) in expected), None)
-    if target is None:
-        target = next((m for m in matches if not _is_year(m.group(0))), None)
+    key = next((m for m in candidates if value(m) in expected), None)
+    target = key or (candidates[0] if candidates else None)
     if target is None:
         return None
-    return answer[:target.start()] + _wrong_value_text(target.group(0)) + answer[target.end():]
+    mutated = answer[:target.start()] + _wrong_value_text(target.group(0)) + answer[target.end():]
+    return mutated, key is not None
 
 
 def add_false_claim(answer: str, case_id: str) -> str:
@@ -93,8 +113,10 @@ def make_mutations(row: dict) -> list[dict]:
         return mutations
 
     swapped = swap_number(row["answer"], row.get("expected_numbers", []))
-    if swapped and swapped != row["answer"]:
-        mutations.append({**base, "mutation": "number_swap", "answer": swapped})
+    if swapped:
+        text, is_key = swapped
+        mutations.append({**base, "mutation": "number_swap" if is_key else "detail_swap",
+                          "answer": text})
 
     mutations.append({**base, "mutation": "false_claim",
                       "answer": add_false_claim(row["answer"], row["id"])})

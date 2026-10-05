@@ -7,6 +7,7 @@ from app.rag import REFUSAL
 from evals.judge import JudgeError, judge_answer
 from evals.metrics import (
     mentions_internals,
+    passage_hit,
     refusal_is_exact,
     retrieval_hit,
     score_case,
@@ -36,6 +37,7 @@ def evaluate_case(case: dict, assistant, use_judge: bool = True,
         # Retrieval
         "retrieved_sources": result.sources,
         "retrieval_hit": retrieval_hit(case, result.sources),
+        "passage_hit": passage_hit(case, result.contexts),
         "contexts": result.contexts,   # saved so humans can check faithfulness later
         # Performance
         "model": result.llm.model,

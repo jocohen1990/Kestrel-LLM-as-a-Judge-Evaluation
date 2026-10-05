@@ -4,10 +4,12 @@ import json
 import pytest
 
 from evals.calibration import (
+    LABEL_COLUMNS,
     agreement,
     cohen_kappa,
     export_for_labeling,
     parse_label,
+    read_label_rows,
     score_labels,
 )
 
@@ -61,7 +63,7 @@ def test_export_is_blind_and_round_trips_through_score(tmp_path):
     sheet = tmp_path / "labels.csv"
     key_path = export_for_labeling(rows, sheet)
 
-    with sheet.open(newline="") as f:
+    with sheet.open(newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         header = reader.fieldnames
         labeled = list(reader)
@@ -71,11 +73,11 @@ def test_export_is_blind_and_round_trips_through_score(tmp_path):
     assert len(labeled) == 2
     assert all(r["label_id"].startswith("L") for r in labeled)
 
-    key = json.loads(key_path.read_text())
+    key = json.loads(key_path.read_text(encoding="utf-8"))
     for r in labeled:   # human agrees with the judge on every row
         r["human_correct"] = "y" if key[r["label_id"]]["judge_correct"] else "n"
         r["human_faithful"] = "y" if key[r["label_id"]]["judge_faithful"] else "n"
-    with sheet.open("w", newline="") as f:
+    with sheet.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=header)
         writer.writeheader()
         writer.writerows(labeled)
@@ -84,3 +86,52 @@ def test_export_is_blind_and_round_trips_through_score(tmp_path):
     assert results["correct"].accuracy == 1.0
     assert results["correct"].kappa == 1.0
     assert results["faithful"].n == 2
+
+
+# ---- Saving from Excel ---------------------------------------------------
+
+def write_sheet(path, rows, encoding):
+    """Write a labeling sheet the way Excel would save it."""
+    lines = [",".join(LABEL_COLUMNS)]
+    for r in rows:
+        lines.append(",".join(r.get(col, "") for col in LABEL_COLUMNS))
+    path.write_bytes(("\r\n".join(lines) + "\r\n").encode(encoding))
+
+
+def test_export_starts_with_a_bom_for_excel(tmp_path):
+    sheet = tmp_path / "labels.csv"
+    export_for_labeling([make_row("g001", True, True)], sheet)
+    assert sheet.read_bytes().startswith(b"\xef\xbb\xbf")
+
+
+def test_reads_excel_csv_utf8_with_bom(tmp_path):
+    sheet = tmp_path / "labels.csv"
+    write_sheet(sheet, [{"label_id": "L001", "human_correct": "y"}], "utf-8-sig")
+    assert read_label_rows(sheet)[0]["label_id"] == "L001"
+
+
+def test_reads_excel_plain_csv_in_windows_1252(tmp_path):
+    sheet = tmp_path / "labels.csv"
+    write_sheet(sheet, [{"label_id": "L001", "notes": "caf\u00e9 \u2019quote\u2019"}], "cp1252")
+    assert read_label_rows(sheet)[0]["notes"] == "caf\u00e9 \u2019quote\u2019"
+
+
+def test_score_skips_empty_rows_excel_leaves_behind(tmp_path):
+    sheet = tmp_path / "labels.csv"
+    key_path = export_for_labeling([make_row("g001", True, False)], sheet)
+    key = json.loads(key_path.read_text(encoding="utf-8"))
+    label_id = next(iter(key))
+    write_sheet(sheet, [{"label_id": label_id, "human_correct": "Y", "human_faithful": "n"},
+                        {"label_id": ""}], "utf-8-sig")
+    results = score_labels(sheet)
+    assert results["correct"].n == 1 and results["correct"].accuracy == 1.0
+    assert results["faithful"].accuracy == 1.0
+
+
+def test_score_names_the_row_with_a_bad_label(tmp_path):
+    sheet = tmp_path / "labels.csv"
+    key_path = export_for_labeling([make_row("g001", True, True)], sheet)
+    label_id = next(iter(json.loads(key_path.read_text(encoding="utf-8"))))
+    write_sheet(sheet, [{"label_id": label_id, "human_correct": "maybe"}], "utf-8")
+    with pytest.raises(ValueError, match=f"{label_id} human_correct"):
+        score_labels(sheet)

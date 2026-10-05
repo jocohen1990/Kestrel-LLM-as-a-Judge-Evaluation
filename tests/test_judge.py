@@ -57,3 +57,30 @@ def test_judge_answer_uses_judge_model_and_parses_reply(monkeypatch):
     assert captured["model"] == "judge-x"
     assert "faithful" in captured["system"]
     assert verdict.correct is True
+
+
+def fake_replies(*replies):
+    """A fake generate() that returns the given replies in order."""
+    calls = []
+
+    def _fake(system, user, model=None, **kwargs):
+        calls.append(user)
+        return LLMResponse(text=replies[len(calls) - 1], model=model, input_tokens=1,
+                           output_tokens=1, latency_s=0.0)
+    return _fake, calls
+
+
+def test_judge_retries_once_after_a_broken_reply(monkeypatch):
+    fake, calls = fake_replies('{"faithful": true, "correct": "unfinished', GOOD_REPLY)
+    monkeypatch.setattr(judge, "generate", fake)
+    verdict = judge.judge_answer("Q?", ["ctx"], "REF", "ANS")
+    assert len(calls) == 2
+    assert verdict.correct is True
+
+
+def test_judge_gives_up_after_two_broken_replies(monkeypatch):
+    fake, calls = fake_replies("not json", "still not json")
+    monkeypatch.setattr(judge, "generate", fake)
+    with pytest.raises(JudgeError, match="after 2 attempts"):
+        judge.judge_answer("Q?", ["ctx"], "REF", "ANS")
+    assert len(calls) == 2

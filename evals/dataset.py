@@ -2,7 +2,7 @@
 
 The golden dataset is test data, so it gets the same care as test data in
 any QA suite: a fixed schema, validation on load, and a version number in
-the file name (golden_v1.jsonl). Changing the questions creates golden_v2,
+the file name (golden_v1.jsonl). Changing the dataset creates a new version,
 so results from different dataset versions are never compared by accident.
 
 Format: JSON Lines (.jsonl), one JSON object per line. It's easy to append
@@ -36,6 +36,9 @@ def load_golden(path: Path) -> list[dict]:
         # Optional field added in v2: the answer must contain AT LEAST ONE of
         # these phrases. Defaulting it to [] keeps v1 files loadable.
         case.setdefault("must_include_any", [])
+        # Optional field added in v3: text that must appear in the retrieved
+        # PASSAGES (not just the right document). Older files default to [].
+        case.setdefault("evidence", [])
 
         missing = REQUIRED_FIELDS - case.keys()
         if missing:

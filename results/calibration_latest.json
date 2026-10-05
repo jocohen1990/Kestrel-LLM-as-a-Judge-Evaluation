@@ -1,0 +1,39 @@
+{
+  "labels_file": "labels_20261005_200508.csv",
+  "agreement": {
+    "correct": {
+      "n": 50,
+      "accuracy": 0.92,
+      "kappa": 0.827,
+      "both_pass": 30,
+      "both_fail": 16,
+      "judge_pass_human_fail": 3,
+      "judge_fail_human_pass": 1,
+      "disagreements": [
+        "L021",
+        "L023",
+        "L035",
+        "L038"
+      ]
+    },
+    "faithful": {
+      "n": 50,
+      "accuracy": 0.84,
+      "kappa": 0.585,
+      "both_pass": 9,
+      "both_fail": 33,
+      "judge_pass_human_fail": 5,
+      "judge_fail_human_pass": 3,
+      "disagreements": [
+        "L009",
+        "L017",
+        "L021",
+        "L023",
+        "L025",
+        "L032",
+        "L035",
+        "L041"
+      ]
+    }
+  }
+}

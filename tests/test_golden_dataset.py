@@ -8,14 +8,45 @@ import json
 import pytest
 
 from app.paths import CORPUS_DIR, GOLDEN_DIR
+from app.retriever import load_chunks
 from evals.dataset import DatasetError, load_golden
 
-GOLDEN_FILE = GOLDEN_DIR / "golden_v2.jsonl"
+GOLDEN_FILE = GOLDEN_DIR / "golden_v3.jsonl"
+GOLDEN_V2 = GOLDEN_DIR / "golden_v2.jsonl"
 GOLDEN_V1 = GOLDEN_DIR / "golden_v1.jsonl"
 
 
-def test_golden_v2_loads_and_has_32_cases():
+def test_golden_v3_loads_and_has_32_cases():
     assert len(load_golden(GOLDEN_FILE)) == 32
+
+
+def test_v2_is_unchanged_and_still_loads():
+    assert len(load_golden(GOLDEN_V2)) == 32
+
+
+def test_v3_only_adds_evidence_to_v2():
+    """v3 = v2 plus the evidence field. Nothing else may change."""
+    v3 = {c["id"]: c for c in load_golden(GOLDEN_FILE)}
+    for case in load_golden(GOLDEN_V2):
+        new = dict(v3[case["id"]])
+        new["evidence"] = []          # v2 cases load with evidence defaulted to []
+        assert new == case
+
+
+def test_every_evidence_string_is_in_its_source_documents():
+    """Catches typos: evidence must be copied exactly from the corpus."""
+    chunks = load_chunks(CORPUS_DIR)
+    for case in load_golden(GOLDEN_FILE):
+        for text in case["evidence"]:
+            assert any(text in c.text and c.doc in case["source_docs"] for c in chunks), \
+                f"{case['id']}: {text!r} not found in {case['source_docs']}"
+
+
+def test_answerable_cases_have_evidence():
+    no_single_passage = {"out_of_scope", "ambiguous"}
+    for case in load_golden(GOLDEN_FILE):
+        if case["category"] not in no_single_passage:
+            assert case["evidence"], f"{case['id']} has no evidence strings"
 
 
 def test_v1_is_unchanged_and_still_loads():
@@ -24,7 +55,7 @@ def test_v1_is_unchanged_and_still_loads():
 
 
 def test_v2_contains_every_v1_case_unchanged():
-    v2 = {c["id"]: c for c in load_golden(GOLDEN_FILE)}
+    v2 = {c["id"]: c for c in load_golden(GOLDEN_V2)}
     for case in load_golden(GOLDEN_V1):
         assert v2[case["id"]] == case
 

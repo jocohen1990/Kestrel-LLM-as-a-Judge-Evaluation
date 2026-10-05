@@ -97,7 +97,7 @@ def parse_judge_output(text: str) -> Verdict:
     try:
         data = json.loads(match.group(0))
     except json.JSONDecodeError as exc:
-        raise JudgeError(f"invalid JSON from judge: {exc}") from exc
+        raise JudgeError(f"invalid JSON from judge: {exc}; reply ends with {text[-120:]!r}") from exc
 
     for key in ("faithful", "correct"):
         if not isinstance(data.get(key), bool):
@@ -115,14 +115,21 @@ def parse_judge_output(text: str) -> Verdict:
 
 
 def judge_answer(question: str, contexts: list[str], reference: str, answer: str,
-                 model: str | None = None) -> Verdict:
-    """Ask the judge model for a verdict on one answer."""
+                 model: str | None = None, attempts: int = 2) -> Verdict:
+    """Ask the judge model for a verdict on one answer.
+
+    If the reply can't be parsed, ask again (once, by default). In the first
+    mutation run, 1 of 58 judge replies was broken JSON; a single retry is
+    the usual fix for an occasional formatting slip. If every attempt fails,
+    the error is raised and recorded, never counted as a pass or fail.
+    """
     model = model or os.getenv("JUDGE_MODEL", DEFAULT_JUDGE_MODEL)
-    response = generate(
-        JUDGE_SYSTEM,
-        build_judge_prompt(question, contexts, reference, answer),
-        model=model,
-        max_tokens=800,
-        temperature=0.0,
-    )
-    return parse_judge_output(response.text)
+    prompt = build_judge_prompt(question, contexts, reference, answer)
+    last_error = None
+    for _ in range(attempts):
+        response = generate(JUDGE_SYSTEM, prompt, model=model, max_tokens=1200, temperature=0.0)
+        try:
+            return parse_judge_output(response.text)
+        except JudgeError as exc:
+            last_error = exc
+    raise JudgeError(f"no valid verdict after {attempts} attempts; last error: {last_error}")

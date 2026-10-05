@@ -23,6 +23,11 @@ import random
 from dataclasses import dataclass, field
 from pathlib import Path
 
+# Excel adds and expects a hidden "byte order mark" (BOM) at the start of
+# UTF-8 CSV files. Writing with "utf-8-sig" adds it, so Excel shows special
+# characters correctly.
+WRITE_ENCODING = "utf-8-sig"
+
 LABEL_COLUMNS = [
     "label_id", "question", "passages", "reference_answer", "answer",
     "human_correct", "human_faithful", "notes",
@@ -56,7 +61,7 @@ def export_for_labeling(rows: list[dict], csv_path: Path, seed: int = 7) -> Path
     key = {}
     csv_path = Path(csv_path)
     csv_path.parent.mkdir(parents=True, exist_ok=True)
-    with csv_path.open("w", newline="", encoding="utf-8") as f:
+    with csv_path.open("w", newline="", encoding=WRITE_ENCODING) as f:
         writer = csv.DictWriter(f, fieldnames=LABEL_COLUMNS)
         writer.writeheader()
         for i, row in enumerate(usable, start=1):
@@ -82,6 +87,25 @@ def export_for_labeling(rows: list[dict], csv_path: Path, seed: int = 7) -> Path
     key_path = csv_path.with_suffix(".key.json")
     key_path.write_text(json.dumps(key, indent=2), encoding="utf-8")
     return key_path
+
+
+def read_label_rows(csv_path: Path) -> list[dict]:
+    """Read the labeling sheet, whichever way Excel saved it.
+
+    Excel's "CSV UTF-8" adds a BOM; without handling it, the first column is
+    read as "\ufefflabel_id" and every lookup fails. "utf-8-sig" strips it
+    (and works without one too). Excel's plain "CSV (Comma delimited)" saves
+    in the Windows-1252 encoding instead, so that's the fallback.
+    """
+    raw = Path(csv_path).read_bytes()
+    try:
+        text = raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        text = raw.decode("cp1252")
+    rows = list(csv.DictReader(text.splitlines(keepends=True)))
+    if rows and "label_id" not in rows[0]:
+        raise ValueError(f"no label_id column in {csv_path}; was the header row changed?")
+    return rows
 
 
 @dataclass
@@ -141,12 +165,17 @@ def score_labels(csv_path: Path, key_path: Path | None = None) -> dict:
     key = json.loads(key_path.read_text(encoding="utf-8"))
 
     pairs = {"correct": [], "faithful": []}
-    with csv_path.open(newline="", encoding="utf-8") as f:
-        for row in csv.DictReader(f):
-            judged = key[row["label_id"]]
-            for criterion in pairs:
-                human = parse_label(row[f"human_{criterion}"])
-                if human is not None:
-                    pairs[criterion].append((row["label_id"], judged[f"judge_{criterion}"], human))
+    for row in read_label_rows(csv_path):
+        label_id = row["label_id"].strip()
+        if not label_id:          # Excel sometimes keeps empty trailing rows
+            continue
+        judged = key[label_id]
+        for criterion in pairs:
+            try:
+                human = parse_label(row.get(f"human_{criterion}", ""))
+            except ValueError as exc:
+                raise ValueError(f"{label_id} human_{criterion}: {exc}") from exc
+            if human is not None:
+                pairs[criterion].append((label_id, judged[f"judge_{criterion}"], human))
 
     return {criterion: agreement(p) for criterion, p in pairs.items()}

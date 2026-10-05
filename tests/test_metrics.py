@@ -13,6 +13,9 @@ from evals.metrics import extract_numbers, is_refusal, number_present, score_cas
     ("The company had 1,240 employees.", [1240.0]),
     ("Diluted EPS was $0.38.", [0.38]),
     ("Guidance is $112-115 million.", [112.0, 115.0]),   # dash is not a minus sign
+    ("Revenue of $412,600,000.", [412600000.0]),
+    ("In February 2026, it launched.", [2026.0]),          # trailing comma isn't part of it
+    ("Values 3, 4 and 5.", [3.0, 4.0, 5.0]),
     ("No numbers here.", []),
 ])
 def test_extract_numbers(text, expected):
@@ -104,8 +107,28 @@ def test_refusal_is_exact():
     ("According to the context, the segment contributed 62%.", True),       # g005 in run 1
     ("Passage [2] says revenue was $116.0 million.", True),
     ("The context passages confirm Dana Whitfield is CEO.", True),
+    ("The reference material shows revenue of $116.0 million.", True),     # prompt v2 wording
     ("Kestrel's revenue was $116.0 million.", False),
     ("According to the Q2 2026 earnings release, EPS was $0.38.", False),   # citing a real doc is fine
 ])
 def test_mentions_internals(answer, expected):
     assert mentions_internals(answer) is expected
+
+
+# ---- Fixes after run 2 ---------------------------------------------------
+
+from evals.metrics import passage_hit  # noqa: E402
+
+
+def test_passage_hit_needs_every_evidence_string():
+    case = {"evidence": ["108.3", "116.0"]}
+    both = ["Q1 revenue of $108.3 million", "Q2 revenue of $116.0 million"]
+    assert passage_hit(case, both) is True
+    # The g022 situation: right documents, but the Q2 passage was guidance, not results.
+    guidance_only = ["Q1 revenue of $108.3 million", "Q2 outlook: $112 million to $115 million"]
+    assert passage_hit(case, guidance_only) is False
+
+
+def test_passage_hit_is_none_without_evidence():
+    assert passage_hit({"evidence": []}, ["anything"]) is None
+    assert passage_hit({}, ["anything"]) is None        # older dataset versions

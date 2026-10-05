@@ -9,9 +9,12 @@ measure how well that judge agrees with your own labels.
 import re
 from dataclasses import dataclass
 
-# Matches numbers like 1240, 1,240, 108.3 and 0.38. Signs are ignored on
-# purpose, so a range written "112-115" reads as 112 and 115.
-NUMBER_RE = re.compile(r"\d[\d,]*(?:\.\d+)?")
+# Matches numbers like 1240, 1,240, 412,600,000, 108.3 and 0.38. Signs are
+# ignored on purpose, so a range written "112-115" reads as 112 and 115.
+# A comma only counts when exactly three digits follow it, so the "2026," in
+# "February 2026, a product" is read as 2026 (an earlier, looser pattern
+# swallowed the comma).
+NUMBER_RE = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?")
 
 REFUSAL_PHRASES = (
     "i don't know",
@@ -110,8 +113,10 @@ def refusal_is_exact(answer: str, expected_refusal: str) -> bool:
 
 # Words that expose the pipeline's internals to an end user. A real user
 # never sees "the context" or "passage [2]", so answers shouldn't mention them.
+# Prompt v2 calls the passages "reference material", so that's covered too.
 INTERNALS_PATTERN = re.compile(
-    r"\b(the context|context passages?|passages?\s*\[?\d*\]?|provided context)\b",
+    r"\b(the context|context passages?|passages?\s*\[?\d*\]?|provided context"
+    r"|reference material|the material)\b",
     re.IGNORECASE,
 )
 
@@ -122,7 +127,11 @@ def mentions_internals(answer: str) -> bool:
 
 
 def retrieval_hit(case: dict, retrieved_sources: list[str]) -> bool | None:
-    """Did the retriever fetch every document this question needs?
+    """Did the retriever fetch every DOCUMENT this question needs?
+
+    Run 2 showed this is too coarse: for g022 the right document came back,
+    but the wrong paragraph from it (Q2 guidance instead of Q2 results).
+    It's kept for comparison; passage_hit below is the stricter check.
 
     Returns None for out-of-scope questions, which have no source document,
     so they're left out of the hit-rate average instead of skewing it.
@@ -130,3 +139,17 @@ def retrieval_hit(case: dict, retrieved_sources: list[str]) -> bool | None:
     if not case["source_docs"]:
         return None
     return all(doc in retrieved_sources for doc in case["source_docs"])
+
+
+def passage_hit(case: dict, contexts: list[str]) -> bool | None:
+    """Did the retrieved PASSAGES contain every evidence string the answer needs?
+
+    Each golden case (v3+) lists short `evidence` strings copied from the
+    corpus, such as "116.0". This checks that each one appears in at least
+    one retrieved passage. Returns None when a case has no evidence
+    (out-of-scope and ambiguous questions), so they're left out of the rate.
+    """
+    evidence = case.get("evidence", [])
+    if not evidence:
+        return None
+    return all(any(text in ctx for ctx in contexts) for text in evidence)

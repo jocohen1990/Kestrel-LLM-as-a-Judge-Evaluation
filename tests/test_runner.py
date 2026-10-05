@@ -20,7 +20,8 @@ class FakeAssistant:
 
 CASE = {"id": "g006", "category": "numeric", "question": "Q1 revenue?",
         "expected_answer": "$108.3 million", "expected_numbers": [108.3],
-        "must_include": [], "must_include_any": [], "source_docs": ["q1_2026_earnings.md"]}
+        "must_include": [], "must_include_any": [], "source_docs": ["q1_2026_earnings.md"],
+        "evidence": ["108.3"]}
 
 
 def judge_says(correct, faithful):
@@ -36,6 +37,7 @@ def test_rule_and_judge_both_recorded():
     assert row["passed"] and row["judge_correct"] and row["judge_faithful"]
     assert row["rule_judge_agree"] is True
     assert row["retrieval_hit"] is True
+    assert row["passage_hit"] is False   # the fake assistant's only passage is "ctx"
 
 
 def test_judge_catches_what_the_rules_miss():
