@@ -8,7 +8,8 @@
 2. Export a blind labeling sheet:
        python calibrate.py export results/latest.json results/mutations_latest.json
    Writes data/labels/labels_<timestamp>.csv. Open it in Excel or Google
-   Sheets and fill in human_correct and human_faithful with y or n.
+   Sheets and fill in human_correct and human_faithful with y or n, following
+   data/labels/LABELING_GUIDE.md.
    Don't open the matching .key.json file until you're done; it holds the
    judge's verdicts. Aim for about 50 labeled rows.
 
@@ -18,7 +19,6 @@
 import argparse
 import json
 import sys
-from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -33,7 +33,7 @@ from evals.calibration import export_for_labeling, score_labels
 from evals.dataset import load_golden
 from evals.judge import JudgeError, judge_answer
 from evals.metrics import score_case
-from evals.mutations import caught, make_mutations
+from evals.mutations import caught, make_mutations, summarize_mutations
 
 
 def stamp() -> str:
@@ -53,36 +53,35 @@ def cmd_mutate(args) -> int:
     rows = []
     for original in run["cases"]:
         for m in make_mutations(original):
+            # The rule grader "catches" a mutation if it fails the answer.
+            m["rule_caught"] = not score_case(cases[m["id"]], m["answer"]).passed
             try:
                 verdict = judge_answer(m["question"], m["contexts"], m["expected_answer"],
                                        m["answer"], model=args.judge_model)
             except JudgeError as exc:
-                print(f"  judge error on {m['id']} {m['mutation']}: {exc}")
+                # Saved, not skipped, so the results file shows every judge failure.
+                m.update({"judge_correct": None, "judge_faithful": None, "judge_reasoning": None,
+                          "judge_caught": None, "judge_error": str(exc)})
+                rows.append(m)
+                print(f"[ERROR ] {m['id']} {m['mutation']:<12} judge failed: {str(exc)[:120]}")
                 continue
-            rule_passed = score_case(cases[m["id"]], m["answer"]).passed
             m.update({
                 "judge_correct": verdict.correct,
                 "judge_faithful": verdict.faithful,
                 "judge_reasoning": verdict.reasoning,
                 "judge_caught": caught(m["mutation"], verdict.correct, verdict.faithful),
-                # The rule grader "catches" a mutation if it fails the answer.
-                "rule_caught": not rule_passed,
+                "judge_error": None,
             })
             rows.append(m)
             mark = "caught" if m["judge_caught"] else "MISSED"
             print(f"[{mark}] {m['id']} {m['mutation']:<12} {m['answer'][:90]}")
 
-    by_type = defaultdict(lambda: {"total": 0, "judge_caught": 0, "rule_caught": 0})
-    for r in rows:
-        stats = by_type[r["mutation"]]
-        stats["total"] += 1
-        stats["judge_caught"] += r["judge_caught"]
-        stats["rule_caught"] += r["rule_caught"]
-
+    by_type = summarize_mutations(rows)
     print("\n=== Mutation check: planted errors caught ===")
-    print(f"{'mutation':<14}{'judge':>12}{'rule grader':>16}")
+    print(f"{'mutation':<14}{'judge':>12}{'rule grader':>16}{'judge errors':>15}")
     for name, s in by_type.items():
-        print(f"{name:<14}{s['judge_caught']:>6}/{s['total']:<5}{s['rule_caught']:>10}/{s['total']}")
+        print(f"{name:<14}{s['judge_caught']:>6}/{s['total']:<5}"
+              f"{s['rule_caught']:>10}/{s['total']:<5}{s['judge_errors']:>10}")
 
     save("mutations", {"source_results": Path(args.results).name,
                        "judge_model": args.judge_model, "by_type": dict(by_type), "cases": rows})
@@ -98,6 +97,7 @@ def cmd_export(args) -> int:
     key_path = export_for_labeling(rows, out)
     print(f"Labeling sheet: {out}")
     print(f"Answer key:     {key_path}  (don't open until you've finished labeling)")
+    print("Read data/labels/LABELING_GUIDE.md first; it has the rules and worked examples.")
     print("Fill human_correct and human_faithful with y or n, then run:")
     print(f"  python calibrate.py score {out}")
     return 0

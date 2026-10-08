@@ -128,3 +128,24 @@ def caught(mutation_type: str, judge_correct: bool, judge_faithful: bool) -> boo
     expected = EXPECTED_VERDICTS[mutation_type]
     actual = {"correct": judge_correct, "faithful": judge_faithful}
     return all(actual[key] == want for key, want in expected.items())
+
+
+def summarize_mutations(rows: list[dict]) -> dict:
+    """Count, per mutation type, how many planted errors each grader caught.
+
+    Rows where the judge failed to give a verdict (judge_error set) are
+    counted separately as judge_errors and left out of "total", so a broken
+    judge reply never counts as a catch or a miss. The first runs skipped
+    them silently, which hid 2 missing rows.
+    """
+    by_type = {}
+    for r in rows:
+        stats = by_type.setdefault(r["mutation"], {"total": 0, "judge_caught": 0,
+                                                   "rule_caught": 0, "judge_errors": 0})
+        if r.get("judge_error"):
+            stats["judge_errors"] += 1
+            continue
+        stats["total"] += 1
+        stats["judge_caught"] += bool(r["judge_caught"])
+        stats["rule_caught"] += bool(r["rule_caught"])
+    return by_type

@@ -76,3 +76,17 @@ def test_caught_rules():
     # A planted extra claim only needs to be flagged as unfaithful.
     assert caught("false_claim", judge_correct=True, judge_faithful=False)
     assert not caught("false_claim", judge_correct=True, judge_faithful=True)
+
+
+def test_summarize_counts_judge_errors_separately():
+    from evals.mutations import summarize_mutations
+    rows = [
+        {"mutation": "false_claim", "judge_caught": True, "rule_caught": False},
+        {"mutation": "false_claim", "judge_caught": False, "rule_caught": True},
+        {"mutation": "false_claim", "judge_caught": None, "rule_caught": False,
+         "judge_error": "no valid verdict after 2 attempts"},
+        {"mutation": "fabrication", "judge_caught": True, "rule_caught": True},
+    ]
+    by_type = summarize_mutations(rows)
+    assert by_type["false_claim"] == {"total": 2, "judge_caught": 1, "rule_caught": 1, "judge_errors": 1}
+    assert by_type["fabrication"]["judge_errors"] == 0

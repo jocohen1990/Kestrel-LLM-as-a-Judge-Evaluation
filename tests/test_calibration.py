@@ -135,3 +135,60 @@ def test_score_names_the_row_with_a_bad_label(tmp_path):
     write_sheet(sheet, [{"label_id": label_id, "human_correct": "maybe"}], "utf-8")
     with pytest.raises(ValueError, match=f"{label_id} human_correct"):
         score_labels(sheet)
+
+
+# ---- Spacing between versions of the same question -------------------------
+
+import random  # noqa: E402
+
+from evals.calibration import MIN_GAP, min_distance, spread_out  # noqa: E402
+
+
+def sheet_like_rows():
+    """Same shape as a real export: 25 questions x 3 versions, 7 questions x 2."""
+    rows = []
+    for q in range(32):
+        for v in range(3 if q < 25 else 2):
+            rows.append({"id": f"g{q:03d}", "version": v})
+    return rows
+
+
+def test_versions_of_a_question_are_never_close_together():
+    rows = sheet_like_rows()
+    for seed in range(20):
+        order = spread_out(rows, random.Random(seed))
+        assert min_distance(order) >= MIN_GAP, f"seed {seed}"
+
+
+def test_spread_out_keeps_every_row_exactly_once():
+    rows = sheet_like_rows()
+    order = spread_out(rows, random.Random(3))
+    assert sorted((r["id"], r["version"]) for r in order) == sorted((r["id"], r["version"]) for r in rows)
+
+
+def test_spread_out_is_reproducible_with_the_same_seed():
+    rows = sheet_like_rows()
+    assert spread_out(rows, random.Random(7)) == spread_out(rows, random.Random(7))
+
+
+def test_spread_out_does_its_best_when_the_gap_is_impossible():
+    # 2 questions x 3 versions can't be 10 rows apart; it should still return all rows.
+    rows = [{"id": q, "version": v} for q in ("a", "b") for v in range(3)]
+    order = spread_out(rows, random.Random(1))
+    assert len(order) == 6
+    assert min_distance(order) >= 1
+
+
+def test_min_distance():
+    rows = [{"id": "a"}, {"id": "b"}, {"id": "a"}, {"id": "c"}]
+    assert min_distance(rows) == 2
+    assert min_distance([{"id": "a"}, {"id": "b"}]) is None
+
+
+def test_exported_sheet_keeps_the_gap(tmp_path):
+    rows = [make_row(f"g{q:03d}", True, True, mutation=m)
+            for q in range(30) for m in (None, "number_swap", "false_claim")]
+    sheet = tmp_path / "labels.csv"
+    key = json.loads(export_for_labeling(rows, sheet).read_text(encoding="utf-8"))
+    ordered_ids = [{"id": key[r["label_id"]]["case_id"]} for r in read_label_rows(sheet)]
+    assert min_distance(ordered_ids) >= MIN_GAP

@@ -16,10 +16,20 @@ Blind labeling: the export file deliberately leaves out the judge's
 verdicts, and mixes planted-error answers in with real ones in random order.
 If you could see the judge's opinion while labeling, you'd be nudged toward
 agreeing with it (anchoring bias), and the agreement score would be inflated.
+
+Spacing: one question can appear up to 3 times (the real answer plus planted
+versions). If two versions sit side by side, the labeler compares them instead
+of judging each one against its passages, which makes planted errors easier
+to spot than they are for the judge. The export keeps versions of the same
+question at least MIN_GAP rows apart. (Round 1 used a plain shuffle and had
+versions of the same question in adjacent rows.)
+
+How to label: see data/labels/LABELING_GUIDE.md.
 """
 import csv
 import json
 import random
+from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -49,6 +59,67 @@ def parse_label(text: str) -> bool | None:
     raise ValueError(f"can't read label {text!r}; use y or n")
 
 
+MIN_GAP = 10   # rows between versions of the same question
+
+
+def _one_ordering(groups: dict, rng: random.Random, min_gap: int, total: int) -> list[dict]:
+    """One attempt: build the order a row at a time, avoiding recent questions."""
+    groups = {g: list(members) for g, members in groups.items()}
+    for members in groups.values():
+        rng.shuffle(members)              # random order of versions within a question
+    names = sorted(groups)                # sorted so the result depends only on the seed
+    order, last_used = [], {}
+    while len(order) < total:
+        left = [g for g in names if groups[g]]
+        allowed = [g for g in left if len(order) - last_used.get(g, -min_gap) >= min_gap]
+        if allowed:
+            # Favor questions with more rows left, so they don't pile up at the end.
+            weights = [len(groups[g]) ** 2 for g in allowed]
+            pick = rng.choices(allowed, weights=weights)[0]
+        else:
+            pick = min(left, key=lambda g: last_used.get(g, -min_gap))
+        order.append(groups[pick].pop())
+        last_used[pick] = len(order) - 1
+    return order
+
+
+def spread_out(rows: list[dict], rng: random.Random, min_gap: int = MIN_GAP,
+               group_key: str = "id", attempts: int = 200) -> list[dict]:
+    """Shuffle rows so rows sharing a question are at least min_gap rows apart.
+
+    Each attempt picks rows one at a time, choosing a random question that
+    hasn't appeared in the last min_gap rows. An attempt can get cornered
+    near the end, when only a few questions are left, so it tries again with
+    a fresh random order. It returns the first attempt that keeps the gap, or
+    the best attempt if none does (possible with very few questions).
+    """
+    groups = defaultdict(list)
+    for row in rows:
+        groups[row[group_key]].append(row)
+
+    best, best_gap = list(rows), -1
+    for _ in range(attempts):
+        order = _one_ordering(groups, rng, min_gap, len(rows))
+        gap = min_distance(order, group_key)
+        if gap is None or gap >= min_gap:
+            return order
+        if gap > best_gap:
+            best, best_gap = order, gap
+    return best
+
+
+def min_distance(rows: list[dict], group_key: str = "id") -> int | None:
+    """Smallest row distance between two rows of the same question (None if no repeats)."""
+    last, best = {}, None
+    for i, row in enumerate(rows):
+        g = row[group_key]
+        if g in last:
+            gap = i - last[g]
+            best = gap if best is None else min(best, gap)
+        last[g] = i
+    return best
+
+
 def export_for_labeling(rows: list[dict], csv_path: Path, seed: int = 7) -> Path:
     """Write a blind labeling sheet plus a separate answer key.
 
@@ -56,7 +127,7 @@ def export_for_labeling(rows: list[dict], csv_path: Path, seed: int = 7) -> Path
     mutation check). Returns the path of the answer-key file.
     """
     usable = [r for r in rows if r.get("judge_correct") is not None]
-    random.Random(seed).shuffle(usable)   # fixed seed = same order every time
+    usable = spread_out(usable, random.Random(seed))   # fixed seed = same order every time
 
     key = {}
     csv_path = Path(csv_path)

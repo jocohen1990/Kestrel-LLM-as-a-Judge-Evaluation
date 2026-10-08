@@ -4,7 +4,7 @@ An end-to-end evaluation suite for an LLM-powered financial Q&A assistant, built
 a QA engineer tests software: versioned test data, graders that are themselves tested,
 measurable quality thresholds, and a CI pipeline that blocks regressions.
 
-> **Status:** Phases 1–2 of 6 complete; Run 3 (prompt v2) pending. See the [roadmap](#roadmap).
+> **Status:** Phases 1–2 of 6 complete, through Run 3 and the first human calibration round. See the [roadmap](#roadmap).
 
 ## What's being tested
 
@@ -37,7 +37,7 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-pytest -v                          # 97 offline tests: free, no API key needed
+pytest -v                          # 104 offline tests: free, no API key needed
 
 cp .env.example .env               # then add your ANTHROPIC_API_KEY
 python run_evals.py                # golden v3, prompt v2, LLM judge
@@ -50,12 +50,13 @@ python run_evals.py --no-judge     # rule-based graders only (cheaper)
 ```bash
 python calibrate.py mutate                       # plant errors, see how many the judge catches
 python calibrate.py export results/latest.json results/mutations_latest.json
-# fill in human_correct / human_faithful (y/n) in the CSV, without opening the .key.json
+# label following data/labels/LABELING_GUIDE.md, without opening the .key.json
 python calibrate.py score data/labels/labels_<timestamp>.csv
 ```
 
 The sheet opens in Excel or Google Sheets and can be saved in any CSV format Excel offers.
-Rows are shuffled, so labeling the first 50 gives a representative sample.
+Rows are shuffled, so labeling the first 50 gives a representative sample. The
+[labeling guide](data/labels/LABELING_GUIDE.md) defines both labels with worked examples.
 
 ## Tests vs. evals
 
@@ -91,13 +92,16 @@ An LLM judge is a model too, so it gets tested before it's trusted:
    (`fabrication`). Reports how many each grader catches. The appended-claim mutation is
    invisible to the rule grader by design.
 2. **Human calibration** (`calibrate.py export` / `score`). Blind labeling: the sheet hides the
-   judge's verdicts and shuffles planted-error answers in with real ones, so the labeler isn't
-   anchored. Reports accuracy, Cohen's kappa (agreement corrected for chance), and which way
-   the judge errs: too lenient or too strict.
+   judge's verdicts and shuffles planted-error answers in with real ones, keeping versions of the
+   same question at least 10 rows apart so the labeler judges each one on its own. A written
+   [labeling guide](data/labels/LABELING_GUIDE.md) keeps the labels consistent. Reports accuracy,
+   Cohen's kappa (agreement corrected for chance), and which way the judge errs: too lenient or
+   too strict.
 
 The judge defaults to a different, stronger model than the assistant, to avoid a model
 grading its own outputs. If a judge reply isn't valid JSON, it's retried once; a reply that
-still fails is recorded as a judge error, never counted as a pass or fail.
+still fails is recorded as a judge error, never counted as a pass or fail, and is saved in the
+results file with its error message.
 
 ## Golden dataset
 
@@ -124,8 +128,8 @@ evals/                The evaluation framework
 data/
   corpus/             The four Kestrel documents
   golden/             golden_v1, golden_v2 (frozen), golden_v3, dataset card
-  labels/             Human labeling sheets
-tests/                97 offline tests
+  labels/             Labeling guide and human labeling sheets
+tests/                104 offline tests
 run_evals.py          Eval runner and quality gates
 calibrate.py          Judge validation commands
 .github/workflows/    CI pipeline
@@ -210,4 +214,90 @@ correctness 97%, judge faithfulness 97%, rule/judge agreement 94%.
 
 ### Run 3: prompt v1 vs. v2 on golden v3
 
-*Pending.*
+Same assistant (claude-haiku-4-5), judge (claude-sonnet-5-5) and 32 questions; only the prompt changes.
+
+| Metric | Prompt v1 | Prompt v2 |
+|---|---|---|
+| Rule pass rate | 29/32 (91%) | **31/32 (97%)** |
+| Judge correctness | 30/32 | **31/32** |
+| Judge faithfulness | 31/32 | **32/32** |
+| Exact refusals | 1/4 | **4/4** |
+| Mentions "the context" | 7/32 | **1/32** |
+| Retrieval (passage) | 26/27 | 26/27 |
+| Avg / p95 latency | 0.74s / 1.01s | 0.69s / 1.04s |
+| Tokens in / out | 13.2k / 1.4k | **16.7k** / 1.2k |
+
+- **v2 fixed every prompt-level failure from Run 2.** The false premise (g026) is now corrected
+  without the refusal opener, the ambiguous question (g032) now asks which period is meant, and
+  the hallucinated detail inside a refusal (g030) is gone.
+- **The one remaining failure is retrieval, not the prompt.** g022 still refuses because the Q2
+  results paragraph isn't retrieved at k=4. That answer also accounts for v2's only refusal with
+  extra commentary and its only "reference material" mention.
+- **The cost:** v2's longer instructions add 27% more input tokens per question.
+- **Caveat:** v2 was written against failures seen in these same 32 questions, and the gap
+  between the prompts is 2 questions. New, unseen questions are needed to show it generalizes.
+
+**Run-to-run variation (same prompt v1, same questions, Run 2 vs. Run 3):**
+
+- The judge gave **opposite verdicts on an identical answer.** g032's answer text was the same
+  in both runs; the judge marked it correct in Run 2 and incorrect in Run 3, at temperature 0.
+  It's the same borderline case the human calibration flagged.
+- The assistant's wording differed on 3 of 32 questions (g001, g014, g031), also at temperature 0.
+  The verdicts didn't change, but "temperature 0" doesn't mean "repeatable".
+- → Repeat-run consistency testing moves into Phase 3, for both the assistant and the judge.
+
+**Mutation check, rerun with the fixed scoring:**
+
+| Mutation | Judge | Rule grader |
+|---|---|---|
+| Asked-for number swapped | **19/19** | 19/19 |
+| Supporting figure swapped | **6/6** | 1/6 |
+| False claim appended | **26/26** | 1/26 |
+| Refusal replaced by fabrication | **4/4** | 4/4 |
+
+The judge caught all 55 planted errors. Both rule-grader "catches" outside number swaps and
+fabrications are g022, which already failed before mutation. Two false-claim rows (g010, g023)
+are missing because the judge returned unusable replies twice in a row; those failures were
+being skipped silently. → They're now saved and counted as judge errors.
+
+### Human calibration, round 1
+
+50 blind labels (real answers mixed with planted errors) compared with the judge's verdicts.
+
+| Label | Agreement | Cohen's kappa | Judge too lenient | Judge too strict |
+|---|---|---|---|---|
+| Correct | 92% | **0.83** (strong) | 3 | 1 |
+| Faithful | 84% | **0.59** (moderate) | 5 | 3 |
+
+Every disagreement was reviewed against the written rules:
+
+- **Faithful: the judge applied the rules correctly in all 8 disagreements.** The labels were
+  inconsistent in three ways:
+  - accurate extra details marked unfaithful (2 rows);
+  - a made-up detail marked faithful, in one case despite a note pointing it out (3 rows);
+  - "faithful" used to mean "a bad answer" when every claim was actually supported (3 rows).
+- **Correct:** 3 of the 4 disagreements were label errors. In the fourth (g032, answering
+  "what was revenue?" with guidance), the human's stricter call is the better one. The judge
+  prompt doesn't say that a forecast isn't an actual result, and this is the same case the judge
+  flip-flopped on.
+- **Why:** the labeling rules lived in chat messages, and the rule for extra details was
+  clarified partway through labeling, so earlier and later rows followed different standards.
+- **Takeaway:** the main limit on trusting the judge was the clarity of the labeling rules, not
+  the judge. Kappa is reported as measured; the disputed rows were not relabeled after the
+  judge's verdicts were seen, since that would inflate agreement.
+
+### Changes after Run 3
+
+| Change | Why |
+|---|---|
+| Written [labeling guide](data/labels/LABELING_GUIDE.md) with worked examples | Inconsistent labels capped faithfulness kappa at 0.59 |
+| Export keeps versions of the same question at least 10 rows apart | Adjacent versions let the labeler compare instead of judging each row |
+| Judge failures saved in mutation results and counted per type | 2 mutation rows went missing without a trace |
+
+### Known gaps
+
+- The judge prompt doesn't state that guidance isn't an actual result; the labeling guide does.
+  Until a judge-v2 prompt adds it, ambiguous questions like g032 will keep disagreeing.
+- Ambiguous questions have no `evidence` strings, so their retrieval isn't measured. g032's
+  answers say 2025 revenue isn't in the documents because that paragraph was never retrieved.
+- 32 questions is small: one question is about 3 percentage points.
