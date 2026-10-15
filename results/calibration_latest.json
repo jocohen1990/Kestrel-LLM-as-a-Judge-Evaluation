@@ -1,6 +1,8 @@
 {
   "labels_file": "labels_20261005_200508.csv",
-  "agreement": {
+  "judge_prompt_version": "judge-v2",
+  "key_file": "labels_20261005_200508.judge-v2.key.json",
+  "agreement_before": {
     "correct": {
       "n": 50,
       "accuracy": 0.92,
@@ -35,5 +37,50 @@
         "L041"
       ]
     }
-  }
+  },
+  "agreement": {
+    "correct": {
+      "n": 50,
+      "accuracy": 0.94,
+      "kappa": 0.871,
+      "both_pass": 30,
+      "both_fail": 17,
+      "judge_pass_human_fail": 2,
+      "judge_fail_human_pass": 1,
+      "disagreements": [
+        "L021",
+        "L023",
+        "L038"
+      ]
+    },
+    "faithful": {
+      "n": 50,
+      "accuracy": 0.84,
+      "kappa": 0.585,
+      "both_pass": 9,
+      "both_fail": 33,
+      "judge_pass_human_fail": 5,
+      "judge_fail_human_pass": 3,
+      "disagreements": [
+        "L009",
+        "L017",
+        "L021",
+        "L023",
+        "L025",
+        "L032",
+        "L035",
+        "L041"
+      ]
+    }
+  },
+  "changed_verdicts": [
+    {
+      "label_id": "L035",
+      "case_id": "g032",
+      "criterion": "correct",
+      "before": true,
+      "after": false
+    }
+  ],
+  "judge_errors": []
 }

@@ -308,15 +308,21 @@ def score_labels(csv_path: Path, key_path: Path | None = None) -> dict:
         label_id = row["label_id"].strip()
         if not label_id:          # Excel sometimes keeps empty trailing rows
             continue
+        human = {}
+        for criterion in pairs:
+            try:
+                human[criterion] = parse_label(row.get(f"human_{criterion}", ""))
+            except ValueError as exc:
+                raise ValueError(f"{label_id} human_{criterion}: {exc}") from exc
+        # Unlabeled rows can't be scored, and a rejudged key leaves them out,
+        # so skip them before looking up the key.
+        if all(h is None for h in human.values()):
+            continue
         judged = key[label_id]
         for criterion in pairs:
             if judged.get(f"judge_{criterion}") is None:   # judge failed on this row
                 continue
-            try:
-                human = parse_label(row.get(f"human_{criterion}", ""))
-            except ValueError as exc:
-                raise ValueError(f"{label_id} human_{criterion}: {exc}") from exc
-            if human is not None:
-                pairs[criterion].append((label_id, judged[f"judge_{criterion}"], human))
+            if human[criterion] is not None:
+                pairs[criterion].append((label_id, judged[f"judge_{criterion}"], human[criterion]))
 
     return {criterion: agreement(p) for criterion, p in pairs.items()}

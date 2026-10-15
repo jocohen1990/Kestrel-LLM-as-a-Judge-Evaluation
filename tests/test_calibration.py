@@ -277,5 +277,9 @@ def test_rejudge_skips_rows_nobody_labeled(tmp_path):
         calls.append(1)
         return Verdict(faithful=True, correct=True, reasoning="r")
 
-    new_key = json.loads(rejudge_label_rows(sheet, judge).read_text(encoding="utf-8"))
+    new_path = rejudge_label_rows(sheet, judge)
+    new_key = json.loads(new_path.read_text(encoding="utf-8"))
     assert len(calls) == 1 and list(new_key) == [rows[0]["label_id"]]
+
+    # Scoring against the new key must not trip over the unlabeled row it left out.
+    assert score_labels(sheet, new_path)["correct"].n == 1

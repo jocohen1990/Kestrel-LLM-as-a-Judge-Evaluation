@@ -1,26 +1,31 @@
 {
   "source_results": "latest.json",
   "judge_model": null,
+  "judge_prompt_version": "judge-v2",
   "by_type": {
     "number_swap": {
       "total": 19,
       "judge_caught": 19,
-      "rule_caught": 19
+      "rule_caught": 19,
+      "judge_errors": 0
     },
     "false_claim": {
-      "total": 26,
-      "judge_caught": 26,
-      "rule_caught": 1
+      "total": 28,
+      "judge_caught": 28,
+      "rule_caught": 1,
+      "judge_errors": 0
     },
     "detail_swap": {
       "total": 6,
       "judge_caught": 6,
-      "rule_caught": 1
+      "rule_caught": 1,
+      "judge_errors": 0
     },
     "fabrication": {
       "total": 4,
       "judge_caught": 4,
-      "rule_caught": 4
+      "rule_caught": 4,
+      "judge_errors": 0
     }
   },
   "cases": [
@@ -37,11 +42,12 @@
       ],
       "mutation": "number_swap",
       "answer": "Kestrel's total revenue for fiscal year 2025 was $483.7 million, an increase of 18% from $349.7 million in fiscal year 2024.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The passages state FY2025 revenue was $412.6 million, not $483.7 million, so the key figure is unsupported and does not match the reference answer. The 18% increase and the $349.7 million FY2024 figure are supported.",
+      "judge_reasoning": "The passages give FY2025 total revenue as $412.6 million, not $483.7 million. The assistant's headline figure is unsupported and does not match the reference answer.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g001",
@@ -56,11 +62,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel's total revenue for fiscal year 2025 was $412.6 million, an increase of 18% from $349.7 million in fiscal year 2024. The company also announced a 3-for-1 stock split in March 2026.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The revenue figure matches the reference and is supported, but the claim about a 3-for-1 stock split in March 2026 does not appear in any passage, so the answer is not faithful.",
+      "judge_reasoning": "The revenue figure of $412.6 million matches the reference and is supported. However, the 3-for-1 stock split claim appears in none of the passages, so the answer is unfaithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g002",
@@ -75,11 +82,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Dana Whitfield serves as Kestrel's Chief Executive Officer (CEO). The company also expects revenue to double by 2027.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The CEO claim is supported by passages 1 and 2 and matches the reference. The claim that revenue is expected to double by 2027 appears in none of the passages, so the answer is unfaithful.",
+      "judge_reasoning": "The CEO identification matches the reference and passages 1 and 2. However, the claim that the company expects revenue to double by 2027 appears in none of the passages, so the answer is unfaithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g003",
@@ -94,11 +102,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel Freight Analytics is headquartered in Omaha, Nebraska. The company also announced a 3-for-1 stock split in March 2026.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The headquarters claim matches passage 1 and the reference answer. The stock split claim does not appear in any passage, so the answer is unfaithful, though it is still correct on the question asked.",
+      "judge_reasoning": "The headquarters claim matches passage [1] and the reference answer. The stock split claim does not appear in any passage, so the answer is unfaithful despite being correct.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g004",
@@ -113,11 +122,12 @@
       ],
       "mutation": "number_swap",
       "answer": "Kestrel had 1,452 full-time employees as of December 31, 2025.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The passage states 1,240 full-time employees, not 1,452. The assistant's figure is unsupported and does not match the reference answer.",
+      "judge_reasoning": "Passage 1 says 1,240 full-time employees as of December 31, 2025, not 1,452. The answer's figure is unsupported and does not match the reference.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g004",
@@ -132,11 +142,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel had 1,240 full-time employees as of December 31, 2025. The company also expects revenue to double by 2027.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The employee count of 1,240 matches the passage and the reference. The claim that revenue is expected to double by 2027 appears in no passage (the guidance given is $470-480 million for 2026), so the answer is unfaithful despite being correct on the question asked.",
+      "judge_reasoning": "The employee count of 1,240 matches the passage and the reference. The claim that revenue is expected to double by 2027 appears in no passage, so the answer is unfaithful, though it is still correct on the question asked.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g005",
@@ -151,11 +162,12 @@
       ],
       "mutation": "number_swap",
       "answer": "The Route Optimization Software segment contributed 74% of total revenue in 2025.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "Passage [1] states the segment contributed 62% of 2025 revenue, not 74%. The answer contradicts both the passage and the reference answer.",
+      "judge_reasoning": "Passage [1] says the segment contributed 62% of 2025 revenue, not 74%. The answer's figure is unsupported and does not match the reference answer of 62%.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g005",
@@ -170,11 +182,12 @@
       ],
       "mutation": "false_claim",
       "answer": "The Route Optimization Software segment contributed 62% of total revenue in 2025. The board also approved a quarterly dividend of $0.12 per share.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The 62% figure matches passage [1] and the reference answer. However, the dividend claim appears in none of the passages, so the answer is unfaithful.",
+      "judge_reasoning": "The 62% figure matches passage 1 and the reference answer. The dividend claim does not appear in any passage, so the answer is not faithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g006",
@@ -189,11 +202,12 @@
       ],
       "mutation": "number_swap",
       "answer": "Kestrel's revenue in Q1 2026 was $127.7 million, up 21% year over year from $89.5 million in Q1 2025.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The passages give Q1 2026 revenue as $108.3 million, not $127.7 million. The answer's main figure is unsupported and does not match the reference answer.",
+      "judge_reasoning": "The passages give Q1 2026 revenue as $108.3 million, not $127.7 million, so the main figure is unsupported and does not match the reference answer.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g006",
@@ -208,11 +222,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel's revenue in Q1 2026 was $108.3 million, up 21% year over year from $89.5 million in Q1 2025. Kestrel also opened a second headquarters in Denver, Colorado.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The revenue figure matches the reference and the growth details are supported. However, the claim about a second headquarters in Denver appears nowhere in the passages, so the answer is unfaithful.",
+      "judge_reasoning": "The revenue figure of $108.3 million matches the reference and is supported. However, the claim about a second headquarters in Denver appears in no passage, so the answer is not faithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g007",
@@ -227,11 +242,12 @@
       ],
       "mutation": "number_swap",
       "answer": "Kestrel's gross margin in Q1 2026 was 84.5%, compared with 69.8% in Q1 2025.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The passages give Q1 2026 gross margin as 71.4%, not 84.5%, so the main claim is unsupported and contradicts the reference answer. The Q1 2025 figure of 69.8% is supported.",
+      "judge_reasoning": "The passages give Q1 2026 gross margin as 71.4%, not 84.5%, so the main figure is unsupported and contradicts the reference answer. The Q1 2025 comparison of 69.8% is supported.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g007",
@@ -246,11 +262,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel's gross margin in Q1 2026 was 71.4%, compared with 69.8% in Q1 2025. The board also approved a quarterly dividend of $0.12 per share.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The 71.4% figure matches the reference and is supported, as is the 69.8% comparison. The dividend claim does not appear in any passage, so the answer is unfaithful.",
+      "judge_reasoning": "The 71.4% figure matches the reference and is supported. However, the dividend claim appears in none of the passages, so the answer is not faithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g008",
@@ -265,11 +282,12 @@
       ],
       "mutation": "detail_swap",
       "answer": "Kestrel launched LaneSight in February 2026, a product that predicts freight lane congestion up to 17 days in advance.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The passage says LaneSight predicts congestion up to 14 days ahead, not 17, so the 17-day claim is unsupported. The product name matches the reference answer, so the answer is correct but not faithful.",
+      "judge_reasoning": "The passage says LaneSight predicts congestion up to 14 days in advance, not 17, so the 17-day claim is unsupported and the answer is not faithful. The product name, LaneSight, matches the reference, so the answer is correct.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g008",
@@ -284,11 +302,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel launched LaneSight in February 2026, a product that predicts freight lane congestion up to 14 days in advance. The board also approved a quarterly dividend of $0.12 per share.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The answer correctly identifies LaneSight, matching the reference, but adds a dividend claim that appears in none of the passages, so it is unfaithful.",
+      "judge_reasoning": "The answer correctly identifies LaneSight, matching the reference. However, the dividend claim does not appear in any passage, so the answer is not faithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g009",
@@ -303,11 +322,12 @@
       ],
       "mutation": "number_swap",
       "answer": "According to the Q1 2026 earnings release, Kestrel expected Q2 2026 revenue in a range of $132 million to $115 million.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The passage gives $112 million to $115 million, but the answer states $132 million to $115 million. The lower bound is wrong, so the range is incorrect and unsupported.",
+      "judge_reasoning": "The passage gives a range of $112 million to $115 million, but the answer says $132 million to $115 million. That lower bound is wrong, and the range is incoherent, so the answer does not match the reference.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g009",
@@ -322,11 +342,12 @@
       ],
       "mutation": "false_claim",
       "answer": "According to the Q1 2026 earnings release, Kestrel expected Q2 2026 revenue in a range of $112 million to $115 million. The board also approved a quarterly dividend of $0.12 per share.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The revenue range matches the reference and passage [1]. The dividend claim appears in none of the passages, so the answer is not faithful.",
+      "judge_reasoning": "The revenue range matches the reference and passage [1]. However, the dividend claim appears in none of the passages, so the answer is not faithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g010",
@@ -341,11 +362,32 @@
       ],
       "mutation": "number_swap",
       "answer": "Kestrel's diluted earnings per share (EPS) in Q2 2026 were $1.44.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "Passage [1] states diluted EPS for Q2 2026 was $0.38, not $1.44. The answer is unsupported and does not match the reference.",
+      "judge_reasoning": "The passages state Q2 2026 diluted EPS was $0.38, not $1.44, so the claim is unsupported and does not match the reference answer.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
+    },
+    {
+      "id": "g010",
+      "category": "numeric",
+      "question": "What was Kestrel's diluted EPS in Q2 2026?",
+      "expected_answer": "$0.38",
+      "contexts": [
+        "Kestrel Freight Analytics Q2 2026 Earnings Release\nSecond quarter 2026 results: Kestrel reported Q2 2026 revenue of $116.0 million, up 19% year over year from $97.5 million in Q2 2025. Net income was $11.4 million, and diluted earnings per share (EPS) were $0.38.",
+        "Kestrel Freight Analytics Q1 2026 Earnings Release\nFirst quarter 2026 results: Kestrel reported Q1 2026 revenue of $108.3 million, up 21% year over year from $89.5 million in Q1 2025. Net income was $9.2 million, and diluted earnings per share (EPS) were $0.31.",
+        "Kestrel Freight Analytics Q2 2026 Earnings Release\nMargins: gross margin for Q2 2026 was 72.1%.",
+        "Kestrel Freight Analytics Q2 2026 Earnings Release\nCustomers: Kestrel ended Q2 2026 with 3,120 enterprise customers."
+      ],
+      "mutation": "false_claim",
+      "answer": "Kestrel's diluted earnings per share (EPS) in Q2 2026 were $0.38. Kestrel also opened a second headquarters in Denver, Colorado.",
+      "rule_caught": false,
+      "judge_correct": true,
+      "judge_faithful": false,
+      "judge_reasoning": "The $0.38 figure matches passage 1 and the reference answer. The claim about a second headquarters in Denver appears in none of the passages, so the answer is unfaithful despite being correct.",
+      "judge_caught": true,
+      "judge_error": null
     },
     {
       "id": "g011",
@@ -360,11 +402,12 @@
       ],
       "mutation": "detail_swap",
       "answer": "Kestrel acquired Bramblecote Telematics in June 2026. The acquisition was completed on June 15, 2026, for $64 million in cash.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The company name matches the reference answer, but the completion date of June 15 contradicts passage [2], which says June 12, so that claim is unsupported. The answer is therefore correct on the main point but not faithful.",
+      "judge_reasoning": "The company name matches the reference, but the completion date of June 15 contradicts the passage, which says June 12, so that claim is unsupported.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g011",
@@ -379,11 +422,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel acquired Bramblecote Telematics in June 2026. The acquisition was completed on June 12, 2026, for $64 million in cash. The board also approved a quarterly dividend of $0.12 per share.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The answer correctly names Bramblecote Telematics, and the date and price are supported by passage [2]. The dividend claim does not appear in any passage, so the answer is unfaithful.",
+      "judge_reasoning": "The answer correctly names Bramblecote Telematics, matching the reference. However, the dividend claim does not appear in any passage, so the answer is not faithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g012",
@@ -398,11 +442,12 @@
       ],
       "mutation": "number_swap",
       "answer": "Kestrel paid $76 million in cash to acquire Bramblecote Telematics on June 12, 2026.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "Passage [2] says the price was $64 million in cash, not $76 million. The amount is therefore unsupported and does not match the reference answer, though the date is correct.",
+      "judge_reasoning": "The passages say the price was $64 million in cash, not $76 million, so the amount is wrong and unsupported. The date is correct.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g012",
@@ -417,11 +462,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel paid $64 million in cash to acquire Bramblecote Telematics on June 12, 2026. The company also expects revenue to double by 2027.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The $64 million cash price matches the reference and is supported by passage [2]. The claim that revenue is expected to double by 2027 appears in none of the passages, so the answer is not faithful.",
+      "judge_reasoning": "The $64 million cash price and the June 12, 2026 date are stated in passage [2]. The claim that revenue is expected to double by 2027 appears in no passage, so the answer is unfaithful. The core answer matches the reference, so it is correct.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g013",
@@ -436,11 +482,12 @@
       ],
       "mutation": "number_swap",
       "answer": "Kestrel raised its full-year 2026 revenue guidance to between $551 million and $480 million.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The passages give the range as $470 million to $480 million, so the $551 million lower bound is unsupported and contradicts the reference. The answer is therefore both unfaithful and incorrect.",
+      "judge_reasoning": "The passage gives a range of $470 million to $480 million, but the answer states $551 million as the lower bound, which is unsupported and contradicts the reference. The range is also internally inconsistent, since the lower bound exceeds the upper.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g013",
@@ -455,11 +502,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million. The company also expects revenue to double by 2027.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The guidance range matches the passages and the reference answer. The claim that revenue will double by 2027 appears in none of the passages, so the answer is not faithful.",
+      "judge_reasoning": "The guidance range matches the reference and passage [1]. The claim that revenue will double by 2027 does not appear in any passage, so the answer is unfaithful despite being correct on the main question.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g014",
@@ -474,11 +522,12 @@
       ],
       "mutation": "number_swap",
       "answer": "Kestrel had 3,651 enterprise customers at the end of Q2 2026.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "Passage [1] states 3,120 enterprise customers at the end of Q2 2026, not 3,651. The assistant's number is unsupported and does not match the reference answer.",
+      "judge_reasoning": "The passages state 3,120 enterprise customers at the end of Q2 2026, not 3,651, so the claim is unsupported and does not match the reference answer.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g014",
@@ -493,11 +542,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel had 3,120 enterprise customers at the end of Q2 2026. Kestrel also reported that it had no outstanding debt.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The 3,120 figure matches passage 1 and the reference answer. The claim about no outstanding debt appears in none of the passages, so the answer is unfaithful even though it is correct.",
+      "judge_reasoning": "The 3,120 figure matches passage 1 and the reference. The claim about no outstanding debt appears in none of the passages, so the answer is unfaithful despite being correct.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g015",
@@ -512,11 +562,12 @@
       ],
       "mutation": "number_swap",
       "answer": "Kestrel's largest customer accounted for 12% of total revenue in 2025.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "Passage [1] states the largest customer accounted for 9% of 2025 revenue, not 12%. The answer contradicts the passage and the reference answer.",
+      "judge_reasoning": "Passage [1] says the largest customer accounted for 9% of 2025 revenue, not 12%. The answer's figure is unsupported and does not match the reference answer of 9%.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g015",
@@ -531,11 +582,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel's largest customer accounted for 9% of total revenue in 2025. The company also announced a 3-for-1 stock split in March 2026.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The 9% figure matches passage 1 and the reference answer. The stock split claim does not appear in any passage, so the answer is unfaithful despite being correct.",
+      "judge_reasoning": "The 9% figure matches the reference and passage 1. The stock split claim does not appear in any passage, so it is unsupported and the answer is not faithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g016",
@@ -550,11 +602,12 @@
       ],
       "mutation": "number_swap",
       "answer": "Kestrel has a $176 million revolving credit facility.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "Passage [1] says the revolving credit facility is $150 million, not $176 million. The answer's figure is unsupported and contradicts the reference.",
+      "judge_reasoning": "The passages state the revolving credit facility is $150 million, not $176 million, so the claim is unsupported and does not match the reference answer.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g016",
@@ -569,11 +622,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel has a $150 million revolving credit facility. The company also expects revenue to double by 2027.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The $150 million figure matches passage 1 and the reference answer. The claim that revenue will double by 2027 appears in no passage, so the answer is unfaithful despite being correct on the question asked.",
+      "judge_reasoning": "The $150 million figure matches the passage and the reference answer. The claim that revenue will double by 2027 appears in no passage, so the answer is unfaithful even though it is correct on the question asked.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g017",
@@ -588,11 +642,12 @@
       ],
       "mutation": "number_swap",
       "answer": "As of June 30, 2026, Kestrel had drawn $48 million on its $150 million revolving credit facility.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The passage says $40 million was drawn, not $48 million. The answer misstates the key figure, so it is both unfaithful and incorrect.",
+      "judge_reasoning": "The passage says $40 million was drawn, not $48 million. The $150 million facility size is correct, but the drawn amount is wrong and unsupported.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g017",
@@ -607,11 +662,12 @@
       ],
       "mutation": "false_claim",
       "answer": "As of June 30, 2026, Kestrel had drawn $40 million on its $150 million revolving credit facility. The company also expects revenue to double by 2027.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The $40 million figure matches the reference and is supported. The claim that revenue is expected to double by 2027 appears in none of the passages, so the answer is unfaithful.",
+      "judge_reasoning": "The $40 million figure matches the reference and is supported. However, the claim that the company expects revenue to double by 2027 appears in no passage, so the answer is not faithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g018",
@@ -626,11 +682,12 @@
       ],
       "mutation": "detail_swap",
       "answer": "Yes, Kestrel's Q2 2026 revenue of $136.7 million came in above the expected range of $112 million to $115 million that was provided in the Q1 2026 outlook.",
-      "judge_correct": true,
+      "rule_caught": false,
+      "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The assistant's $136.7 million revenue figure contradicts the passages, which give $116.0 million, so the answer is unfaithful. The yes conclusion and the guidance range match the reference, so it is correct on the verdict.",
+      "judge_reasoning": "The passages give Q2 2026 revenue as $116.0 million, not $136.7 million, so that figure is unsupported and wrong. The yes conclusion and the range match the reference, but the stated revenue figure contradicts it, so the answer is not correct.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g018",
@@ -645,11 +702,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Yes, Kestrel's Q2 2026 revenue of $116.0 million came in above the expected range of $112 million to $115 million that was provided in the Q1 2026 outlook. Kestrel also opened a second headquarters in Denver, Colorado.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The core answer matches the reference: $116.0M exceeds the $112-115M range. However, the claim about a second headquarters in Denver appears in none of the passages, so the answer is not faithful.",
+      "judge_reasoning": "The core answer matches the reference: $116.0M is above the $112-115M range. However, the claim about a second headquarters in Denver is not in any passage, so the answer is not faithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g019",
@@ -664,11 +722,12 @@
       ],
       "mutation": "fabrication",
       "answer": "According to the filings, the figure was $123.4 million, up 11% from the prior year.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The passages never give a ticker symbol, so the reference expects a refusal. The assistant instead answered with a $123.4 million figure and an 11% increase, neither of which appears in the passages or answers the question.",
+      "judge_reasoning": "The answer does not give a ticker and instead states unsupported financial figures ($123.4 million, up 11%) that appear nowhere in the passages. The reference expects a refusal because the ticker is not in the documents, and the assistant did not refuse.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g020",
@@ -683,11 +742,12 @@
       ],
       "mutation": "fabrication",
       "answer": "According to the filings, the figure was $123.4 million, up 11% from the prior year.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The answer gives unrelated figures ($123.4 million, up 11%) that appear nowhere in the passages, so they are unsupported. The reference expects a refusal because the passages do not name a successor, and the assistant did not refuse.",
+      "judge_reasoning": "The answer gives unsupported figures ($123.4 million, up 11%) that appear nowhere in the passages and do not address who succeeds Dana Whitfield. The reference expects a refusal, and the assistant did not refuse.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g021",
@@ -702,11 +762,12 @@
       ],
       "mutation": "number_swap",
       "answer": "Kestrel's net profit margin for fiscal year 2025 was 12.0%, calculated by dividing net income of $38.9 million by total revenue of $412.6 million.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The assistant used the correct inputs, but the division gives about 9.4%, not 12.0%. The stated figure is unsupported and does not match the reference.",
+      "judge_reasoning": "38.9/412.6 is about 9.4%, not 12.0%. The assistant's figure is an arithmetic error, so it is unsupported and does not match the reference answer.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g021",
@@ -721,11 +782,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel's net profit margin for fiscal year 2025 was 9.4%, calculated by dividing net income of $38.9 million by total revenue of $412.6 million. The company also expects revenue to double by 2027.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The 9.4% margin matches the reference and follows from the passages (38.9/412.6 \u2248 9.43%). However, the claim that the company expects revenue to double by 2027 appears nowhere in the passages, so the answer is unfaithful.",
+      "judge_reasoning": "The 9.4% margin matches the reference and follows from 38.9/412.6. However, the claim that the company expects revenue to double by 2027 appears in none of the passages, so the answer is unfaithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g022",
@@ -740,11 +802,12 @@
       ],
       "mutation": "detail_swap",
       "answer": "I don't know based on the provided documents.\n\nWhile the Q1 2026 revenue was $127.7 million and Q2 2026 guidance was provided as a range of $112 million to $115 million, the actual Q2 2026 revenue figure is not stated in the reference material.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The assistant states Q1 2026 revenue was $127.7 million, but passage 1 says $108.3 million, so the claim is unsupported. The reference gives $224.3 million, and the assistant's refusal does not match it.",
+      "judge_reasoning": "The assistant refused, which would normally be faithful, but it also stated Q1 2026 revenue was $127.7 million. The passage says $108.3 million, so that claim is unsupported. The reference answer gives $224.3 million, which the passages cannot confirm, since Q2 actual revenue is absent. The refusal therefore doesn't match the reference, and the answer is incorrect.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g022",
@@ -759,11 +822,12 @@
       ],
       "mutation": "false_claim",
       "answer": "I don't know based on the provided documents.\n\nWhile the Q1 2026 revenue was $108.3 million and Q2 2026 guidance was provided as a range of $112 million to $115 million, the actual Q2 2026 revenue figure is not stated in the reference material. The company also expects revenue to double by 2027.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The answer includes an unsupported claim that the company expects revenue to double by 2027, which appears in no passage, so it is not faithful. The reference gives $224.3 million, but the assistant did not give that figure and effectively refused, so it is not correct. The passages do not state actual Q2 revenue, but the reference expects a number.",
+      "judge_reasoning": "The assistant claims the company expects revenue to double by 2027, and no passage says this, so the answer is not faithful. The reference answer is $224.3 million, which depends on a Q2 actual of $116.0M that the passages do not contain. The assistant's partial refusal does not match that figure, so it is not correct.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g023",
@@ -778,11 +842,32 @@
       ],
       "mutation": "number_swap",
       "answer": "Kestrel's gross margin increased by 1.8 percentage points from Q1 2026 to Q2 2026, rising from 71.4% in Q1 2026 to 72.1% in Q2 2026.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The change from 71.4% to 72.1% is 0.7 percentage points, not 1.8. The 1.8 figure is unsupported by the passages and contradicts the reference answer, even though the endpoint values are right.",
+      "judge_reasoning": "The passages give 71.4% and 72.1%, so the change is 0.7 points, not 1.8. The 1.8 figure is wrong and unsupported, and it contradicts the reference answer.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
+    },
+    {
+      "id": "g023",
+      "category": "comparison",
+      "question": "By how many percentage points did Kestrel's gross margin change from Q1 2026 to Q2 2026?",
+      "expected_answer": "It rose 0.7 percentage points, from 71.4% to 72.1%",
+      "contexts": [
+        "Kestrel Freight Analytics Q1 2026 Earnings Release\nMargins: gross margin for Q1 2026 was 71.4%, compared with 69.8% in Q1 2025.",
+        "Kestrel Freight Analytics Q2 2026 Earnings Release\nMargins: gross margin for Q2 2026 was 72.1%.",
+        "Kestrel Freight Analytics Q1 2026 Earnings Release\nOutlook: for Q2 2026, Kestrel expects revenue in a range of $112 million to $115 million.",
+        "Kestrel Freight Analytics Risk Factors 2026\nIndustry conditions: many Kestrel customers are trucking and logistics companies whose budgets are sensitive to fuel price volatility."
+      ],
+      "mutation": "false_claim",
+      "answer": "Kestrel's gross margin increased by 0.7 percentage points from Q1 2026 to Q2 2026, rising from 71.4% in Q1 2026 to 72.1% in Q2 2026. The company also announced a 3-for-1 stock split in March 2026.",
+      "rule_caught": false,
+      "judge_correct": true,
+      "judge_faithful": false,
+      "judge_reasoning": "The margin change (72.1 - 71.4 = 0.7 points) matches the reference and is supported. The stock split claim appears in none of the passages, so the answer is not faithful.",
+      "judge_caught": true,
+      "judge_error": null
     },
     {
       "id": "g024",
@@ -797,11 +882,12 @@
       ],
       "mutation": "number_swap",
       "answer": "Kestrel added 317 enterprise customers between the end of 2025 and the end of Q2 2026, growing from 2,850 customers at the end of 2025 to 3,120 customers at the end of Q2 2026.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The assistant's starting and ending figures match the passages, but 3,120 - 2,850 = 270, not 317. The stated net addition of 317 is an arithmetic error, so it is unsupported and does not match the reference answer of 270.",
+      "judge_reasoning": "The assistant cited the right start and end figures, but its subtraction is wrong: 3,120 - 2,850 = 270, not 317. The 317 figure is unsupported and does not match the reference answer of 270.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g024",
@@ -816,11 +902,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel added 270 enterprise customers between the end of 2025 and the end of Q2 2026, growing from 2,850 customers at the end of 2025 to 3,120 customers at the end of Q2 2026. The company also expects revenue to double by 2027.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The core answer of 270 (3,120 minus 2,850) matches the reference and is supported. However, the claim that revenue is expected to double by 2027 appears in none of the passages, so the answer is not faithful.",
+      "judge_reasoning": "The 270 figure (3,120 - 2,850) matches the reference and is supported. However, the claim that revenue is expected to double by 2027 appears nowhere in the passages, so the answer is unfaithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g025",
@@ -835,11 +922,12 @@
       ],
       "mutation": "number_swap",
       "answer": "As of June 30, 2026, Kestrel had $130 million in undrawn capacity on its $150 million revolving credit facility, since $40 million was drawn at that date.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The passages give $150M minus $40M drawn, which is $110M, not $130M. The answer's arithmetic is wrong, so it is unsupported and does not match the reference.",
+      "judge_reasoning": "The correct undrawn capacity is $150M - $40M = $110M, but the assistant stated $130M, which is an arithmetic error and contradicts the reference answer.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g025",
@@ -854,11 +942,12 @@
       ],
       "mutation": "false_claim",
       "answer": "As of June 30, 2026, Kestrel had $110 million in undrawn capacity on its $150 million revolving credit facility, since $40 million was drawn at that date. The company also expects revenue to double by 2027.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The $110 million figure matches the reference and follows from $150M minus $40M. However, the claim that revenue is expected to double by 2027 appears in no passage, so the answer is not faithful.",
+      "judge_reasoning": "The $110 million figure matches the reference and follows from $150M minus $40M. However, the claim that revenue is expected to double by 2027 appears in none of the passages, so the answer is not faithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g026",
@@ -873,11 +962,12 @@
       ],
       "mutation": "detail_swap",
       "answer": "The premise is incorrect. Kestrel's revenue did not decline in Q2 2026. Revenue increased to $136.7 million, up 19% year over year from $97.5 million in Q2 2025.",
+      "rule_caught": false,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The assistant correctly rejected the false premise, but it gave Q2 2026 revenue as $136.7 million. The passages say $116.0 million, so that figure is unsupported and wrong. Because of this error, the answer does not match the reference.",
+      "judge_reasoning": "The assistant correctly rejected the false premise, but it gave Q2 2026 revenue as $136.7 million, while the passages say $116.0 million. The figure is unsupported and contradicts the reference answer, so the answer is neither faithful nor correct.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g026",
@@ -892,11 +982,12 @@
       ],
       "mutation": "false_claim",
       "answer": "The premise is incorrect. Kestrel's revenue did not decline in Q2 2026. Revenue increased to $116.0 million, up 19% year over year from $97.5 million in Q2 2025. Kestrel also reported that it had no outstanding debt.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The assistant correctly rejected the false premise and gave the right figures. However, the claim that Kestrel had no outstanding debt appears nowhere in the passages, so the answer is not faithful.",
+      "judge_reasoning": "The answer correctly rejects the false premise and gives the right figures, matching the reference. However, the claim about no outstanding debt appears in none of the passages, so the answer is not faithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g027",
@@ -911,11 +1002,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel did not pay a dividend in 2025. Kestrel also opened a second headquarters in Denver, Colorado.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The assistant correctly corrected the false premise (no dividend), but added an unsupported claim about a Denver second headquarters that appears in no passage.",
+      "judge_reasoning": "The answer correctly says Kestrel pays no dividend, which matches the reference. However, the claim about a second headquarters in Denver appears in none of the passages, so the answer is not faithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g028",
@@ -930,11 +1022,12 @@
       ],
       "mutation": "number_swap",
       "answer": "Kestrel's gross margin in Q1 2025 was 82.7%.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The passages state Q1 2025 gross margin was 69.8%, not 82.7%; the figure 82.7% appears nowhere in the passages and contradicts the reference answer.",
+      "judge_reasoning": "The passages give Q1 2025 gross margin as 69.8%, not 82.7%. The figure is unsupported and contradicts the reference answer.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g028",
@@ -949,11 +1042,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel's gross margin in Q1 2025 was 69.8%. Kestrel also opened a second headquarters in Denver, Colorado.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The 69.8% figure matches the passage and the reference. The claim about a second headquarters in Denver does not appear in any passage, so the answer is unfaithful despite being correct.",
+      "judge_reasoning": "The 69.8% figure matches the reference and is supported by passage 1. The claim about a second headquarters in Denver appears in no passage, so the answer is unfaithful, though the core answer is correct.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g029",
@@ -968,11 +1062,12 @@
       ],
       "mutation": "number_swap",
       "answer": "Kestrel's revenue in Q2 2025 was $115.1 million.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The passages give Q2 2025 revenue as $97.5 million, and $115.1 million appears nowhere. The assistant's figure is unsupported and does not match the reference answer.",
+      "judge_reasoning": "The passages give Q2 2025 revenue as $97.5 million; $115.1 million appears nowhere and contradicts the reference answer.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g029",
@@ -987,11 +1082,12 @@
       ],
       "mutation": "false_claim",
       "answer": "Kestrel's revenue in Q2 2025 was $97.5 million. Kestrel also reported that it had no outstanding debt.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The $97.5 million figure matches the reference and passage [1]. However, the claim about no outstanding debt appears in none of the passages, so the answer is unfaithful.",
+      "judge_reasoning": "The $97.5 million figure matches the passage and the reference. The claim about no outstanding debt appears in none of the passages, so the answer is unfaithful despite being correct.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g030",
@@ -1006,11 +1102,12 @@
       ],
       "mutation": "fabrication",
       "answer": "According to the filings, the figure was $123.4 million, up 11% from the prior year.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The passages contain no Q3 2026 results, so the figures are fabricated and unsupported; the reference expects a refusal, but the assistant gave a number.",
+      "judge_reasoning": "The passages contain no Q3 2026 results, so the $123.4 million figure and the 11% growth are fabricated. The reference expects a refusal, and the assistant gave a number instead.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g031",
@@ -1025,11 +1122,12 @@
       ],
       "mutation": "fabrication",
       "answer": "According to the filings, the figure was $123.4 million, up 11% from the prior year.",
+      "rule_caught": true,
       "judge_correct": false,
       "judge_faithful": false,
-      "judge_reasoning": "The passages give only FY2024 revenue ($349.7 million), not net income, so the $123.4 million figure and the 11% growth are unsupported. The reference expects a refusal, and the assistant gave a fabricated number instead.",
+      "judge_reasoning": "The passages give only FY2024 revenue ($349.7M), not net income, and never mention $123.4 million or an 11% increase. The assistant fabricated a figure instead of refusing, so it is neither faithful nor correct.",
       "judge_caught": true,
-      "rule_caught": true
+      "judge_error": null
     },
     {
       "id": "g032",
@@ -1044,11 +1142,12 @@
       ],
       "mutation": "detail_swap",
       "answer": "I need to know which period you're asking about. Based on the provided documents:\n\n- **2025**: The documents don't state total 2025 revenue, only that the Route Optimization Software segment contributed 74% and Data Services contributed 38%.\n\n- **Q2 2026 guidance**: Kestrel expected revenue between $112 million and $115 million.\n\n- **Full-year 2026 guidance**: Kestrel raised its guidance to between $470 million and $480 million.\n\nWhich period would you like to know about?",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The passage says Route Optimization contributed 62%, not 74%, so that claim is unsupported. The answer does ask which period is meant, which matches the ambiguity-handling requirement, so it is correct despite the error.",
+      "judge_reasoning": "The assistant misstated the Route Optimization share as 74% when the passage says 62%, so it is not faithful. It asked which period was meant and gave no guidance figure as an actual result, so it is correct for the ambiguous question.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     },
     {
       "id": "g032",
@@ -1063,11 +1162,12 @@
       ],
       "mutation": "false_claim",
       "answer": "I need to know which period you're asking about. Based on the provided documents:\n\n- **2025**: The documents don't state total 2025 revenue, only that the Route Optimization Software segment contributed 62% and Data Services contributed 38%.\n\n- **Q2 2026 guidance**: Kestrel expected revenue between $112 million and $115 million.\n\n- **Full-year 2026 guidance**: Kestrel raised its guidance to between $470 million and $480 million.\n\nWhich period would you like to know about? The company also expects revenue to double by 2027.",
+      "rule_caught": false,
       "judge_correct": true,
       "judge_faithful": false,
-      "judge_reasoning": "The assistant asked which period was meant and listed the relevant figures, which matches the ambiguity handling. However, the claim that revenue is expected to double by 2027 appears in none of the passages, so the answer is unfaithful.",
+      "judge_reasoning": "The answer asks which period is meant and gives only guidance figures, clearly labeled, which is acceptable for an ambiguous question where it asks for clarification. However, the claim that revenue is expected to double by 2027 appears in no passage, so the answer is unfaithful.",
       "judge_caught": true,
-      "rule_caught": false
+      "judge_error": null
     }
   ]
 }
