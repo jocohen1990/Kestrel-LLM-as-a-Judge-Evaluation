@@ -76,6 +76,42 @@ def warmup(model: str | None = None) -> None:
     generate("Reply with OK.", "OK", model=model, max_tokens=5)
 
 
+def _create(request: dict, model: str, temperature: float, extra: dict | None = None):
+    """Send one request, handling models that reject the temperature setting.
+
+    anthropic 1.x removed `temperature` from create(); extra_body still sends
+    it. Some newer models reject it entirely, so for those we retry once
+    without it and remember the model so later calls skip it. Anything else
+    in `extra` (e.g. tool settings) is always sent.
+
+    Returns (response, latency in seconds).
+    """
+    body = dict(extra or {})
+    if model not in _NO_TEMPERATURE_MODELS:
+        body["temperature"] = temperature
+    start = time.perf_counter()
+    try:
+        response = _get_client().messages.create(**request, extra_body=body)
+    except Exception as exc:
+        if "temperature" in body and _rejects_temperature(exc):
+            _NO_TEMPERATURE_MODELS.add(model)
+            body.pop("temperature")
+            start = time.perf_counter()   # don't count the failed attempt
+            response = _get_client().messages.create(**request, extra_body=body)
+        else:
+            raise
+    return response, time.perf_counter() - start
+
+
+def _base_request(system: str, user: str, model: str, max_tokens: int) -> dict:
+    return {
+        "model": model,
+        "max_tokens": max_tokens,
+        "system": system,
+        "messages": [{"role": "user", "content": user}],
+    }
+
+
 def generate(system: str, user: str, model: str | None = None,
              max_tokens: int = 400, temperature: float = 0.0) -> LLMResponse:
     """Send one prompt to the model and return its reply plus metadata.
@@ -85,30 +121,7 @@ def generate(system: str, user: str, model: str | None = None,
     deterministic, which is exactly what the Phase 3 consistency tests probe.)
     """
     model = model or os.getenv("LLM_MODEL", DEFAULT_MODEL)
-    request = {
-        "model": model,
-        "max_tokens": max_tokens,
-        "system": system,
-        "messages": [{"role": "user", "content": user}],
-    }
-    # anthropic 1.x removed `temperature` from create(); extra_body still
-    # sends it. Some newer models reject it entirely, so for those we retry
-    # once without it and remember the model so later calls skip it.
-    if model not in _NO_TEMPERATURE_MODELS:
-        request["extra_body"] = {"temperature": temperature}
-
-    start = time.perf_counter()
-    try:
-        response = _get_client().messages.create(**request)
-    except Exception as exc:
-        if "extra_body" in request and _rejects_temperature(exc):
-            _NO_TEMPERATURE_MODELS.add(model)
-            request.pop("extra_body")
-            start = time.perf_counter()   # don't count the failed attempt
-            response = _get_client().messages.create(**request)
-        else:
-            raise
-    latency = time.perf_counter() - start
+    response, latency = _create(_base_request(system, user, model, max_tokens), model, temperature)
     text = "".join(block.text for block in response.content if block.type == "text")
     return LLMResponse(
         text=text,
@@ -117,3 +130,60 @@ def generate(system: str, user: str, model: str | None = None,
         output_tokens=response.usage.output_tokens,
         latency_s=latency,
     )
+
+
+class StructuredOutputError(RuntimeError):
+    """The model didn't return the forced tool call (e.g. it hit max_tokens)."""
+
+
+@dataclass
+class StructuredResponse:
+    data: dict            # the tool call's input, already parsed from JSON
+    model: str
+    input_tokens: int
+    output_tokens: int
+    latency_s: float
+    stop_reason: str | None
+
+
+def generate_structured(system: str, user: str, schema: dict, tool_name: str,
+                        tool_description: str, model: str | None = None,
+                        max_tokens: int = 1200, temperature: float = 0.0) -> StructuredResponse:
+    """Get a reply that is GUARANTEED to match a JSON schema.
+
+    Asking for "only a JSON object" in the prompt is a request, not a
+    guarantee: in Run 4 the judge broke its JSON on 4 of 160 calls. Instead,
+    this defines one tool whose input is the schema, sets `strict: true` (the
+    API makes the input match the schema exactly) and `tool_choice` (the
+    model must call that tool). The reply arrives as a parsed dict, so there
+    is no JSON text for us to parse at all.
+
+    Tools are sent through extra_body, like temperature, so this works
+    whichever create() parameters the installed SDK version declares.
+    """
+    model = model or os.getenv("LLM_MODEL", DEFAULT_MODEL)
+    tools = {
+        "tools": [{
+            "name": tool_name,
+            "description": tool_description,
+            "strict": True,
+            "input_schema": schema,
+        }],
+        "tool_choice": {"type": "tool", "name": tool_name},
+    }
+    response, latency = _create(_base_request(system, user, model, max_tokens), model,
+                                temperature, extra=tools)
+    for block in response.content:
+        if block.type == "tool_use" and block.name == tool_name:
+            return StructuredResponse(
+                data=dict(block.input),
+                model=model,
+                input_tokens=response.usage.input_tokens,
+                output_tokens=response.usage.output_tokens,
+                latency_s=latency,
+                stop_reason=getattr(response, "stop_reason", None),
+            )
+    # Strict mode guarantees the SHAPE of a tool call, not that one is made:
+    # a reply cut off by max_tokens, or a refusal, can still arrive without it.
+    raise StructuredOutputError(
+        f"no {tool_name!r} tool call in reply (stop_reason={getattr(response, 'stop_reason', None)!r})")

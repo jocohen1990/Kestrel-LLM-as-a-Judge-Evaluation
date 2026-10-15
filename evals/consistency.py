@@ -21,7 +21,7 @@ flaky test, and QA treats flaky tests as bugs.
 """
 from collections import Counter
 
-from evals.judge import DEFAULT_JUDGE_PROMPT, JudgeError, judge_answer
+from evals.judge import DEFAULT_JUDGE_PROMPT, DEFAULT_OUTPUT_MODE, JudgeError, judge_answer
 from evals.metrics import score_case
 
 
@@ -59,7 +59,8 @@ def verdict_stability(verdicts: list) -> dict:
 
 def check_case(case: dict, assistant, runs: int, use_judge: bool = True,
                judge_fn=judge_answer, judge_model: str | None = None,
-               judge_prompt: str = DEFAULT_JUDGE_PROMPT) -> dict:
+               judge_prompt: str = DEFAULT_JUDGE_PROMPT,
+               judge_output: str = DEFAULT_OUTPUT_MODE) -> dict:
     """Run one golden case `runs` times through the assistant, and `runs` times
     through the judge on a fixed answer. Returns one result row."""
     results = [assistant.answer(case["question"]) for _ in range(runs)]
@@ -89,7 +90,7 @@ def check_case(case: dict, assistant, runs: int, use_judge: bool = True,
     for _ in range(runs):
         try:
             v = judge_fn(case["question"], fixed.contexts, case["expected_answer"], fixed.answer,
-                         model=judge_model, prompt_version=judge_prompt)
+                         model=judge_model, prompt_version=judge_prompt, output_mode=judge_output)
             verdicts.append({"correct": v.correct, "faithful": v.faithful, "reasoning": v.reasoning})
         except JudgeError as exc:
             verdicts.append(None)

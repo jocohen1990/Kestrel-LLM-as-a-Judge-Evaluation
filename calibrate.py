@@ -20,6 +20,9 @@ After changing the judge prompt, re-grade the rows you already labeled. Your
 labels stay the same; only the judge changes, so the comparison is fair:
        python calibrate.py rejudge data/labels/labels_<timestamp>.csv --judge-prompt judge-v2
        python calibrate.py mutate --judge-prompt judge-v2     # still catches planted errors?
+
+To compare two answer keys made by rejudge (e.g. text vs. tool output):
+       python calibrate.py rejudge labels.csv --judge-output tool --baseline-key labels.judge-v2.key.json
 """
 import argparse
 import json
@@ -36,7 +39,8 @@ except ImportError:
 from app.paths import GOLDEN_DIR, RESULTS_DIR, ROOT
 from evals.calibration import changed_verdicts, export_for_labeling, rejudge_label_rows, score_labels
 from evals.dataset import load_golden
-from evals.judge import DEFAULT_JUDGE_PROMPT, JUDGE_PROMPTS, JudgeError, judge_answer
+from evals.judge import (DEFAULT_JUDGE_PROMPT, DEFAULT_OUTPUT_MODE, JUDGE_RULES, OUTPUT_MODES,
+                         JudgeError, judge_answer)
 from evals.metrics import score_case
 from evals.mutations import caught, make_mutations, summarize_mutations
 
@@ -63,7 +67,8 @@ def cmd_mutate(args) -> int:
             try:
                 verdict = judge_answer(m["question"], m["contexts"], m["expected_answer"],
                                        m["answer"], model=args.judge_model,
-                                       prompt_version=args.judge_prompt)
+                                       prompt_version=args.judge_prompt,
+                                       output_mode=args.judge_output)
             except JudgeError as exc:
                 # Saved, not skipped, so the results file shows every judge failure.
                 m.update({"judge_correct": None, "judge_faithful": None, "judge_reasoning": None,
@@ -91,6 +96,7 @@ def cmd_mutate(args) -> int:
 
     save("mutations", {"source_results": Path(args.results).name,
                        "judge_model": args.judge_model, "judge_prompt_version": args.judge_prompt,
+                       "judge_output_mode": args.judge_output,
                        "by_type": dict(by_type), "cases": rows})
     print("\nSaved results/mutations_latest.json")
     return 0
@@ -142,19 +148,20 @@ def cmd_score(args) -> int:
 
 def cmd_rejudge(args) -> int:
     labels = Path(args.labels)
-    old_key_path = labels.with_suffix(".key.json")
-    new_key_path = labels.with_suffix(f".{args.judge_prompt}.key.json")
-    print(f"Re-judging {labels.name} with {args.judge_prompt}...")
-    rejudge_label_rows(labels, judge_answer, out_key_path=new_key_path,
-                       model=args.judge_model, prompt_version=args.judge_prompt)
+    old_key_path = Path(args.baseline_key) if args.baseline_key else labels.with_suffix(".key.json")
+    # The mode is in the name so a tool-mode key never overwrites a text-mode one.
+    new_key_path = labels.with_suffix(f".{args.judge_prompt}-{args.judge_output}.key.json")
+    print(f"Re-judging {labels.name} with {args.judge_prompt} ({args.judge_output} output)...")
+    rejudge_label_rows(labels, judge_answer, out_key_path=new_key_path, model=args.judge_model,
+                       prompt_version=args.judge_prompt, output_mode=args.judge_output)
 
     old_key = json.loads(old_key_path.read_text(encoding="utf-8"))
     new_key = json.loads(new_key_path.read_text(encoding="utf-8"))
     errors = [i for i, e in new_key.items() if e.get("judge_error")]
 
-    print("\n=== Original judge (key from export) vs. human ===")
+    print(f"\n=== Baseline ({old_key_path.name}) vs. human ===")
     before = print_agreement(score_labels(labels, old_key_path))
-    print(f"\n=== {args.judge_prompt} vs. human ===")
+    print(f"\n=== {args.judge_prompt}, {args.judge_output} output vs. human ===")
     after = print_agreement(score_labels(labels, new_key_path))
 
     changes = changed_verdicts(old_key, new_key)
@@ -165,6 +172,7 @@ def cmd_rejudge(args) -> int:
         print(f"\nJudge errors on {len(errors)} rows (left out of the scores): {', '.join(errors)}")
 
     save("calibration", {"labels_file": labels.name, "judge_prompt_version": args.judge_prompt,
+                         "judge_output_mode": args.judge_output, "baseline_key": old_key_path.name,
                          "key_file": new_key_path.name, "agreement_before": before,
                          "agreement": after, "changed_verdicts": changes, "judge_errors": errors})
     print(f"\nNew answer key: {new_key_path}")
@@ -178,7 +186,8 @@ def main() -> int:
     p = sub.add_parser("mutate", help="Plant known errors and check the judge catches them")
     p.add_argument("--results", default=RESULTS_DIR / "latest.json")
     p.add_argument("--judge-model", default=None)
-    p.add_argument("--judge-prompt", default=DEFAULT_JUDGE_PROMPT, choices=sorted(JUDGE_PROMPTS))
+    p.add_argument("--judge-prompt", default=DEFAULT_JUDGE_PROMPT, choices=sorted(JUDGE_RULES))
+    p.add_argument("--judge-output", default=DEFAULT_OUTPUT_MODE, choices=OUTPUT_MODES)
     p.set_defaults(func=cmd_mutate)
 
     p = sub.add_parser("export", help="Write a blind CSV for human labeling")
@@ -194,8 +203,11 @@ def main() -> int:
 
     p = sub.add_parser("rejudge", help="Re-grade already-labeled rows with another judge prompt")
     p.add_argument("labels", help="The filled-in labeling CSV")
-    p.add_argument("--judge-prompt", default=DEFAULT_JUDGE_PROMPT, choices=sorted(JUDGE_PROMPTS))
+    p.add_argument("--judge-prompt", default=DEFAULT_JUDGE_PROMPT, choices=sorted(JUDGE_RULES))
+    p.add_argument("--judge-output", default=DEFAULT_OUTPUT_MODE, choices=OUTPUT_MODES)
     p.add_argument("--judge-model", default=None)
+    p.add_argument("--baseline-key", default=None,
+                   help="Key to compare against (default: the original key from export)")
     p.set_defaults(func=cmd_rejudge)
 
     args = parser.parse_args()

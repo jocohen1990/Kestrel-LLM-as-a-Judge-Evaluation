@@ -31,7 +31,8 @@ from app.paths import GOLDEN_DIR, RESULTS_DIR
 from app.rag import DEFAULT_PROMPT_VERSION, PROMPTS, RagAssistant
 from evals.consistency import check_case, summarize_consistency
 from evals.dataset import load_golden
-from evals.judge import DEFAULT_JUDGE_MODEL, DEFAULT_JUDGE_PROMPT, JUDGE_PROMPTS
+from evals.judge import (DEFAULT_JUDGE_MODEL, DEFAULT_JUDGE_PROMPT, DEFAULT_OUTPUT_MODE,
+                         JUDGE_RULES, OUTPUT_MODES)
 
 
 def parse_args():
@@ -44,7 +45,9 @@ def parse_args():
     parser.add_argument("--k", type=int, default=4)
     parser.add_argument("--no-judge", action="store_true")
     parser.add_argument("--judge-model", default=None)
-    parser.add_argument("--judge-prompt", default=DEFAULT_JUDGE_PROMPT, choices=sorted(JUDGE_PROMPTS))
+    parser.add_argument("--judge-prompt", default=DEFAULT_JUDGE_PROMPT, choices=sorted(JUDGE_RULES))
+    parser.add_argument("--judge-output", default=DEFAULT_OUTPUT_MODE, choices=OUTPUT_MODES,
+                        help="How the judge returns its verdict: a strict tool call or free text")
     args = parser.parse_args()
     if args.runs < 2:
         parser.error("--runs must be at least 2; one run can't be compared with anything")
@@ -69,6 +72,7 @@ def print_report(run: dict) -> None:
         print(f"  RULE VERDICT FLIPPED:         {', '.join(s['rule_flips'])}")
     if run["judge_model"]:
         print(f"Judge: {run['judge_model']} ({run['judge_prompt_version']}, "
+              f"{run['judge_output_mode']} output, "
               f"temperature {'0' if run['judge_temperature_sent'] else 'NOT SENT'}), "
               f"same answer graded {s['runs_per_question']} times")
         print(f"  'correct' verdict stable:     {fmt(s['judge_correct_stable_rate'])}")
@@ -101,7 +105,8 @@ def main() -> int:
     rows = []
     for case in cases:
         row = check_case(case, assistant, args.runs, use_judge=not args.no_judge,
-                         judge_model=judge_model, judge_prompt=args.judge_prompt)
+                         judge_model=judge_model, judge_prompt=args.judge_prompt,
+                         judge_output=args.judge_output)
         rows.append(row)
         notes = []
         if not row["assistant"]["identical"]:
@@ -122,6 +127,7 @@ def main() -> int:
         "assistant_temperature_sent": sends_temperature(assistant_model),
         "judge_model": judge_model,
         "judge_prompt_version": None if args.no_judge else args.judge_prompt,
+        "judge_output_mode": None if args.no_judge else args.judge_output,
         "judge_temperature_sent": sends_temperature(judge_model) if judge_model else None,
         "golden_file": Path(args.golden).name,
         "k": args.k,

@@ -4,7 +4,7 @@ An end-to-end evaluation suite for an LLM-powered financial Q&A assistant, built
 a QA engineer tests software: versioned test data, graders that are themselves tested,
 measurable quality thresholds, and a CI pipeline that blocks regressions.
 
-> **Status:** Phases 1–2 of 6 complete; Phase 3 in progress (judge-v2 prompt and repeat-run consistency built). See the [roadmap](#roadmap).
+> **Status:** Phases 1–2 of 6 complete; Phase 3 in progress (judge-v2 prompt and repeat-run consistency done, through Run 4). See the [roadmap](#roadmap).
 
 ## What's being tested
 
@@ -37,12 +37,13 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-pytest -v                          # 128 offline tests: free, no API key needed
+pytest -v                          # 150 offline tests: free, no API key needed
 
 cp .env.example .env               # then add your ANTHROPIC_API_KEY
 python run_evals.py                # golden v3, prompt v2, LLM judge (judge-v2)
 python run_evals.py --prompt v1    # same, with the original prompt (for before/after)
 python run_evals.py --judge-prompt judge-v1   # same, graded by the original judge prompt
+python run_evals.py --judge-output text       # judge replies in free text instead of a strict tool call
 python run_evals.py --no-judge     # rule-based graders only (cheaper)
 ```
 
@@ -52,6 +53,9 @@ python run_evals.py --no-judge     # rule-based graders only (cheaper)
 python consistency.py              # every question 5 times; the judge grades one answer 5 times
 python consistency.py --runs 3 --ids g022 g032   # cheaper: fewer runs, chosen questions
 python consistency.py --judge-prompt judge-v1    # is the old judge prompt less consistent?
+
+# drift over time: compare any two results files (no API calls)
+python compare_runs.py results/consistency_<older>.json results/consistency_latest.json
 ```
 
 ### Validating the judge
@@ -119,7 +123,9 @@ An LLM judge is a model too, so it gets tested before it's trusted:
    assistant's (which is measured by asking each question several times).
 
 Judge prompts are versioned like assistant prompts (`judge-v1` kept, `judge-v2` the default),
-and every results file records which version graded it. judge-v2 adds one rule from human
+and every results file records which version graded it. The judge returns its verdict through
+a forced tool call in strict mode (`--judge-output tool`, the default), so the API guarantees the
+verdict's shape; `--judge-output text` keeps the original "reply with only JSON" approach. judge-v2 adds one rule from human
 calibration round 1: guidance and forecasts aren't actual results.
 
 The judge defaults to a different, stronger model than the assistant, to avoid a model
@@ -149,15 +155,17 @@ evals/                The evaluation framework
   mutations.py        Planted errors for testing the judge
   calibration.py      Blind labeling export, Cohen's kappa, confusion matrix, re-judging
   consistency.py      Repeat-run consistency for the assistant and the judge
+  drift.py            Compares two results files from different times
   report.py           Scorecard aggregation
 data/
   corpus/             The four Kestrel documents
   golden/             golden_v1, golden_v2 (frozen), golden_v3, dataset card
   labels/             Labeling guide and human labeling sheets
-tests/                128 offline tests
+tests/                150 offline tests
 run_evals.py          Eval runner and quality gates
 calibrate.py          Judge validation commands
 consistency.py        Repeat-run consistency check
+compare_runs.py       Drift between two results files
 .github/workflows/    CI pipeline
 ```
 
@@ -266,7 +274,9 @@ Same assistant (claude-haiku-4-5), judge (claude-sonnet-5-5) and 32 questions; o
 **Run-to-run variation (same prompt v1, same questions, Run 2 vs. Run 3):**
 
 - The judge gave **opposite verdicts on an identical answer.** g032's answer text was the same
-  in both runs; the judge marked it correct in Run 2 and incorrect in Run 3, at temperature 0.
+  in both runs; the judge marked it correct in Run 2 and incorrect in Run 3. (This originally said
+  "at temperature 0". Run 4 found the judge model rejects the temperature setting, so the judge
+  never ran at temperature 0. See Run 4.)
   It's the same borderline case the human calibration flagged.
 - The assistant's wording differed on 3 of 32 questions (g001, g014, g031), also at temperature 0.
   The verdicts didn't change, but "temperature 0" doesn't mean "repeatable".
@@ -320,10 +330,103 @@ Every disagreement was reviewed against the written rules:
 | Export keeps versions of the same question at least 10 rows apart | Adjacent versions let the labeler compare instead of judging each row |
 | Judge failures saved in mutation results and counted per type | 2 mutation rows went missing without a trace |
 
+### Run 4: judge-v2 and repeat-run consistency
+
+Assistant claude-haiku-4-5 (prompt v2), judge claude-sonnet-5-5 (judge-v2), golden v3.
+
+**judge-v2 re-graded the same 50 human-labeled rows** (`calibrate.py rejudge`):
+
+| Label | judge-v1 agreement / kappa | judge-v2 agreement / kappa |
+|---|---|---|
+| Correct | 92% / 0.83 | **94% / 0.87** |
+| Faithful | 84% / 0.59 | 84% / 0.59 |
+
+- **Exactly 1 of 100 verdicts changed:** g032 (revenue question answered with guidance) went from
+  correct to incorrect, matching the human label.
+- **Nothing else moved**, including g009 and g013, the two questions that ask *for* guidance.
+  v2 was written after seeing the g032 disagreement, so fixing that row was expected; the
+  meaningful result is that the new rule broke nothing else.
+- The 3 remaining "correct" disagreements are the label errors found in calibration round 1.
+  The judge now agrees with every "correct" label that survived that review.
+
+**Mutation check with judge-v2:**
+
+| Mutation | Judge | Rule grader |
+|---|---|---|
+| Asked-for number swapped | **19/19** | 19/19 |
+| Supporting figure swapped | **6/6** | 1/6 |
+| False claim appended | **28/28** | 1/28 |
+| Refusal replaced by fabrication | **4/4** | 4/4 |
+
+57 of 57 planted errors caught with no judge errors, including the 2 false-claim rows (g010,
+g023) that failed with judge errors in Run 3. The rule grader's only false-claim and
+detail-swap "catches" are again g022, which failed before mutation.
+
+**Repeat-run consistency** (`consistency.py`, 5 runs per question, back to back):
+
+| | Result |
+|---|---|
+| Assistant: identical answer all 5 runs | **32/32** |
+| Assistant: rule verdict stable | 32/32 |
+| Judge (same answer graded 5 times): `correct` stable | 32/32 |
+| Judge: `faithful` stable | 32/32 |
+| Judge errors | 4 of 160 calls (g023 ×2, g024 ×2) |
+
+- **The judge was never running at temperature 0.** The judge model rejects the temperature
+  setting, and `app/llm.py` silently retries without it. That held for every judge call in
+  Runs 2–4. The assistant does receive temperature 0. The consistency results file now
+  records which models actually got the setting.
+- **Back to back, everything was repeatable**, even without temperature for the judge. g001,
+  g014 and g031, whose wording changed between Runs 2 and 3, gave identical answers 5 times
+  in a row. Runs 2 and 3 were about 4 hours apart, so drift seems to appear **over time,
+  not between consecutive calls**. That's a hypothesis, not yet shown: a consistency check
+  run minutes apart can understate the noise between two eval runs on different days.
+- **g032 graded the same 5 times out of 5 under judge-v2.** Under judge-v1 it flipped between
+  Runs 2 and 3. This run doesn't separate "v2's clearer rule fixed it" from "consecutive calls
+  agree anyway"; that needs the same check with `--judge-prompt judge-v1`.
+- **Judge errors cluster on arithmetic questions.** All 4 were broken JSON on g023 and g024,
+  both questions whose answers involve subtraction, and both failed on the retry too. g023 also
+  produced both of Run 3's judge errors. Errors are recorded and excluded rather than scored,
+  so they don't distort the rates, but 2.5% of calls is a real reliability cost. The saved
+  error only keeps the last 120 characters of the reply, which isn't enough to see what broke.
+
+### Changes after Run 4
+
+| Change | Why |
+|---|---|
+| Judge returns its verdict through a forced, strict tool call (`--judge-output tool`, now the default) | 4 of 160 free-text judge replies were broken JSON. The API now guarantees the shape, so there's no JSON text to parse |
+| Text-mode judge errors keep the whole reply, not the last 120 characters | Run 4's errors couldn't be diagnosed from what was saved |
+| Results files record `judge_output_mode`; text mode sends byte-identical prompts to Run 4 | So the two modes can be compared fairly |
+| `compare_runs.py` compares any two results files | Back-to-back consistency can't show drift that builds up over hours or days |
+
+**Drift over 9 days, measured from files already saved** (`compare_runs.py`, Run 3's prompt-v2
+file vs. Run 4's consistency file; same assistant model, prompt, k and dataset; no API calls):
+
+| | Back to back (Run 4) | 9 days apart |
+|---|---|---|
+| Answers changed | 0/32 | **6/32** (g011, g021, g022, g023, g027, g032) |
+| Rule verdict changed | 0/32 | 0/32 |
+
+- **This supports the Run 4 hypothesis:** identical requests agree when sent seconds apart and
+  drift when sent days apart. Retrieval doesn't explain it: re-running today's retriever on the
+  32 questions returns exactly the passages saved in the Run 3 file, so the assistant saw
+  identical input both times.
+- **The changes were wording, not substance.** g021 says "calculated as" instead of "calculated
+  by dividing"; g027 says "does not pay a dividend" instead of "did not pay a dividend in 2025";
+  g023 and g011 trimmed or reordered details. No pass/fail result moved.
+- **Why it matters:** a single eval run is a sample. A question that changes wording over a
+  week could just as well change its verdict, so a score difference of one or two questions
+  between runs on different days isn't evidence of a regression on its own.
+- Judge drift couldn't be measured from these files: they used different judge prompts
+  (judge-v1 vs. judge-v2), and the comparison skips verdicts when settings differ.
+
 ### Known gaps
 
-- ~~The judge prompt doesn't state that guidance isn't an actual result.~~ Added in judge-v2;
-  results pending (`calibrate.py rejudge`).
+- ~~The judge prompt doesn't state that guidance isn't an actual result.~~ Fixed in judge-v2 (Run 4).
+- Tool-mode judging is built and tested offline but hasn't been run against the API yet: it
+  needs a rejudge, mutation check and consistency run to confirm verdicts didn't change.
+- Drift was measured once (9 days, assistant only). Judge drift needs two runs with the same
+  judge settings some time apart.
 - Ambiguous questions have no `evidence` strings, so their retrieval isn't measured. g032's
   answers say 2025 revenue isn't in the documents because that paragraph was never retrieved.
 - 32 questions is small: one question is about 3 percentage points.

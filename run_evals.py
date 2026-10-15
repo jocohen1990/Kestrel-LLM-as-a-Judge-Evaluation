@@ -35,7 +35,8 @@ from app.llm import warmup
 from app.paths import GOLDEN_DIR, RESULTS_DIR
 from app.rag import DEFAULT_PROMPT_VERSION, PROMPTS, RagAssistant
 from evals.dataset import load_golden
-from evals.judge import DEFAULT_JUDGE_MODEL, DEFAULT_JUDGE_PROMPT, JUDGE_PROMPTS
+from evals.judge import (DEFAULT_JUDGE_MODEL, DEFAULT_JUDGE_PROMPT, DEFAULT_OUTPUT_MODE,
+                         JUDGE_RULES, OUTPUT_MODES)
 from evals.report import summarize
 from evals.runner import evaluate_case
 
@@ -53,8 +54,10 @@ def parse_args():
                         help="Minimum judge faithfulness rate (ignored with --no-judge)")
     parser.add_argument("--no-judge", action="store_true", help="Skip the LLM judge")
     parser.add_argument("--judge-model", default=None, help="Judge model name")
-    parser.add_argument("--judge-prompt", default=DEFAULT_JUDGE_PROMPT, choices=sorted(JUDGE_PROMPTS),
+    parser.add_argument("--judge-prompt", default=DEFAULT_JUDGE_PROMPT, choices=sorted(JUDGE_RULES),
                         help="Judge prompt version (see evals/judge.py)")
+    parser.add_argument("--judge-output", default=DEFAULT_OUTPUT_MODE, choices=OUTPUT_MODES,
+                        help="How the judge returns its verdict: a strict tool call or free text")
     return parser.parse_args()
 
 
@@ -67,7 +70,8 @@ def print_scorecard(run: dict) -> None:
     s = run["summary"]
     print("\n=== Scorecard ===")
     print(f"Assistant model:      {run['model']}  (prompt {run['prompt_version']})")
-    judge = f"{run['judge_model']}  ({run['judge_prompt_version']})" if run["judge_model"] else "off"
+    judge = (f"{run['judge_model']}  ({run['judge_prompt_version']}, {run['judge_output_mode']} output)"
+             if run["judge_model"] else "off")
     print(f"Judge model:          {judge}")
     print(f"Dataset:              {run['golden_file']}")
     print(f"Rule pass rate:       {s['passed']}/{s['total_cases']} ({fmt(s['pass_rate'])})")
@@ -109,7 +113,7 @@ def main() -> int:
     rows = []
     for case in cases:
         row = evaluate_case(case, assistant, use_judge=not args.no_judge, judge_model=judge_model,
-                            judge_prompt=args.judge_prompt)
+                            judge_prompt=args.judge_prompt, judge_output=args.judge_output)
         rows.append(row)
 
         status = "PASS" if row["passed"] else "FAIL"
@@ -131,6 +135,7 @@ def main() -> int:
         "prompt_version": args.prompt,
         "judge_model": judge_model,
         "judge_prompt_version": None if args.no_judge else args.judge_prompt,
+        "judge_output_mode": None if args.no_judge else args.judge_output,
         "golden_file": Path(args.golden).name,
         "k": args.k,
         "threshold": args.threshold,
