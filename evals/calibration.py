@@ -25,6 +25,11 @@ question at least MIN_GAP rows apart. (Round 1 used a plain shuffle and had
 versions of the same question in adjacent rows.)
 
 How to label: see data/labels/LABELING_GUIDE.md.
+
+Re-judging: human labels don't depend on the judge, so one labeled sheet can
+score any number of judge versions. rejudge_label_rows() runs a new judge over
+the same rows and writes a second answer key; scoring both keys against the
+same labels gives a fair before/after for a judge prompt change.
 """
 import csv
 import json
@@ -32,6 +37,8 @@ import random
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
+
+from evals.judge import JudgeError
 
 # Excel adds and expects a hidden "byte order mark" (BOM) at the start of
 # UTF-8 CSV files. Writing with "utf-8-sig" adds it, so Excel shows special
@@ -179,6 +186,67 @@ def read_label_rows(csv_path: Path) -> list[dict]:
     return rows
 
 
+PASSAGE_SEPARATOR = "\n---\n"   # how export_for_labeling joins passages in one cell
+
+
+def split_passages(cell: str) -> list[str]:
+    """Undo the join from export_for_labeling. Excel may save Windows line
+    endings (\r\n), so those are normalized first."""
+    text = (cell or "").replace("\r\n", "\n")
+    return [p for p in text.split(PASSAGE_SEPARATOR) if p.strip()]
+
+
+def rejudge_label_rows(csv_path: Path, judge_fn, key_path: Path | None = None,
+                       out_key_path: Path | None = None, **judge_kwargs) -> Path:
+    """Grade every row of a labeling sheet again with judge_fn; write a new key.
+
+    The new key keeps each row's case_id and mutation from the original key,
+    so the two keys line up row for row. Rows with no human label are
+    skipped: grading them costs API calls and can't change any score.
+    A judge failure is saved as
+    judge_error with null verdicts; score_labels() skips those rows.
+    judge_kwargs (model, prompt_version, ...) are passed to judge_fn.
+    """
+    csv_path = Path(csv_path)
+    key_path = Path(key_path) if key_path else csv_path.with_suffix(".key.json")
+    old_key = json.loads(key_path.read_text(encoding="utf-8"))
+    new_key = {}
+    for row in read_label_rows(csv_path):
+        label_id = row["label_id"].strip()
+        if not label_id:
+            continue
+        if not (row.get("human_correct", "").strip() or row.get("human_faithful", "").strip()):
+            continue
+        entry = {"case_id": old_key[label_id]["case_id"],
+                 "mutation": old_key[label_id].get("mutation")}
+        try:
+            verdict = judge_fn(row["question"], split_passages(row["passages"]),
+                               row["reference_answer"], row["answer"], **judge_kwargs)
+            entry.update({"judge_correct": verdict.correct, "judge_faithful": verdict.faithful,
+                          "judge_reasoning": verdict.reasoning, "judge_error": None})
+        except JudgeError as exc:
+            entry.update({"judge_correct": None, "judge_faithful": None,
+                          "judge_reasoning": None, "judge_error": str(exc)})
+        new_key[label_id] = entry
+
+    out = Path(out_key_path) if out_key_path else csv_path.with_suffix(".rejudged.key.json")
+    out.write_text(json.dumps(new_key, indent=2), encoding="utf-8")
+    return out
+
+
+def changed_verdicts(old_key: dict, new_key: dict) -> list[dict]:
+    """Rows where the two judges disagree on either verdict."""
+    changes = []
+    for label_id, new in new_key.items():
+        old = old_key.get(label_id, {})
+        for criterion in ("correct", "faithful"):
+            before, after = old.get(f"judge_{criterion}"), new.get(f"judge_{criterion}")
+            if before is not None and after is not None and before != after:
+                changes.append({"label_id": label_id, "case_id": new.get("case_id"),
+                                "criterion": criterion, "before": before, "after": after})
+    return changes
+
+
 @dataclass
 class Agreement:
     n: int
@@ -242,6 +310,8 @@ def score_labels(csv_path: Path, key_path: Path | None = None) -> dict:
             continue
         judged = key[label_id]
         for criterion in pairs:
+            if judged.get(f"judge_{criterion}") is None:   # judge failed on this row
+                continue
             try:
                 human = parse_label(row.get(f"human_{criterion}", ""))
             except ValueError as exc:

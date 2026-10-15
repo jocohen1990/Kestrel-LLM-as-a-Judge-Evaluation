@@ -73,3 +73,14 @@ def test_strict_refusal_check_only_for_out_of_scope():
     assert exact["passed"] and exact["refusal_exact"] is True
     assert chatty["passed"] and chatty["refusal_exact"] is False   # lenient pass, strict fail
     assert evaluate_case(CASE, FakeAssistant("108.3"), use_judge=False)["refusal_exact"] is None
+
+
+def test_judge_prompt_version_is_passed_to_the_judge():
+    seen = {}
+
+    def recording_judge(*args, **kwargs):
+        seen.update(kwargs)
+        return Verdict(faithful=True, correct=True, reasoning="r")
+
+    evaluate_case(CASE, FakeAssistant("108.3"), judge_fn=recording_judge, judge_prompt="judge-v1")
+    assert seen["prompt_version"] == "judge-v1"

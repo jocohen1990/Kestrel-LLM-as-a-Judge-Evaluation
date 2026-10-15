@@ -4,7 +4,7 @@ This lives apart from run_evals.py (the command-line part) so tests can call
 it with a fake assistant and a fake judge, with no API calls at all.
 """
 from app.rag import REFUSAL
-from evals.judge import JudgeError, judge_answer
+from evals.judge import DEFAULT_JUDGE_PROMPT, JudgeError, judge_answer
 from evals.metrics import (
     mentions_internals,
     passage_hit,
@@ -15,7 +15,8 @@ from evals.metrics import (
 
 
 def evaluate_case(case: dict, assistant, use_judge: bool = True,
-                  judge_model: str | None = None, judge_fn=judge_answer) -> dict:
+                  judge_model: str | None = None, judge_fn=judge_answer,
+                  judge_prompt: str = DEFAULT_JUDGE_PROMPT) -> dict:
     """Run one case end to end and return a flat result row (easy to save as JSON)."""
     result = assistant.answer(case["question"])
     rule = score_case(case, result.answer)
@@ -56,7 +57,8 @@ def evaluate_case(case: dict, assistant, use_judge: bool = True,
     if use_judge:
         try:
             verdict = judge_fn(case["question"], result.contexts,
-                               case["expected_answer"], result.answer, model=judge_model)
+                               case["expected_answer"], result.answer, model=judge_model,
+                               prompt_version=judge_prompt)
             row.update({
                 "judge_faithful": verdict.faithful,
                 "judge_correct": verdict.correct,

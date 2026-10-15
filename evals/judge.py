@@ -30,9 +30,11 @@ from dataclasses import dataclass, field
 from app.llm import generate
 
 DEFAULT_JUDGE_MODEL = "claude-sonnet-5-5"
-JUDGE_PROMPT_VERSION = "judge-v1"
 
-JUDGE_SYSTEM = """You are a strict evaluator of answers produced by a document Q&A assistant.
+# Like the assistant prompts in app/rag.py, judge prompts are versioned and
+# never edited in place. A results file records which version graded it, so a
+# score change can be traced to the judge rather than the model.
+_STEPS = """You are a strict evaluator of answers produced by a document Q&A assistant.
 You will receive a question, the passages the assistant was given, a reference answer
 written by a human, and the assistant's answer.
 
@@ -48,13 +50,38 @@ Step 3. Decide two verdicts:
     correct means the assistant refused. If the reference says the question has a
     false premise, correct means the assistant corrected the premise. If the
     reference says the question is ambiguous, correct means the assistant either
-    asked which period was meant or clearly stated which period it answered for.
+    asked which period was meant or clearly stated which period it answered for."""
+
+_REPLY_FORMAT = """
 
 Respond with ONLY a JSON object, no other text:
 {"claims": [{"claim": "...", "supported": true}],
  "faithful": true,
  "correct": true,
  "reasoning": "one or two sentences"}"""
+
+JUDGE_PROMPTS = {
+    # judge-v1: used for Runs 2 and 3, the mutation checks, and human
+    # calibration round 1.
+    "judge-v1": _STEPS + _REPLY_FORMAT,
+    # judge-v2: adds one rule, from calibration round 1. Asked "What was
+    # Kestrel's revenue?" (g032), the assistant answered with GUIDANCE, a
+    # forecast. The human labeled it incorrect; the judge called it correct in
+    # Run 2 and incorrect in Run 3 on the identical answer. v1 never said a
+    # forecast isn't an actual result, so the judge had to guess. The labeling
+    # guide already had this rule; now the judge has it too.
+    "judge-v2": _STEPS + """
+
+Rule for forecasts. Guidance, forecasts, outlooks and targets are NOT actual results.
+When the question asks for an actual result (what revenue, earnings or margin was),
+an answer whose only figure for it is guidance or a forecast is NOT correct, even if
+it labels the figure as guidance. For an ambiguous question, correct means the
+assistant asked which period was meant, or named a period and gave that period's
+ACTUAL figure. When the question itself asks for guidance or what the company
+expected, guidance is the right answer.""" + _REPLY_FORMAT,
+}
+
+DEFAULT_JUDGE_PROMPT = "judge-v2"
 
 
 class JudgeError(ValueError):
@@ -115,19 +142,27 @@ def parse_judge_output(text: str) -> Verdict:
 
 
 def judge_answer(question: str, contexts: list[str], reference: str, answer: str,
-                 model: str | None = None, attempts: int = 2) -> Verdict:
+                 model: str | None = None, attempts: int = 2,
+                 prompt_version: str = DEFAULT_JUDGE_PROMPT) -> Verdict:
     """Ask the judge model for a verdict on one answer.
 
     If the reply can't be parsed, ask again (once, by default). In the first
     mutation run, 1 of 58 judge replies was broken JSON; a single retry is
     the usual fix for an occasional formatting slip. If every attempt fails,
     the error is raised and recorded, never counted as a pass or fail.
+
+    prompt_version picks the judge instructions (see JUDGE_PROMPTS), so two
+    versions can grade the same answers and be compared.
     """
+    if prompt_version not in JUDGE_PROMPTS:
+        raise ValueError(f"unknown judge prompt {prompt_version!r}; "
+                         f"choose from {sorted(JUDGE_PROMPTS)}")
+    system = JUDGE_PROMPTS[prompt_version]
     model = model or os.getenv("JUDGE_MODEL", DEFAULT_JUDGE_MODEL)
     prompt = build_judge_prompt(question, contexts, reference, answer)
     last_error = None
     for _ in range(attempts):
-        response = generate(JUDGE_SYSTEM, prompt, model=model, max_tokens=1200, temperature=0.0)
+        response = generate(system, prompt, model=model, max_tokens=1200, temperature=0.0)
         try:
             return parse_judge_output(response.text)
         except JudgeError as exc:

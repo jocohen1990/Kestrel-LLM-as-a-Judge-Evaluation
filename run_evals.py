@@ -7,6 +7,7 @@ Usage:
     python run_evals.py --prompt v1              # compare against the original prompt
     python run_evals.py --model <model-name>     # evaluate a different assistant model
     python run_evals.py --judge-model <name>     # use a different judge
+    python run_evals.py --judge-prompt judge-v1  # grade with the original judge prompt
 
 Tests vs. evals, a distinction worth explaining in interviews:
   * `pytest` (the tests/ folder) checks that OUR CODE works. Offline, free,
@@ -34,7 +35,7 @@ from app.llm import warmup
 from app.paths import GOLDEN_DIR, RESULTS_DIR
 from app.rag import DEFAULT_PROMPT_VERSION, PROMPTS, RagAssistant
 from evals.dataset import load_golden
-from evals.judge import DEFAULT_JUDGE_MODEL, JUDGE_PROMPT_VERSION
+from evals.judge import DEFAULT_JUDGE_MODEL, DEFAULT_JUDGE_PROMPT, JUDGE_PROMPTS
 from evals.report import summarize
 from evals.runner import evaluate_case
 
@@ -52,6 +53,8 @@ def parse_args():
                         help="Minimum judge faithfulness rate (ignored with --no-judge)")
     parser.add_argument("--no-judge", action="store_true", help="Skip the LLM judge")
     parser.add_argument("--judge-model", default=None, help="Judge model name")
+    parser.add_argument("--judge-prompt", default=DEFAULT_JUDGE_PROMPT, choices=sorted(JUDGE_PROMPTS),
+                        help="Judge prompt version (see evals/judge.py)")
     return parser.parse_args()
 
 
@@ -64,7 +67,8 @@ def print_scorecard(run: dict) -> None:
     s = run["summary"]
     print("\n=== Scorecard ===")
     print(f"Assistant model:      {run['model']}  (prompt {run['prompt_version']})")
-    print(f"Judge model:          {run['judge_model'] or 'off'}")
+    judge = f"{run['judge_model']}  ({run['judge_prompt_version']})" if run["judge_model"] else "off"
+    print(f"Judge model:          {judge}")
     print(f"Dataset:              {run['golden_file']}")
     print(f"Rule pass rate:       {s['passed']}/{s['total_cases']} ({fmt(s['pass_rate'])})")
     for category, stats in s["by_category"].items():
@@ -104,7 +108,8 @@ def main() -> int:
 
     rows = []
     for case in cases:
-        row = evaluate_case(case, assistant, use_judge=not args.no_judge, judge_model=judge_model)
+        row = evaluate_case(case, assistant, use_judge=not args.no_judge, judge_model=judge_model,
+                            judge_prompt=args.judge_prompt)
         rows.append(row)
 
         status = "PASS" if row["passed"] else "FAIL"
@@ -125,7 +130,7 @@ def main() -> int:
         "model": rows[0]["model"] if rows else args.model,
         "prompt_version": args.prompt,
         "judge_model": judge_model,
-        "judge_prompt_version": None if args.no_judge else JUDGE_PROMPT_VERSION,
+        "judge_prompt_version": None if args.no_judge else args.judge_prompt,
         "golden_file": Path(args.golden).name,
         "k": args.k,
         "threshold": args.threshold,

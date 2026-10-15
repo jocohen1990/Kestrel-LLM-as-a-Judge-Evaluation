@@ -6,12 +6,16 @@ import pytest
 from evals.calibration import (
     LABEL_COLUMNS,
     agreement,
+    changed_verdicts,
     cohen_kappa,
     export_for_labeling,
     parse_label,
     read_label_rows,
+    rejudge_label_rows,
     score_labels,
+    split_passages,
 )
+from evals.judge import JudgeError, Verdict
 
 
 def test_kappa_perfect_agreement():
@@ -192,3 +196,86 @@ def test_exported_sheet_keeps_the_gap(tmp_path):
     key = json.loads(export_for_labeling(rows, sheet).read_text(encoding="utf-8"))
     ordered_ids = [{"id": key[r["label_id"]]["case_id"]} for r in read_label_rows(sheet)]
     assert min_distance(ordered_ids) >= MIN_GAP
+
+
+# ---- Re-judging labeled rows with a new judge --------------------------
+
+def test_split_passages_undoes_the_export_join_even_after_excel():
+    assert split_passages("one\n---\ntwo") == ["one", "two"]
+    assert split_passages("one\r\n---\r\ntwo") == ["one", "two"]   # Windows line endings
+    assert split_passages("") == []
+
+
+def labeled_sheet(tmp_path):
+    """An exported sheet where the human agrees with the ORIGINAL judge on every row."""
+    sheet = tmp_path / "labels.csv"
+    rows = [make_row("g001", True, True), make_row("g002", False, False, "number_swap")]
+    key = json.loads(export_for_labeling(rows, sheet).read_text(encoding="utf-8"))
+    with sheet.open(newline="", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+        header, labeled = reader.fieldnames, list(reader)
+    for r in labeled:
+        r["human_correct"] = "y" if key[r["label_id"]]["judge_correct"] else "n"
+        r["human_faithful"] = "y" if key[r["label_id"]]["judge_faithful"] else "n"
+    with sheet.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=header)
+        writer.writeheader()
+        writer.writerows(labeled)
+    return sheet, key
+
+
+def test_rejudge_writes_a_new_key_and_never_touches_the_labels(tmp_path):
+    sheet, old_key = labeled_sheet(tmp_path)
+    labels_before = sheet.read_bytes()
+    seen = []
+
+    def always_pass(question, contexts, reference, answer, **kwargs):
+        seen.append((contexts, kwargs))
+        return Verdict(faithful=True, correct=True, reasoning="new judge")
+
+    new_path = rejudge_label_rows(sheet, always_pass, prompt_version="judge-v2")
+    new_key = json.loads(new_path.read_text(encoding="utf-8"))
+
+    assert sheet.read_bytes() == labels_before            # labels unchanged
+    assert set(new_key) == set(old_key)                   # same rows
+    assert seen[0] == (["c1", "c2"], {"prompt_version": "judge-v2"})   # passages split back out
+    assert all(e["judge_correct"] is True for e in new_key.values())
+    assert {e["case_id"] for e in new_key.values()} == {"g001", "g002"}
+
+    # The new judge passes everything, so it now disagrees with the human on g002.
+    assert score_labels(sheet)["correct"].accuracy == 1.0
+    assert score_labels(sheet, new_path)["correct"].accuracy == 0.5
+    changes = changed_verdicts(old_key, new_key)
+    assert {(c["case_id"], c["criterion"]) for c in changes} == {("g002", "correct"),
+                                                                 ("g002", "faithful")}
+
+
+def test_rejudge_records_judge_failures_and_score_skips_them(tmp_path):
+    sheet, _ = labeled_sheet(tmp_path)
+
+    def broken(*args, **kwargs):
+        raise JudgeError("garbled")
+
+    new_key = json.loads(rejudge_label_rows(sheet, broken).read_text(encoding="utf-8"))
+    assert all(e["judge_error"] == "garbled" and e["judge_correct"] is None
+               for e in new_key.values())
+    results = score_labels(sheet, sheet.with_suffix(".rejudged.key.json"))
+    assert results["correct"].n == 0    # failed rows are left out, not counted as pass or fail
+
+
+def test_rejudge_skips_rows_nobody_labeled(tmp_path):
+    sheet, key = labeled_sheet(tmp_path)
+    rows = read_label_rows(sheet)
+    rows[1]["human_correct"] = rows[1]["human_faithful"] = ""   # leave the second row unlabeled
+    with sheet.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=LABEL_COLUMNS)
+        writer.writeheader()
+        writer.writerows(rows)
+    calls = []
+
+    def judge(*args, **kwargs):
+        calls.append(1)
+        return Verdict(faithful=True, correct=True, reasoning="r")
+
+    new_key = json.loads(rejudge_label_rows(sheet, judge).read_text(encoding="utf-8"))
+    assert len(calls) == 1 and list(new_key) == [rows[0]["label_id"]]

@@ -84,3 +84,42 @@ def test_judge_gives_up_after_two_broken_replies(monkeypatch):
     with pytest.raises(JudgeError, match="after 2 attempts"):
         judge.judge_answer("Q?", ["ctx"], "REF", "ANS")
     assert len(calls) == 2
+
+
+# ---- Judge prompt versions ----------------------------------------------
+
+def test_judge_v1_is_frozen_and_v2_adds_the_forecast_rule():
+    v1, v2 = judge.JUDGE_PROMPTS["judge-v1"], judge.JUDGE_PROMPTS["judge-v2"]
+    assert "guidance" not in v1.lower()
+    assert "NOT actual results" in v2
+    # v2 still allows guidance when the question asks for it (g009, g013).
+    assert "asks for guidance" in v2
+    # v2 is v1 plus the new rule: everything v1 said is still there.
+    assert v1.split("Respond with ONLY")[0].strip() in v2
+
+
+def test_default_judge_prompt_is_v2():
+    assert judge.DEFAULT_JUDGE_PROMPT == "judge-v2"
+
+
+@pytest.mark.parametrize("version", ["judge-v1", "judge-v2"])
+def test_judge_answer_sends_the_requested_prompt(monkeypatch, version):
+    captured = {}
+
+    def fake_generate(system, user, model=None, **kwargs):
+        captured["system"] = system
+        return LLMResponse(text=GOOD_REPLY, model=model, input_tokens=1,
+                           output_tokens=1, latency_s=0.0)
+
+    monkeypatch.setattr(judge, "generate", fake_generate)
+    judge.judge_answer("Q?", ["ctx"], "REF", "ANS", prompt_version=version)
+    assert captured["system"] == judge.JUDGE_PROMPTS[version]
+
+
+def test_unknown_judge_prompt_is_rejected_before_any_call(monkeypatch):
+    def exploding_generate(*args, **kwargs):
+        raise AssertionError("no API call should be made")
+
+    monkeypatch.setattr(judge, "generate", exploding_generate)
+    with pytest.raises(ValueError, match="judge-v9"):
+        judge.judge_answer("Q?", ["ctx"], "REF", "ANS", prompt_version="judge-v9")

@@ -4,7 +4,7 @@ An end-to-end evaluation suite for an LLM-powered financial Q&A assistant, built
 a QA engineer tests software: versioned test data, graders that are themselves tested,
 measurable quality thresholds, and a CI pipeline that blocks regressions.
 
-> **Status:** Phases 1–2 of 6 complete, through Run 3 and the first human calibration round. See the [roadmap](#roadmap).
+> **Status:** Phases 1–2 of 6 complete; Phase 3 in progress (judge-v2 prompt and repeat-run consistency built). See the [roadmap](#roadmap).
 
 ## What's being tested
 
@@ -37,12 +37,21 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-pytest -v                          # 104 offline tests: free, no API key needed
+pytest -v                          # 128 offline tests: free, no API key needed
 
 cp .env.example .env               # then add your ANTHROPIC_API_KEY
-python run_evals.py                # golden v3, prompt v2, LLM judge
+python run_evals.py                # golden v3, prompt v2, LLM judge (judge-v2)
 python run_evals.py --prompt v1    # same, with the original prompt (for before/after)
+python run_evals.py --judge-prompt judge-v1   # same, graded by the original judge prompt
 python run_evals.py --no-judge     # rule-based graders only (cheaper)
+```
+
+### Measuring run-to-run consistency
+
+```bash
+python consistency.py              # every question 5 times; the judge grades one answer 5 times
+python consistency.py --runs 3 --ids g022 g032   # cheaper: fewer runs, chosen questions
+python consistency.py --judge-prompt judge-v1    # is the old judge prompt less consistent?
 ```
 
 ### Validating the judge
@@ -52,6 +61,10 @@ python calibrate.py mutate                       # plant errors, see how many th
 python calibrate.py export results/latest.json results/mutations_latest.json
 # label following data/labels/LABELING_GUIDE.md, without opening the .key.json
 python calibrate.py score data/labels/labels_<timestamp>.csv
+
+# after changing the judge prompt: re-grade the rows you already labeled
+python calibrate.py rejudge data/labels/labels_<timestamp>.csv --judge-prompt judge-v2
+python calibrate.py mutate --judge-prompt judge-v2
 ```
 
 The sheet opens in Excel or Google Sheets and can be saved in any CSV format Excel offers.
@@ -98,6 +111,17 @@ An LLM judge is a model too, so it gets tested before it's trusted:
    Cohen's kappa (agreement corrected for chance), and which way the judge errs: too lenient or
    too strict.
 
+3. **Re-judging** (`calibrate.py rejudge`). Human labels don't depend on the judge, so after a
+   judge prompt change the same labeled rows are graded again and both judge versions are
+   scored against the same labels. Only labeled rows are sent to the judge.
+4. **Repeat-run consistency** (`consistency.py`). The judge grades the *same* answer several
+   times. Any change in verdict is the judge's own noise, measured separately from the
+   assistant's (which is measured by asking each question several times).
+
+Judge prompts are versioned like assistant prompts (`judge-v1` kept, `judge-v2` the default),
+and every results file records which version graded it. judge-v2 adds one rule from human
+calibration round 1: guidance and forecasts aren't actual results.
+
 The judge defaults to a different, stronger model than the assistant, to avoid a model
 grading its own outputs. If a judge reply isn't valid JSON, it's retried once; a reply that
 still fails is recorded as a judge error, never counted as a pass or fail, and is saved in the
@@ -120,18 +144,20 @@ app/                  The system under test
 evals/                The evaluation framework
   dataset.py          Loads and validates the golden dataset
   metrics.py          Rule-based graders
-  judge.py            LLM-as-judge
+  judge.py            LLM-as-judge (judge-v1 and judge-v2 prompts, both kept)
   runner.py           Runs one case through every grader
   mutations.py        Planted errors for testing the judge
-  calibration.py      Blind labeling export, Cohen's kappa, confusion matrix
+  calibration.py      Blind labeling export, Cohen's kappa, confusion matrix, re-judging
+  consistency.py      Repeat-run consistency for the assistant and the judge
   report.py           Scorecard aggregation
 data/
   corpus/             The four Kestrel documents
   golden/             golden_v1, golden_v2 (frozen), golden_v3, dataset card
   labels/             Labeling guide and human labeling sheets
-tests/                104 offline tests
+tests/                128 offline tests
 run_evals.py          Eval runner and quality gates
 calibrate.py          Judge validation commands
+consistency.py        Repeat-run consistency check
 .github/workflows/    CI pipeline
 ```
 
@@ -141,7 +167,7 @@ calibrate.py          Judge validation commands
 |---|---|---|
 | 1 | RAG app, golden dataset v1, rule-based correctness, CI pipeline | ✅ Done |
 | 2 | Golden v2, LLM-as-judge (faithfulness, correctness), format checks, mutation testing, human calibration | ✅ Done |
-| 3 | Safety and robustness: prompt injection (including injections hidden inside documents), jailbreaks, bias probes, paraphrase and typo robustness, repeat-run consistency | ⬜ |
+| 3 | Safety and robustness: ~~repeat-run consistency~~ (built), prompt injection (including injections hidden inside documents), jailbreaks, bias probes, paraphrase and typo robustness | 🟡 In progress |
 | 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | ⬜ |
 | 5 | Model comparison scorecard and a results dashboard | ⬜ |
 | 6 | Production-style tracing and monitoring | ⬜ |
@@ -296,8 +322,8 @@ Every disagreement was reviewed against the written rules:
 
 ### Known gaps
 
-- The judge prompt doesn't state that guidance isn't an actual result; the labeling guide does.
-  Until a judge-v2 prompt adds it, ambiguous questions like g032 will keep disagreeing.
+- ~~The judge prompt doesn't state that guidance isn't an actual result.~~ Added in judge-v2;
+  results pending (`calibrate.py rejudge`).
 - Ambiguous questions have no `evidence` strings, so their retrieval isn't measured. g032's
   answers say 2025 revenue isn't in the documents because that paragraph was never retrieved.
 - 32 questions is small: one question is about 3 percentage points.

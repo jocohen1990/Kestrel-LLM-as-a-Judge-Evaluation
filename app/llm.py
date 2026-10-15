@@ -55,6 +55,17 @@ def _rejects_temperature(exc: Exception) -> bool:
     return status == 400 and "temperature" in str(exc).lower()
 
 
+def sends_temperature(model: str) -> bool:
+    """Did calls to this model include the temperature setting?
+
+    Only meaningful after at least one call: a model is added to
+    _NO_TEMPERATURE_MODELS the first time it rejects the setting. Results
+    files record this, because "temperature 0" can't explain consistency for
+    a model that never received it.
+    """
+    return model not in _NO_TEMPERATURE_MODELS
+
+
 def warmup(model: str | None = None) -> None:
     """Make one tiny call before measuring anything.
 

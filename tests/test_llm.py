@@ -63,3 +63,10 @@ def test_other_errors_are_not_swallowed(monkeypatch):
     use_client(monkeypatch, client)
     with pytest.raises(FakeAPIError):
         llm.generate("sys", "hi", model="model-b")
+
+
+def test_sends_temperature_reports_models_that_rejected_it(monkeypatch):
+    use_client(monkeypatch, FakeClient(reject_temperature=True))
+    assert llm.sends_temperature("picky-model") is True    # not called yet
+    llm.generate("sys", "hi", model="picky-model")
+    assert llm.sends_temperature("picky-model") is False
