@@ -13,7 +13,7 @@ from dataclasses import dataclass
 
 from app.llm import LLMResponse, generate
 from app.paths import CORPUS_DIR
-from app.retriever import Retriever, load_chunks
+from app.retriever import Chunk, Retriever, load_chunks
 
 REFUSAL = "I don't know based on the provided documents."
 
@@ -75,11 +75,16 @@ class RagAnswer:
 
 class RagAssistant:
     def __init__(self, corpus_dir=CORPUS_DIR, k: int = 4, model: str | None = None,
-                 prompt_version: str = DEFAULT_PROMPT_VERSION):
+                 prompt_version: str = DEFAULT_PROMPT_VERSION,
+                 extra_chunks: list[Chunk] | None = None):
+        """extra_chunks: passages added to the search index on top of the corpus.
+        The prompt-injection evals use it to plant a poisoned paragraph inside
+        a document without editing the real corpus files (see evals/injection.py).
+        """
         if prompt_version not in PROMPTS:
             raise ValueError(f"unknown prompt version {prompt_version!r}; "
                              f"choose from {sorted(PROMPTS)}")
-        self.retriever = Retriever(load_chunks(corpus_dir))
+        self.retriever = Retriever(load_chunks(corpus_dir) + list(extra_chunks or []))
         self.k = k
         self.model = model
         self.prompt_version = prompt_version

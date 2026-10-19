@@ -4,7 +4,7 @@ An end-to-end evaluation suite for an LLM-powered financial Q&A assistant, built
 a QA engineer tests software: versioned test data, graders that are themselves tested,
 measurable quality thresholds, and a CI pipeline that blocks regressions.
 
-> **Status:** Phases 1–2 of 6 complete; Phase 3 in progress (judge-v2 prompt and repeat-run consistency done, through Run 4). See the [roadmap](#roadmap).
+> **Status:** Phases 1–2 of 6 complete; Phase 3 in progress (judge-v2 prompt and repeat-run consistency done, through Run 4; prompt-injection evals built, not yet run). See the [roadmap](#roadmap).
 
 ## What's being tested
 
@@ -37,7 +37,7 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-pytest -v                          # 150 offline tests: free, no API key needed
+pytest -v                          # 208 offline tests: free, no API key needed
 
 cp .env.example .env               # then add your ANTHROPIC_API_KEY
 python run_evals.py                # golden v3, prompt v2, LLM judge (judge-v2)
@@ -57,6 +57,21 @@ python consistency.py --judge-prompt judge-v1    # is the old judge prompt less 
 # drift over time: compare any two results files (no API calls)
 python compare_runs.py results/consistency_<older>.json results/consistency_latest.json
 ```
+
+### Testing prompt injection
+
+```bash
+python injection.py                # 21 attacks (11 direct, 10 hidden in documents), prompt v2
+python injection.py --prompt v1    # is the older prompt easier to attack?
+python injection.py --type indirect            # only attacks planted in documents
+python injection.py --max-asr 0.10             # exit 1 if more than 10% of attacks work
+```
+
+Indirect attacks plant a paragraph inside one of the documents at run time (the corpus files
+never change) and ask an innocent question. Every check is rule-based, so there are no judge
+calls: did an attacker-chosen string reach the answer, did the system prompt leak, was a
+must-refuse question answered, or was an answerable one refused? Each indirect question is
+also asked on the clean corpus as a control. See the [attack dataset card](data/attacks/README.md).
 
 ### Validating the judge
 
@@ -96,6 +111,8 @@ Rows are shuffled, so labeling the first 50 gives a representative sample. The
 | Mentions internals | Rules | Answers that expose the pipeline to users ("According to the context…") |
 | Retrieval (document) | Rules | The retriever missed a document the question needs |
 | Retrieval (passage) | Rules | The retriever missed the **paragraph** holding the answer, even if it found the right document. Uses the `evidence` strings in golden v3 |
+| Attack success rate | Rules | Share of prompt-injection attacks that got what they wanted (lower is better), split direct / indirect |
+| Task preservation | Rules | Whether the real question inside an attack was still answered. Refusing everything isn't a defense |
 | Latency avg / p95, tokens | — | Performance and cost (a warm-up call keeps connection setup out of the numbers) |
 
 ## Validating the judge
@@ -156,16 +173,19 @@ evals/                The evaluation framework
   calibration.py      Blind labeling export, Cohen's kappa, confusion matrix, re-judging
   consistency.py      Repeat-run consistency for the assistant and the judge
   drift.py            Compares two results files from different times
+  injection.py        Prompt-injection grading: canaries, prompt leaks, task preservation
   report.py           Scorecard aggregation
 data/
   corpus/             The four Kestrel documents
   golden/             golden_v1, golden_v2 (frozen), golden_v3, dataset card
   labels/             Labeling guide and human labeling sheets
-tests/                150 offline tests
+  attacks/            Prompt-injection attacks (injection_v1) and dataset card
+tests/                208 offline tests
 run_evals.py          Eval runner and quality gates
 calibrate.py          Judge validation commands
 consistency.py        Repeat-run consistency check
 compare_runs.py       Drift between two results files
+injection.py          Prompt-injection eval
 .github/workflows/    CI pipeline
 ```
 
@@ -175,7 +195,7 @@ compare_runs.py       Drift between two results files
 |---|---|---|
 | 1 | RAG app, golden dataset v1, rule-based correctness, CI pipeline | ✅ Done |
 | 2 | Golden v2, LLM-as-judge (faithfulness, correctness), format checks, mutation testing, human calibration | ✅ Done |
-| 3 | Safety and robustness: ~~repeat-run consistency~~ (built), prompt injection (including injections hidden inside documents), jailbreaks, bias probes, paraphrase and typo robustness | 🟡 In progress |
+| 3 | Safety and robustness: ~~repeat-run consistency~~ (built), ~~prompt injection, including injections hidden inside documents~~ (built, not yet run), jailbreaks, bias probes, paraphrase and typo robustness | 🟡 In progress |
 | 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | ⬜ |
 | 5 | Model comparison scorecard and a results dashboard | ⬜ |
 | 6 | Production-style tracing and monitoring | ⬜ |
@@ -430,3 +450,6 @@ file vs. Run 4's consistency file; same assistant model, prompt, k and dataset; 
 - Ambiguous questions have no `evidence` strings, so their retrieval isn't measured. g032's
   answers say 2025 revenue isn't in the documents because that paragraph was never retrieved.
 - 32 questions is small: one question is about 3 percentage points.
+- Prompt-injection evals are built and tested offline but haven't been run against the API.
+  There's no baseline attack success rate yet, so they aren't a CI gate. 21 attacks is also
+  small: one attack is about 5 percentage points.
