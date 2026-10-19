@@ -26,6 +26,7 @@ To compare two answer keys made by rejudge (e.g. text vs. tool output):
 """
 import argparse
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -36,17 +37,25 @@ try:
 except ImportError:
     pass
 
+from app.llm import forces_tool_choice
 from app.paths import GOLDEN_DIR, RESULTS_DIR, ROOT
 from evals.calibration import changed_verdicts, export_for_labeling, rejudge_label_rows, score_labels
 from evals.dataset import load_golden
-from evals.judge import (DEFAULT_JUDGE_PROMPT, DEFAULT_OUTPUT_MODE, JUDGE_RULES, OUTPUT_MODES,
-                         JudgeError, judge_answer)
+from evals.judge import (DEFAULT_JUDGE_MODEL, DEFAULT_JUDGE_PROMPT, DEFAULT_OUTPUT_MODE, JUDGE_RULES,
+                         OUTPUT_MODES, JudgeError, judge_answer)
 from evals.metrics import score_case
 from evals.mutations import caught, make_mutations, summarize_mutations
 
 
 def stamp() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+
+
+def tool_choice_forced(args):
+    """Was the judge's tool call forced? None in text mode. See app/llm.py."""
+    if args.judge_output != "tool":
+        return None
+    return forces_tool_choice(args.judge_model or os.getenv("JUDGE_MODEL", DEFAULT_JUDGE_MODEL))
 
 
 def save(name: str, data: dict) -> None:
@@ -97,6 +106,7 @@ def cmd_mutate(args) -> int:
     save("mutations", {"source_results": Path(args.results).name,
                        "judge_model": args.judge_model, "judge_prompt_version": args.judge_prompt,
                        "judge_output_mode": args.judge_output,
+                       "judge_tool_choice_forced": tool_choice_forced(args),
                        "by_type": dict(by_type), "cases": rows})
     print("\nSaved results/mutations_latest.json")
     return 0
@@ -172,7 +182,9 @@ def cmd_rejudge(args) -> int:
         print(f"\nJudge errors on {len(errors)} rows (left out of the scores): {', '.join(errors)}")
 
     save("calibration", {"labels_file": labels.name, "judge_prompt_version": args.judge_prompt,
-                         "judge_output_mode": args.judge_output, "baseline_key": old_key_path.name,
+                         "judge_output_mode": args.judge_output,
+                         "judge_tool_choice_forced": tool_choice_forced(args),
+                         "baseline_key": old_key_path.name,
                          "key_file": new_key_path.name, "agreement_before": before,
                          "agreement": after, "changed_verdicts": changes, "judge_errors": errors})
     print(f"\nNew answer key: {new_key_path}")

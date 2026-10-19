@@ -1,9 +1,11 @@
 {
-  "timestamp": "2026-10-05T23:41:09.272302+00:00",
+  "timestamp": "2026-10-19T03:48:58.013897+00:00",
   "model": "claude-haiku-4-5-20251001",
-  "prompt_version": "v2",
+  "prompt_version": "v5",
   "judge_model": "claude-sonnet-5-5",
-  "judge_prompt_version": "judge-v1",
+  "judge_prompt_version": "judge-v2",
+  "judge_output_mode": "tool",
+  "judge_tool_choice_forced": false,
   "golden_file": "golden_v3.jsonl",
   "k": 4,
   "threshold": 0.85,
@@ -62,10 +64,13 @@
     "judge_correct_rate": 0.969,
     "rule_judge_agreement": 1.0,
     "judge_errors": 0,
-    "avg_latency_s": 0.692,
-    "p95_latency_s": 1.044,
-    "total_input_tokens": 16681,
-    "total_output_tokens": 1175
+    "avg_latency_s": 0.741,
+    "p95_latency_s": 1.099,
+    "total_input_tokens": 17225,
+    "total_output_tokens": 1079,
+    "judge_input_tokens": 49231,
+    "judge_cached_input_tokens": 31093,
+    "judge_output_tokens": 7400
   },
   "cases": [
     {
@@ -95,15 +100,18 @@
         "Kestrel Freight Analytics Q1 2026 Earnings Release\nFirst quarter 2026 results: Kestrel reported Q1 2026 revenue of $108.3 million, up 21% year over year from $89.5 million in Q1 2025. Net income was $9.2 million, and diluted earnings per share (EPS) were $0.31."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.704,
-      "input_tokens": 552,
+      "latency_s": 1.113,
+      "input_tokens": 569,
       "output_tokens": 45,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "All claims appear directly in passage [1], and the answer matches the reference of $412.6 million. The extra detail about the 18% increase from $349.7 million is also supported.",
+      "judge_reasoning": "The answer's figures all match passage [1]. Its $412.6 million matches the reference answer.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1590,
+      "judge_cached_input_tokens": 0,
+      "judge_output_tokens": 254
     },
     {
       "id": "g002",
@@ -132,14 +140,17 @@
       ],
       "model": "claude-haiku-4-5-20251001",
       "latency_s": 0.635,
-      "input_tokens": 465,
+      "input_tokens": 482,
       "output_tokens": 20,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "Passages 1 and 2 both state that Dana Whitfield is Kestrel's CEO, which matches the reference answer.",
+      "judge_reasoning": "Passages 1 and 2 both name Dana Whitfield as Kestrel's CEO, which matches the reference answer.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1480,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 203
     },
     {
       "id": "g003",
@@ -166,15 +177,18 @@
         "Kestrel Freight Analytics Q1 2026 Earnings Release\nOutlook: for Q2 2026, Kestrel expects revenue in a range of $112 million to $115 million."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.526,
-      "input_tokens": 496,
+      "latency_s": 0.549,
+      "input_tokens": 513,
       "output_tokens": 21,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "Passage 1 states the company is headquartered in Omaha, Nebraska, which matches the reference answer.",
+      "judge_reasoning": "Passage 1 states the company is headquartered in Omaha, Nebraska. The answer matches the reference.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1503,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 196
     },
     {
       "id": "g004",
@@ -203,15 +217,18 @@
         "Kestrel Freight Analytics Annual Report 2025\nFinancial results for fiscal year 2025: total revenue was $412.6 million, an increase of 18% from $349.7 million in fiscal year 2024. Net income for fiscal year 2025 was $38.9 million."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.622,
-      "input_tokens": 519,
+      "latency_s": 0.64,
+      "input_tokens": 536,
       "output_tokens": 27,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "Passage [1] states 1,240 full-time employees as of December 31, 2025, which matches the reference answer.",
+      "judge_reasoning": "Passage 1 states 1,240 full-time employees as of December 31, 2025, which matches the reference answer.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1510,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 194
     },
     {
       "id": "g005",
@@ -239,15 +256,18 @@
         "Kestrel Freight Analytics Annual Report 2025\nFinancial results for fiscal year 2025: total revenue was $412.6 million, an increase of 18% from $349.7 million in fiscal year 2024. Net income for fiscal year 2025 was $38.9 million."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.583,
-      "input_tokens": 522,
+      "latency_s": 0.627,
+      "input_tokens": 539,
       "output_tokens": 21,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "Passage [1] states that Route Optimization Software contributed 62% of total 2025 revenue, which matches the reference answer.",
+      "judge_reasoning": "Passage [1] states the segment contributed 62% of 2025 total revenue, which matches the reference answer.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1546,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 194
     },
     {
       "id": "g006",
@@ -274,15 +294,18 @@
         "Kestrel Freight Analytics Q1 2026 Earnings Release\nProduct news: in February 2026 Kestrel launched LaneSight, a product that predicts freight lane congestion up to 14 days in advance."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.693,
-      "input_tokens": 538,
+      "latency_s": 0.772,
+      "input_tokens": 555,
       "output_tokens": 45,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "All claims match passage [1], and the answer's revenue figure of $108.3 million matches the reference answer.",
+      "judge_reasoning": "The answer gives $108.3 million, matching the reference. The 21% growth and the $89.5 million Q1 2025 figure both appear in passage 1.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1543,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 261
     },
     {
       "id": "g007",
@@ -310,15 +333,18 @@
         "Kestrel Freight Analytics Q1 2026 Earnings Release\nOutlook: for Q2 2026, Kestrel expects revenue in a range of $112 million to $115 million."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.623,
-      "input_tokens": 520,
+      "latency_s": 0.699,
+      "input_tokens": 537,
       "output_tokens": 37,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "Passage [1] states both figures exactly: 71.4% for Q1 2026 and 69.8% for Q1 2025. The answer matches the reference of 71.4% and adds only supported detail.",
+      "judge_reasoning": "Both figures come straight from passage [1]. The 71.4% Q1 2026 figure matches the reference answer.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1513,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 226
     },
     {
       "id": "g008",
@@ -344,15 +370,18 @@
         "Kestrel Freight Analytics Q1 2026 Earnings Release\nOutlook: for Q2 2026, Kestrel expects revenue in a range of $112 million to $115 million."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.644,
-      "input_tokens": 471,
+      "latency_s": 0.742,
+      "input_tokens": 488,
       "output_tokens": 36,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "Passage 1 states that Kestrel launched LaneSight in February 2026 and that it predicts freight lane congestion up to 14 days in advance. This matches the reference answer.",
+      "judge_reasoning": "The answer names LaneSight, which matches the reference. Passage 1 states both claims: the February 2026 launch and the 14-day congestion prediction.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1460,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 236
     },
     {
       "id": "g009",
@@ -363,7 +392,7 @@
         112,
         115
       ],
-      "answer": "According to the Q1 2026 earnings release, Kestrel expected Q2 2026 revenue in a range of $112 million to $115 million.",
+      "answer": "Kestrel expected Q2 2026 revenue in a range of $112 million to $115 million, according to the Q1 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
       "refusal_exact": null,
@@ -381,15 +410,18 @@
         "Kestrel Freight Analytics Q2 2026 Earnings Release\nMargins: gross margin for Q2 2026 was 72.1%."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.832,
-      "input_tokens": 520,
+      "latency_s": 0.797,
+      "input_tokens": 537,
       "output_tokens": 41,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "The answer matches passage [1] and the reference answer exactly, giving a range of $112 million to $115 million, and it correctly attributes the figure to the Q1 2026 release.",
+      "judge_reasoning": "Passage 1 gives the Q2 2026 revenue outlook as $112 million to $115 million, and it comes from the Q1 2026 earnings release. The question asks what Kestrel expected, so guidance is the right answer. It matches the reference answer.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1528,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 279
     },
     {
       "id": "g010",
@@ -399,7 +431,7 @@
       "expected_numbers": [
         0.38
       ],
-      "answer": "Kestrel's diluted earnings per share (EPS) in Q2 2026 were $0.38.",
+      "answer": "Kestrel's diluted EPS in Q2 2026 was $0.38.",
       "passed": true,
       "reason": "all expected values present",
       "refusal_exact": null,
@@ -417,15 +449,18 @@
         "Kestrel Freight Analytics Q2 2026 Earnings Release\nCustomers: Kestrel ended Q2 2026 with 3,120 enterprise customers."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.678,
-      "input_tokens": 558,
-      "output_tokens": 30,
+      "latency_s": 0.625,
+      "input_tokens": 575,
+      "output_tokens": 25,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "Passage [1] states Q2 2026 diluted EPS was $0.38, which matches the reference answer.",
+      "judge_reasoning": "Passage 1 states Q2 2026 diluted EPS was $0.38, which matches the reference answer.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1544,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 193
     },
     {
       "id": "g011",
@@ -433,7 +468,7 @@
       "question": "Which company did Kestrel acquire in June 2026?",
       "expected_answer": "Bramblecote Telematics",
       "expected_numbers": [],
-      "answer": "Kestrel acquired Bramblecote Telematics in June 2026. The acquisition was completed on June 12, 2026, for $64 million in cash.",
+      "answer": "Kestrel acquired Bramblecote Telematics in June 2026 for $64 million in cash.",
       "passed": true,
       "reason": "all expected values present",
       "refusal_exact": null,
@@ -451,15 +486,18 @@
         "Kestrel Freight Analytics Risk Factors 2026\nKey personnel: Kestrel depends on its CEO, Dana Whitfield, and other senior leaders. The company does not maintain key-person life insurance."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 1.044,
-      "input_tokens": 522,
-      "output_tokens": 44,
+      "latency_s": 0.738,
+      "input_tokens": 539,
+      "output_tokens": 31,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "All claims match passages 1 and 2, and the answer identifies Bramblecote Telematics, matching the reference.",
+      "judge_reasoning": "Passage 2 states Kestrel completed its acquisition of Bramblecote Telematics on June 12, 2026, for $64 million in cash. Passage 1 also confirms the June 2026 acquisition. Both claims in the answer are supported, and the company name matches the reference answer.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1539,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 276
     },
     {
       "id": "g012",
@@ -488,15 +526,18 @@
         "Kestrel Freight Analytics Q2 2026 Earnings Release\nCustomers: Kestrel ended Q2 2026 with 3,120 enterprise customers."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.634,
-      "input_tokens": 496,
+      "latency_s": 0.713,
+      "input_tokens": 513,
       "output_tokens": 34,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "Passage [2] states Kestrel completed the acquisition on June 12, 2026 for $64 million in cash, matching the assistant's answer and the reference.",
+      "judge_reasoning": "Passage [2] states that Kestrel completed the acquisition on June 12, 2026 for $64 million in cash. Both claims in the answer match it, and the answer matches the reference.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1496,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 249
     },
     {
       "id": "g013",
@@ -526,15 +567,18 @@
         "Kestrel Freight Analytics Q2 2026 Earnings Release\nSecond quarter 2026 results: Kestrel reported Q2 2026 revenue of $116.0 million, up 19% year over year from $97.5 million in Q2 2025. Net income was $11.4 million, and diluted earnings per share (EPS) were $0.38."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.583,
-      "input_tokens": 601,
+      "latency_s": 0.659,
+      "input_tokens": 618,
       "output_tokens": 30,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "The answer matches passage [1] exactly and agrees with the reference answer of $470 million to $480 million.",
+      "judge_reasoning": "The answer repeats passage [1] exactly and matches the reference answer. The question asks for guidance, so a guidance figure is the right answer.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1612,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 210
     },
     {
       "id": "g014",
@@ -563,15 +607,18 @@
         "Kestrel Freight Analytics Q2 2026 Earnings Release\nMargins: gross margin for Q2 2026 was 72.1%."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.648,
-      "input_tokens": 476,
+      "latency_s": 0.624,
+      "input_tokens": 493,
       "output_tokens": 25,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "Passage [1] states Kestrel ended Q2 2026 with 3,120 enterprise customers, which matches the reference answer.",
+      "judge_reasoning": "Passage 1 states Kestrel ended Q2 2026 with 3,120 enterprise customers. This matches the reference answer.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1462,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 203
     },
     {
       "id": "g015",
@@ -601,15 +648,18 @@
         "Kestrel Freight Analytics Q2 2026 Earnings Release\nSecond quarter 2026 results: Kestrel reported Q2 2026 revenue of $116.0 million, up 19% year over year from $97.5 million in Q2 2025. Net income was $11.4 million, and diluted earnings per share (EPS) were $0.38."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.553,
-      "input_tokens": 580,
+      "latency_s": 0.626,
+      "input_tokens": 597,
       "output_tokens": 24,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "Passage [1] states the largest customer accounted for 9% of total revenue in 2025, which matches the reference answer.",
+      "judge_reasoning": "Passage [1] states that the largest customer accounted for 9% of total revenue in 2025. The answer says the same, and it matches the reference answer of 9%.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1576,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 210
     },
     {
       "id": "g016",
@@ -619,7 +669,7 @@
       "expected_numbers": [
         150
       ],
-      "answer": "Kestrel has a $150 million revolving credit facility.",
+      "answer": "Kestrel's revolving credit facility is $150 million.",
       "passed": true,
       "reason": "all expected values present",
       "refusal_exact": null,
@@ -638,15 +688,18 @@
         "Kestrel Freight Analytics Risk Factors 2026\nIndustry conditions: many Kestrel customers are trucking and logistics companies whose budgets are sensitive to fuel price volatility."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.519,
-      "input_tokens": 494,
+      "latency_s": 0.623,
+      "input_tokens": 511,
       "output_tokens": 18,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "Passage [1] states Kestrel has a $150 million revolving credit facility, and the assistant's answer matches the reference answer of $150 million.",
+      "judge_reasoning": "Passage [1] says Kestrel has a $150 million revolving credit facility. The answer states the same figure and matches the reference.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1483,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 192
     },
     {
       "id": "g017",
@@ -675,15 +728,18 @@
         "Kestrel Freight Analytics Q2 2026 Earnings Release\nAcquisition: on June 12, 2026, Kestrel completed its acquisition of Bramblecote Telematics, a provider of in-truck sensor data, for $64 million in cash."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.648,
-      "input_tokens": 543,
+      "latency_s": 0.704,
+      "input_tokens": 560,
       "output_tokens": 34,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "Passage 1 states a $150 million revolving facility with $40 million drawn as of June 30, 2026, which matches the reference answer of $40 million.",
+      "judge_reasoning": "Passage 1 states a $150 million revolving facility with $40 million drawn as of June 30, 2026. The answer matches the reference.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1549,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 237
     },
     {
       "id": "g018",
@@ -709,15 +765,18 @@
         "Kestrel Freight Analytics Q2 2026 Earnings Release\nMargins: gross margin for Q2 2026 was 72.1%."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.799,
-      "input_tokens": 538,
+      "latency_s": 0.747,
+      "input_tokens": 555,
       "output_tokens": 53,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "The answer matches passages 1 and 3: Q2 revenue of $116.0M exceeds the $112-115M guidance range. It agrees with the reference answer.",
+      "judge_reasoning": "The answer matches the passages and the reference answer. Passage 3 gives Q2 2026 revenue of $116.0 million. Passage 1 gives the Q1 outlook range of $112 million to $115 million. $116.0 million is above $115 million, so the conclusion follows.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1592,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 324
     },
     {
       "id": "g019",
@@ -744,15 +803,18 @@
         "Kestrel Freight Analytics Q2 2026 Earnings Release\nOutlook and guidance: Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.474,
-      "input_tokens": 468,
+      "latency_s": 0.566,
+      "input_tokens": 485,
       "output_tokens": 13,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "The passages never give a ticker symbol, so the reference expects a refusal. The assistant refused, which makes no factual claims and matches the reference.",
+      "judge_reasoning": "The passages don't give a ticker symbol, and the reference answer says to refuse. The assistant refused, so it made no factual claims. That makes it faithful and correct.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1450,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 173
     },
     {
       "id": "g020",
@@ -778,15 +840,18 @@
         "Kestrel Freight Analytics Annual Report 2025\nFinancial results for fiscal year 2025: total revenue was $412.6 million, an increase of 18% from $349.7 million in fiscal year 2024. Net income for fiscal year 2025 was $38.9 million."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.465,
-      "input_tokens": 513,
+      "latency_s": 0.577,
+      "input_tokens": 530,
       "output_tokens": 13,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "The passages say nothing about a successor to Dana Whitfield. The assistant refused, which makes no factual claims and matches the reference answer's expected refusal.",
+      "judge_reasoning": "The passages say nothing about a CEO succession or a 2027 successor. The assistant refused, which matches the reference answer. A refusal makes no factual claims, so it is faithful.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1540,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 178
     },
     {
       "id": "g021",
@@ -796,7 +861,7 @@
       "expected_numbers": [
         9.4
       ],
-      "answer": "Kestrel's net profit margin for fiscal year 2025 was 9.4%, calculated by dividing net income of $38.9 million by total revenue of $412.6 million.",
+      "answer": "Kestrel's net profit margin for fiscal year 2025 was 9.4%, calculated as net income of $38.9 million divided by total revenue of $412.6 million.",
       "passed": true,
       "reason": "all expected values present",
       "refusal_exact": null,
@@ -815,15 +880,18 @@
         "Kestrel Freight Analytics Q1 2026 Earnings Release\nMargins: gross margin for Q1 2026 was 71.4%, compared with 69.8% in Q1 2025."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.784,
-      "input_tokens": 600,
-      "output_tokens": 48,
+      "latency_s": 0.939,
+      "input_tokens": 617,
+      "output_tokens": 47,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "The answer uses the FY2025 net income and revenue from passage 1; 38.9/412.6 \u2248 9.43%, which matches the reference answer of about 9.4%.",
+      "judge_reasoning": "38.9/412.6 = 0.0943, so 9.4%. This matches the reference answer, and the inputs come straight from passage 1.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1648,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 263
     },
     {
       "id": "g022",
@@ -833,7 +901,7 @@
       "expected_numbers": [
         224.3
       ],
-      "answer": "I don't know based on the provided documents.\n\nWhile the Q1 2026 revenue was $108.3 million and Q2 2026 guidance was provided as a range of $112 million to $115 million, the actual Q2 2026 revenue figure is not stated in the reference material.",
+      "answer": "I don't know based on the provided documents.\n\nThe material provides Q1 2026 actual revenue of $108.3 million and Q2 2026 guidance of $112\u2013$115 million, but does not contain Q2 2026 actual results needed to calculate combined first-half revenue.",
       "passed": false,
       "reason": "refused, but the answer is in the documents",
       "refusal_exact": null,
@@ -852,15 +920,18 @@
         "Kestrel Freight Analytics Q2 2026 Earnings Release\nOutlook and guidance: Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 1.041,
-      "input_tokens": 535,
-      "output_tokens": 72,
+      "latency_s": 1.099,
+      "input_tokens": 552,
+      "output_tokens": 70,
       "judge_faithful": true,
       "judge_correct": false,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "The assistant's claims are all supported by the passages, and it correctly notes that actual Q2 revenue is missing. However, the reference answer expects $224.3 million, and the assistant refused instead of giving it, so it does not match.",
+      "judge_reasoning": "Every claim in the answer is supported by the passages. The passages give Q1 actual revenue and Q2 guidance. They don't give Q2 actual revenue. The reference answer is $224.3 million, so the assistant's refusal doesn't match it and is not correct.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1610,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 309
     },
     {
       "id": "g023",
@@ -870,7 +941,7 @@
       "expected_numbers": [
         0.7
       ],
-      "answer": "Kestrel's gross margin increased by 0.7 percentage points from Q1 2026 to Q2 2026, rising from 71.4% in Q1 2026 to 72.1% in Q2 2026.",
+      "answer": "Kestrel's gross margin increased by 0.7 percentage points from Q1 2026 to Q2 2026, rising from 71.4% to 72.1%.",
       "passed": true,
       "reason": "all expected values present",
       "refusal_exact": null,
@@ -889,15 +960,18 @@
         "Kestrel Freight Analytics Risk Factors 2026\nIndustry conditions: many Kestrel customers are trucking and logistics companies whose budgets are sensitive to fuel price volatility."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.79,
-      "input_tokens": 480,
-      "output_tokens": 60,
+      "latency_s": 0.965,
+      "input_tokens": 497,
+      "output_tokens": 46,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "Both margin figures (71.4% and 72.1%) appear in the passages, and 72.1 \u2212 71.4 = 0.7 is simple arithmetic. The answer matches the reference.",
+      "judge_reasoning": "The figures 71.4% and 72.1% are both in the passages, and 72.1 \u2212 71.4 = 0.7. This matches the reference answer.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1513,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 267
     },
     {
       "id": "g024",
@@ -926,15 +1000,18 @@
         "Kestrel Freight Analytics Q2 2026 Earnings Release\nOutlook and guidance: Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.845,
-      "input_tokens": 498,
+      "latency_s": 1.014,
+      "input_tokens": 515,
       "output_tokens": 64,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "The figures 2,850 and 3,120 come directly from the passages, and 3,120 - 2,850 = 270, which matches the reference answer.",
+      "judge_reasoning": "Both figures come from the passages, and 3,120 \u2212 2,850 = 270, which matches the reference answer.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1544,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 274
     },
     {
       "id": "g025",
@@ -944,7 +1021,7 @@
       "expected_numbers": [
         110
       ],
-      "answer": "As of June 30, 2026, Kestrel had $110 million in undrawn capacity on its $150 million revolving credit facility, since $40 million was drawn at that date.",
+      "answer": "As of June 30, 2026, Kestrel had $110 million in undrawn capacity on its $150 million revolving credit facility, with $40 million drawn at that date.",
       "passed": true,
       "reason": "all expected values present",
       "refusal_exact": null,
@@ -962,15 +1039,18 @@
         "Kestrel Freight Analytics Q2 2026 Earnings Release\nMargins: gross margin for Q2 2026 was 72.1%."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.811,
-      "input_tokens": 521,
-      "output_tokens": 49,
+      "latency_s": 0.882,
+      "input_tokens": 538,
+      "output_tokens": 48,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "The answer matches the reference: $150M minus $40M drawn is $110M, and each figure comes directly from passage 1.",
+      "judge_reasoning": "The passages give a $150M facility with $40M drawn at June 30, 2026. 150 \u2212 40 = 110, which matches the reference answer.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1559,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 263
     },
     {
       "id": "g026",
@@ -978,7 +1058,7 @@
       "question": "Why did Kestrel's revenue decline in Q2 2026?",
       "expected_answer": "False premise: revenue did not decline. Q2 2026 revenue rose 19% year over year to $116.0 million.",
       "expected_numbers": [],
-      "answer": "The premise is incorrect. Kestrel's revenue did not decline in Q2 2026. Revenue increased to $116.0 million, up 19% year over year from $97.5 million in Q2 2025.",
+      "answer": "The premise is wrong\u2014Kestrel's revenue did not decline in Q2 2026. Revenue increased 19% year over year to $116.0 million in Q2 2026, up from $97.5 million in Q2 2025.",
       "passed": true,
       "reason": "all expected values present",
       "refusal_exact": null,
@@ -996,15 +1076,18 @@
         "Kestrel Freight Analytics Q2 2026 Earnings Release\nMargins: gross margin for Q2 2026 was 72.1%."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.783,
-      "input_tokens": 520,
-      "output_tokens": 55,
+      "latency_s": 1.055,
+      "input_tokens": 537,
+      "output_tokens": 61,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "All claims come straight from passage [1], and the answer corrects the false premise just as the reference does.",
+      "judge_reasoning": "The answer corrects the false premise and gives the same figures as the reference answer. The passages support every figure it states.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1584,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 256
     },
     {
       "id": "g027",
@@ -1012,7 +1095,7 @@
       "question": "How much did Kestrel pay in dividends in 2025?",
       "expected_answer": "False premise: Kestrel does not pay a dividend.",
       "expected_numbers": [],
-      "answer": "Kestrel did not pay a dividend in 2025.",
+      "answer": "Kestrel does not pay a dividend.",
       "passed": true,
       "reason": "all expected values present",
       "refusal_exact": null,
@@ -1029,15 +1112,18 @@
         "Kestrel Freight Analytics Annual Report 2025\nRevenue by segment: the Route Optimization Software segment contributed 62% of total revenue in 2025, and the Data Services segment contributed the remaining 38%."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.558,
-      "input_tokens": 520,
-      "output_tokens": 17,
+      "latency_s": 0.627,
+      "input_tokens": 537,
+      "output_tokens": 13,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "Passage 1 states that Kestrel does not pay a dividend, so the claim is supported. The answer corrects the false premise, matching the reference.",
+      "judge_reasoning": "Passage 1 states that Kestrel does not pay a dividend. The assistant's answer matches this and corrects the false premise, as the reference answer does.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1516,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 195
     },
     {
       "id": "g028",
@@ -1065,15 +1151,18 @@
         "Kestrel Freight Analytics Q1 2026 Earnings Release\nOutlook: for Q2 2026, Kestrel expects revenue in a range of $112 million to $115 million."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.577,
-      "input_tokens": 520,
+      "latency_s": 0.626,
+      "input_tokens": 537,
       "output_tokens": 23,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "Passage [1] states the gross margin was 69.8% in Q1 2025, which matches the reference answer.",
+      "judge_reasoning": "Passage [1] states gross margin was 69.8% in Q1 2025, which matches the assistant's answer and the reference answer.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1519,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 199
     },
     {
       "id": "g029",
@@ -1102,15 +1191,18 @@
         "Kestrel Freight Analytics Q2 2026 Earnings Release\nOutlook and guidance: Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.54,
-      "input_tokens": 530,
+      "latency_s": 0.576,
+      "input_tokens": 547,
       "output_tokens": 24,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "Passage [1] states Q2 2025 revenue was $97.5 million, which matches the reference answer.",
+      "judge_reasoning": "Passage 1 says Q2 2025 revenue was $97.5 million, which matches the reference answer.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1551,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 191
     },
     {
       "id": "g030",
@@ -1138,15 +1230,18 @@
         "Kestrel Freight Analytics Annual Report 2025\nRevenue by segment: the Route Optimization Software segment contributed 62% of total revenue in 2025, and the Data Services segment contributed the remaining 38%."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.481,
-      "input_tokens": 486,
+      "latency_s": 0.538,
+      "input_tokens": 503,
       "output_tokens": 13,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "The assistant refused, which matches the reference answer that Q3 2026 revenue is not in the documents. A refusal makes no factual claims, so it is faithful.",
+      "judge_reasoning": "The assistant refused, which matches the reference. The passages have no Q3 2026 results. A refusal makes no factual claims, so it is faithful.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1485,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 167
     },
     {
       "id": "g031",
@@ -1173,15 +1268,18 @@
         "Kestrel Freight Analytics Q2 2026 Earnings Release\nOutlook and guidance: Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 0.512,
-      "input_tokens": 599,
+      "latency_s": 0.55,
+      "input_tokens": 616,
       "output_tokens": 13,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "The passages give FY2024 revenue ($349.7M) but not FY2024 net income, so the reference expects a refusal. The assistant refused, which makes no factual claims and matches the reference.",
+      "judge_reasoning": "The passages give FY2024 revenue ($349.7 million) but not FY2024 net income. The reference answer says to refuse, and the assistant refused. A refusal makes no factual claims, so it is faithful and correct.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1598,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 191
     },
     {
       "id": "g032",
@@ -1189,7 +1287,7 @@
       "question": "What was Kestrel's revenue?",
       "expected_answer": "Ambiguous: should name the period it is answering for (e.g. FY2025 $412.6M, Q1 2026 $108.3M, Q2 2026 $116.0M) or ask which period.",
       "expected_numbers": [],
-      "answer": "I need to know which period you're asking about. Based on the provided documents:\n\n- **2025**: The documents don't state total 2025 revenue, only that the Route Optimization Software segment contributed 62% and Data Services contributed 38%.\n\n- **Q2 2026 guidance**: Kestrel expected revenue between $112 million and $115 million.\n\n- **Full-year 2026 guidance**: Kestrel raised its guidance to between $470 million and $480 million.\n\nWhich period would you like to know about?",
+      "answer": "I need to know which period you're asking about. Kestrel's 2025 total revenue isn't stated in the provided documents, but the Q2 2026 earnings release shows full-year 2026 revenue guidance of $470 million to $480 million.",
       "passed": true,
       "reason": "all expected values present",
       "refusal_exact": null,
@@ -1209,15 +1307,18 @@
         "Kestrel Freight Analytics Q2 2026 Earnings Release\nOutlook and guidance: Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million."
       ],
       "model": "claude-haiku-4-5-20251001",
-      "latency_s": 1.508,
-      "input_tokens": 480,
-      "output_tokens": 126,
+      "latency_s": 1.065,
+      "input_tokens": 497,
+      "output_tokens": 64,
       "judge_faithful": true,
       "judge_correct": true,
       "judge_unsupported_claims": [],
-      "judge_reasoning": "All claims match the passages. The assistant recognized the ambiguity, asked which period was meant, and listed the available figures, which satisfies the reference's requirement to ask or name the period.",
+      "judge_reasoning": "The question is ambiguous about the period. The assistant asked which period was meant, which is a correct response. Its other statements match the passages. The passages give no 2025 total revenue figure. Passage 4 gives the $470\u2013480M guidance. The assistant labeled that figure as guidance and did not present it as an actual result.",
       "judge_error": null,
-      "rule_judge_agree": true
+      "rule_judge_agree": true,
+      "judge_input_tokens": 1588,
+      "judge_cached_input_tokens": 1003,
+      "judge_output_tokens": 337
     }
   ]
 }

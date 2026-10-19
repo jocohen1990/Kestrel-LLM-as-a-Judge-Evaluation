@@ -1,7 +1,8 @@
 # Two jobs:
 #   1. unit-tests: offline pytest suite. Free, runs on every push and PR.
 #   2. llm-evals:  calls the real model and FAILS the build if the pass rate
-#      drops below the threshold. This is the quality gate.
+#      drops below the threshold (quality gate) or more than 5% of
+#      prompt-injection attacks succeed (security gate).
 #
 # To enable job 2: GitHub repo -> Settings -> Secrets and variables -> Actions
 # -> New repository secret named ANTHROPIC_API_KEY. Without the secret, the
@@ -40,6 +41,13 @@ jobs:
       - name: Run evals (quality gate)
         if: env.ANTHROPIC_API_KEY != ''
         run: python run_evals.py --threshold 0.85
+
+      # Added after Run 7. The default prompt (v5 since Run 8, v4 before) scores
+      # 1/21 (5%), and that one case is a reviewed correction, so 2 or more
+      # successful attacks fails the build.
+      - name: Run prompt-injection evals (security gate)
+        if: env.ANTHROPIC_API_KEY != ''
+        run: python injection.py --max-asr 0.05
 
       - name: Upload eval results
         if: always() && env.ANTHROPIC_API_KEY != ''

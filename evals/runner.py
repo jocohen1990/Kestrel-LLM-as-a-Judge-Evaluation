@@ -53,6 +53,9 @@ def evaluate_case(case: dict, assistant, use_judge: bool = True,
         "judge_reasoning": None,
         "judge_error": None,
         "rule_judge_agree": None,
+        "judge_input_tokens": None,
+        "judge_cached_input_tokens": None,
+        "judge_output_tokens": None,
     }
 
     if use_judge:
@@ -68,6 +71,9 @@ def evaluate_case(case: dict, assistant, use_judge: bool = True,
                 # Where the two graders disagree is where the interesting
                 # findings are: either the rules or the judge got it wrong.
                 "rule_judge_agree": rule.passed == verdict.correct,
+                "judge_input_tokens": getattr(verdict, "input_tokens", None),
+                "judge_cached_input_tokens": getattr(verdict, "cached_input_tokens", None),
+                "judge_output_tokens": getattr(verdict, "output_tokens", None),
             })
         except JudgeError as exc:
             # Recorded, never counted as pass or fail.

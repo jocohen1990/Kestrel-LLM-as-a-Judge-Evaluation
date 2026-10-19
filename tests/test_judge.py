@@ -3,6 +3,8 @@
 The judge's reply is untrusted text from a model, so the parser is tested
 against the messy shapes real replies come in.
 """
+import json
+
 import pytest
 
 from app.llm import LLMResponse, StructuredOutputError, StructuredResponse
@@ -218,3 +220,34 @@ def test_tool_mode_still_validates_the_fields(monkeypatch):
                         lambda *a, **k: structured({"claims": [], "faithful": "yes", "correct": True}))
     with pytest.raises(JudgeError, match="faithful"):
         judge.judge_answer("Q?", ["ctx"], "REF", "ANS")
+
+
+# ---- Prompt caching (Run 8) -----------------------------------------------
+
+@pytest.mark.parametrize("mode", ["tool", "text"])
+def test_judge_marks_its_fixed_prefix_as_cacheable(monkeypatch, mode):
+    seen = {}
+
+    def fake_structured(*args, **kwargs):
+        seen.update(kwargs)
+        return structured(GOOD_DATA)
+
+    def fake_generate(system, user, **kwargs):
+        seen.update(kwargs)
+        return LLMResponse(text=json.dumps(GOOD_DATA), model="j", input_tokens=900,
+                           output_tokens=50, latency_s=0.1, cache_read_input_tokens=600)
+
+    monkeypatch.setattr(judge, "generate_structured", fake_structured)
+    monkeypatch.setattr(judge, "generate", fake_generate)
+    judge.judge_answer("Q?", ["ctx"], "REF", "ANS", output_mode=mode)
+    assert seen["cache_system"] is True
+
+
+def test_verdict_carries_the_calls_token_usage(monkeypatch):
+    def fake_generate(system, user, **kwargs):
+        return LLMResponse(text=json.dumps(GOOD_DATA), model="j", input_tokens=900,
+                           output_tokens=50, latency_s=0.1, cache_read_input_tokens=600)
+
+    monkeypatch.setattr(judge, "generate", fake_generate)
+    v = judge.judge_answer("Q?", ["ctx"], "REF", "ANS", output_mode="text")
+    assert (v.input_tokens, v.cached_input_tokens, v.output_tokens) == (900, 600, 50)

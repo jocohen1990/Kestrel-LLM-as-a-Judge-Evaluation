@@ -26,7 +26,7 @@ try:
 except ImportError:
     pass
 
-from app.llm import DEFAULT_MODEL, sends_temperature, warmup
+from app.llm import DEFAULT_MODEL, forces_tool_choice, sends_temperature, warmup
 from app.paths import GOLDEN_DIR, RESULTS_DIR
 from app.rag import DEFAULT_PROMPT_VERSION, PROMPTS, RagAssistant
 from evals.consistency import check_case, summarize_consistency
@@ -128,6 +128,8 @@ def main() -> int:
         "judge_model": judge_model,
         "judge_prompt_version": None if args.no_judge else args.judge_prompt,
         "judge_output_mode": None if args.no_judge else args.judge_output,
+        "judge_tool_choice_forced": (forces_tool_choice(judge_model)
+                                     if judge_model and args.judge_output == "tool" else None),
         "judge_temperature_sent": sends_temperature(judge_model) if judge_model else None,
         "golden_file": Path(args.golden).name,
         "k": args.k,

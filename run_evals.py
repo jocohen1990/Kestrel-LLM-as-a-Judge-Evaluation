@@ -31,7 +31,7 @@ try:  # Load ANTHROPIC_API_KEY from a local .env file if one exists.
 except ImportError:
     pass
 
-from app.llm import warmup
+from app.llm import forces_tool_choice, warmup
 from app.paths import GOLDEN_DIR, RESULTS_DIR
 from app.rag import DEFAULT_PROMPT_VERSION, PROMPTS, RagAssistant
 from evals.dataset import load_golden
@@ -86,6 +86,10 @@ def print_scorecard(run: dict) -> None:
     print(f"Retrieval (passage):  {fmt(s['passage_hit_rate'])}  (the stricter check)")
     print(f"Latency avg / p95:    {s['avg_latency_s']}s / {s['p95_latency_s']}s")
     print(f"Tokens in / out:      {s['total_input_tokens']} / {s['total_output_tokens']}")
+    if s.get("judge_input_tokens"):
+        cached = s["judge_cached_input_tokens"]
+        print(f"Judge tokens in / out: {s['judge_input_tokens']} / {s['judge_output_tokens']}"
+              f"  ({cached} in = {cached / s['judge_input_tokens']:.0%} read from cache)")
     if s["judge_errors"]:
         print(f"Judge errors:         {s['judge_errors']} (see judge_error in the results file)")
 
@@ -136,6 +140,8 @@ def main() -> int:
         "judge_model": judge_model,
         "judge_prompt_version": None if args.no_judge else args.judge_prompt,
         "judge_output_mode": None if args.no_judge else args.judge_output,
+        "judge_tool_choice_forced": (forces_tool_choice(judge_model)
+                                     if judge_model and args.judge_output == "tool" else None),
         "golden_file": Path(args.golden).name,
         "k": args.k,
         "threshold": args.threshold,

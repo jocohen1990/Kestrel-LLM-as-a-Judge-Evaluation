@@ -84,3 +84,26 @@ def test_judge_prompt_version_is_passed_to_the_judge():
 
     evaluate_case(CASE, FakeAssistant("108.3"), judge_fn=recording_judge, judge_prompt="judge-v1")
     assert seen["prompt_version"] == "judge-v1"
+
+
+def test_judge_token_usage_is_recorded_and_summed():
+    from evals.report import summarize
+
+    def judge_with_usage(*args, **kwargs):
+        return Verdict(faithful=True, correct=True, reasoning="r", input_tokens=900,
+                       cached_input_tokens=600, output_tokens=50)
+
+    rows = [evaluate_case(CASE, FakeAssistant("Revenue was $108.3 million."),
+                          judge_fn=judge_with_usage) for _ in range(2)]
+    assert rows[0]["judge_input_tokens"] == 900 and rows[0]["judge_cached_input_tokens"] == 600
+    s = summarize(rows)
+    assert (s["judge_input_tokens"], s["judge_cached_input_tokens"], s["judge_output_tokens"]) \
+        == (1800, 1200, 100)
+
+
+def test_summary_works_on_rows_saved_before_judge_usage_existed():
+    from evals.report import summarize
+    row = evaluate_case(CASE, FakeAssistant("Revenue was $108.3 million."), use_judge=False)
+    for key in ("judge_input_tokens", "judge_cached_input_tokens", "judge_output_tokens"):
+        row.pop(key)
+    assert summarize([row])["judge_input_tokens"] == 0

@@ -156,6 +156,11 @@ class Verdict:
     correct: bool
     reasoning: str
     claims: list[dict] = field(default_factory=list)
+    # Token usage of the call that produced this verdict (0 when unknown,
+    # e.g. a fake judge in tests). input_tokens includes cached tokens.
+    input_tokens: int = 0
+    cached_input_tokens: int = 0
+    output_tokens: int = 0
 
     @property
     def unsupported_claims(self) -> list[str]:
@@ -215,17 +220,30 @@ def parse_judge_output(text: str) -> Verdict:
     return verdict_from_data(data)
 
 
+def _with_usage(verdict: Verdict, response) -> Verdict:
+    verdict.input_tokens = response.input_tokens
+    verdict.cached_input_tokens = response.cache_read_input_tokens
+    verdict.output_tokens = response.output_tokens
+    return verdict
+
+
 def _ask_once(system: str, prompt: str, model: str, output_mode: str) -> Verdict:
+    """One judge call. The system prompt (and in tool mode, the tool) is the
+    same for every answer, so it's marked as a cacheable prefix: after the
+    first call, later calls within a few minutes read it from the cache at a
+    fraction of the input price. Verdicts are unaffected; caching changes the
+    bill, not the model's input."""
     if output_mode == "tool":
         try:
             response = generate_structured(system, prompt, VERDICT_SCHEMA, TOOL_NAME,
                                            TOOL_DESCRIPTION, model=model, max_tokens=1200,
-                                           temperature=0.0)
+                                           temperature=0.0, cache_system=True)
         except StructuredOutputError as exc:
             raise JudgeError(str(exc)) from exc
-        return verdict_from_data(response.data)
-    response = generate(system, prompt, model=model, max_tokens=1200, temperature=0.0)
-    return parse_judge_output(response.text)
+        return _with_usage(verdict_from_data(response.data), response)
+    response = generate(system, prompt, model=model, max_tokens=1200, temperature=0.0,
+                        cache_system=True)
+    return _with_usage(parse_judge_output(response.text), response)
 
 
 def judge_answer(question: str, contexts: list[str], reference: str, answer: str,

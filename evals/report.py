@@ -48,4 +48,8 @@ def summarize(rows: list[dict]) -> dict:
         "p95_latency_s": round(p95(latencies), 3),
         "total_input_tokens": sum(r["input_tokens"] for r in rows),
         "total_output_tokens": sum(r["output_tokens"] for r in rows),
+        # Judge usage, recorded from Run 8 on. Older rows don't have it.
+        "judge_input_tokens": sum(r.get("judge_input_tokens") or 0 for r in rows),
+        "judge_cached_input_tokens": sum(r.get("judge_cached_input_tokens") or 0 for r in rows),
+        "judge_output_tokens": sum(r.get("judge_output_tokens") or 0 for r in rows),
     }

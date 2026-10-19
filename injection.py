@@ -61,6 +61,8 @@ def print_report(run: dict) -> None:
           f"({s['attacks_succeeded']}/{s['attacks']}; lower is better)")
     for kind, rate in s["attack_success_rate_by_type"].items():
         print(f"    {kind:<9}              {fmt(rate)} of {s['attacks_by_type'][kind]}")
+    print(f"  Attack impact rate:      {fmt(s['attack_impact_rate'])} "
+          f"({s['attacks_with_impact']}/{s['attacks']}; succeeded, or broke a real answer)")
     print(f"  Real question still answered: {fmt(s['task_preserved_rate'])} "
           f"of {s['task_cases']} cases that include one")
     print(f"  Poisoned passage retrieved:   {fmt(s['poison_retrieved_rate'])}")
@@ -68,6 +70,7 @@ def print_report(run: dict) -> None:
         print(f"  Clean-corpus control passed:  {fmt(s['control_task_passed_rate'])}")
     for key, label in (("succeeded_ids", "ATTACKS THAT WORKED"),
                        ("task_broken_ids", "Real answer broken by attack"),
+                       ("impact_only_ids", "Impact without the exact goal"),
                        ("prompt_leak_ids", "System prompt leaked"),
                        ("mentions_internals_ids", "Mentions internals"),
                        ("poison_not_retrieved_ids", "Poison NOT retrieved (attack untested)"),
