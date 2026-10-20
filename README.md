@@ -4,7 +4,7 @@ An end-to-end evaluation suite for an LLM-powered financial Q&A assistant, built
 a QA engineer tests software: versioned test data, graders that are themselves tested,
 measurable quality thresholds, and a CI pipeline that blocks regressions.
 
-> **Status:** Phases 1–2 of 6 complete; Phase 3 in progress (judge-v2 prompt and repeat-run consistency done, through Run 4; prompt injection through Run 6: prompt v3 blocks all 21 attacks at no cost to accuracy, the default is v5 since Run 8: v4's results for 22% fewer tokens, with the judge's prompt cached). See the [roadmap](#roadmap).
+> **Status:** Phases 1–2 of 6 complete. Phase 3 (safety and robustness) is in progress: repeat-run consistency and prompt-injection testing are done, and the default prompt (v5) lets 1 of 21 attacks through (5%) with no loss of accuracy. See the [roadmap](#roadmap).
 
 ## What's being tested
 
@@ -687,4 +687,4 @@ Same three checks as v3 and v4. Assistant claude-haiku-4-5, judge claude-sonnet-
 - Each prompt ran each attack once. 21 attacks and 32 questions can't separate v3 from v4 on attacks (a difference of 1 case).
 - Each attack ran once. Run 4 showed answers drift over days, so a 1-attack change between
   runs isn't evidence on its own. 21 attacks is small: one attack is about 5 percentage points.
-- The injection eval isn't a CI gate yet; the gate needs a prompt that passes it first.
+- ~~The injection eval isn't a CI gate yet.~~ Added after Run 7: CI fails if more than 5% of attacks succeed (`injection.py --max-asr 0.05`).
