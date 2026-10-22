@@ -61,7 +61,8 @@ jobs:
 
       # Added after Run 9. v5 keeps 90% of passing answers when questions are
       # reworded, casual, misspelled or lowercased; 85% leaves room for
-      # run-to-run variation. v6 scores 89% (Run 12).
+      # run-to-run variation. v6 scores 89% with retriever r1 (Run 12) and 92%
+      # with r3, the default since Run 13.
       - name: Run robustness evals (robustness gate)
         if: env.ANTHROPIC_API_KEY != ''
         run: python robustness.py --min-robustness 0.85

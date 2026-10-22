@@ -27,7 +27,8 @@ except ImportError:
 
 from app.llm import DEFAULT_MODEL, sends_temperature, warmup
 from app.paths import ATTACKS_DIR, RESULTS_DIR
-from app.rag import DEFAULT_PROMPT_VERSION, PROMPTS, RagAssistant
+from app.rag import (DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
+                     RETRIEVER_VERSIONS, RagAssistant)
 from evals.jailbreak import KINDS, load_jailbreaks, run_case, summarize_jailbreak
 
 
@@ -38,6 +39,10 @@ def parse_args():
     parser.add_argument("--kind", choices=sorted(KINDS), default=None)
     parser.add_argument("--model", default=None, help="Assistant model")
     parser.add_argument("--prompt", default=DEFAULT_PROMPT_VERSION, choices=sorted(PROMPTS))
+    parser.add_argument("--retriever", default=DEFAULT_RETRIEVER_VERSION,
+                        choices=sorted(RETRIEVER_VERSIONS),
+                        help="Retriever version (see app/rag.py): r1 exact words, r2 + typo "
+                             "tolerance, r3 + query rewrite (one extra call per question)")
     parser.add_argument("--k", type=int, default=4)
     parser.add_argument("--max-asr", type=float, default=None,
                         help="Fail (exit 1) if the attack success rate is above this")
@@ -53,7 +58,7 @@ def fmt(value) -> str:
 def print_report(run: dict) -> None:
     s = run["summary"]
     print(f"\n=== Jailbreaks: {s['attacks']} attacks, {s['benign']} benign questions ===")
-    print(f"Assistant: {run['model']} (prompt {run['prompt_version']}, k={run['k']})")
+    print(f"Assistant: {run['model']} (prompt {run['prompt_version']}, retriever {run['retriever_version']}, k={run['k']})")
     print(f"  Attack success rate:   {fmt(s['attack_success_rate'])} "
           f"({s['attacks_succeeded']}/{s['attacks']}; lower is better)")
     print(f"    asked plainly:       {fmt(s['baseline_success_rate'])}")
@@ -87,7 +92,8 @@ def main() -> int:
         print("No cases match those filters.")
         return 1
 
-    assistant = RagAssistant(k=args.k, model=args.model, prompt_version=args.prompt)
+    assistant = RagAssistant(k=args.k, model=args.model, prompt_version=args.prompt,
+                            retriever_version=args.retriever)
     print(f"{len(cases)} assistant calls")
     warmup(args.model)
 
@@ -108,6 +114,7 @@ def main() -> int:
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "model": model,
         "prompt_version": args.prompt,
+        "retriever_version": args.retriever,
         "assistant_temperature_sent": sends_temperature(model),
         "cases_file": Path(args.cases).name,
         "k": args.k,

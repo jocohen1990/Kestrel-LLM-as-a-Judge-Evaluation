@@ -1,11 +1,12 @@
 {
-  "timestamp": "2026-10-22T02:48:13.555167+00:00",
+  "timestamp": "2026-10-22T03:50:43.169942+00:00",
   "retrieval_only": true,
   "model": null,
   "prompt_version": null,
+  "retriever_version": "r2",
   "assistant_temperature_sent": null,
   "golden_file": "golden_v3.jsonl",
-  "variants_file": "paraphrases_v1.jsonl",
+  "variants_file": "paraphrases_v2.jsonl",
   "styles": [
     "original",
     "reworded",
@@ -28,34 +29,27 @@
       },
       "reworded": {
         "variants": 31,
-        "passage_hit_rate": 0.852,
+        "passage_hit_rate": 0.926,
         "passage_misses": [
-          "g003-reworded",
-          "g016-reworded",
-          "g018-reworded",
-          "g022-reworded"
+          "g013-reworded",
+          "g024-reworded"
         ],
         "passages_lost": [
-          "g003-reworded",
-          "g016-reworded",
-          "g018-reworded"
+          "g013-reworded",
+          "g024-reworded"
         ]
       },
       "casual": {
         "variants": 31,
-        "passage_hit_rate": 0.815,
+        "passage_hit_rate": 0.889,
         "passage_misses": [
           "g002-casual",
           "g003-casual",
-          "g008-casual",
-          "g018-casual",
           "g022-casual"
         ],
         "passages_lost": [
           "g002-casual",
-          "g003-casual",
-          "g008-casual",
-          "g018-casual"
+          "g003-casual"
         ]
       },
       "typo": {
@@ -68,22 +62,11 @@
       },
       "typos3": {
         "variants": 31,
-        "passage_hit_rate": 0.778,
+        "passage_hit_rate": 0.963,
         "passage_misses": [
-          "g003-typos3",
-          "g008-typos3",
-          "g011-typos3",
-          "g012-typos3",
-          "g022-typos3",
-          "g024-typos3"
+          "g022-typos3"
         ],
-        "passages_lost": [
-          "g003-typos3",
-          "g008-typos3",
-          "g011-typos3",
-          "g012-typos3",
-          "g024-typos3"
-        ]
+        "passages_lost": []
       },
       "lower": {
         "variants": 31,
@@ -109,6 +92,10 @@
         "q1_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What was Kestrel's total revenue for fiscal year 2025?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -118,14 +105,16 @@
       "source_id": "g001",
       "style": "reworded",
       "category": "numeric",
-      "question": "How much money did Kestrel bring in during its 2025 fiscal year?",
+      "question": "What were Kestrel's annual sales in fiscal 2025?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "annual_report_2025.md",
-        "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "annual_report_2025.md"
       ],
+      "search_query": "What were Kestrel's annual sales in fiscal 2025?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -135,14 +124,19 @@
       "source_id": "g001",
       "style": "casual",
       "category": "numeric",
-      "question": "Total sales for Kestrel in FY2025?",
+      "question": "kestrel 2025 top line?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
-        "q2_2026_earnings.md",
-        "risk_factors_2026.md"
+        "q1_2026_earnings.md"
       ],
+      "search_query": "kestrel 2025 top line?",
+      "corrections": {
+        "line": "lane"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -158,8 +152,14 @@
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "risk_factors_2026.md"
       ],
+      "search_query": "What was Kestrel's tota revenue for fiscal year 2025?",
+      "corrections": {
+        "tota": "total"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -174,8 +174,17 @@
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
+        "q1_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What was Kestrel's total reveneu for fiiscal yera 2025?",
+      "corrections": {
+        "reveneu": "revenue",
+        "fiiscal": "fiscal",
+        "yera": "year"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -193,6 +202,12 @@
         "q1_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "what was kestrels total revenue for fiscal year 2025",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -211,6 +226,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Who is Kestrel's CEO?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -220,14 +239,19 @@
       "source_id": "g002",
       "style": "reworded",
       "category": "factual",
-      "question": "Who leads Kestrel Freight Analytics as chief executive?",
+      "question": "Who holds the chief executive role at Kestrel?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
+      "search_query": "Who holds the chief executive role at Kestrel?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -237,7 +261,7 @@
       "source_id": "g002",
       "style": "casual",
       "category": "factual",
-      "question": "Who's in charge at Kestrel?",
+      "question": "Kestrel boss?",
       "retrieval_hit": false,
       "passage_hit": false,
       "retrieved_sources": [
@@ -245,6 +269,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Kestrel boss?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -259,8 +287,16 @@
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
+        "q1_2026_earnings.md",
+        "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Who is Kestre's CEO?",
+      "corrections": {
+        "kestre": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -275,8 +311,16 @@
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
+        "q1_2026_earnings.md",
+        "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Who is Kesttrel's CEO?",
+      "corrections": {
+        "kesttrel": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -291,8 +335,16 @@
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
+        "q1_2026_earnings.md",
+        "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "who is kestrels ceo",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -310,6 +362,10 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "Where is Kestrel Freight Analytics headquartered?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -319,14 +375,18 @@
       "source_id": "g003",
       "style": "reworded",
       "category": "factual",
-      "question": "In which city is Kestrel's head office located?",
-      "retrieval_hit": false,
-      "passage_hit": false,
+      "question": "Which city is Kestrel Freight Analytics based in?",
+      "retrieval_hit": true,
+      "passage_hit": true,
       "retrieved_sources": [
+        "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md",
-        "risk_factors_2026.md"
+        "q2_2026_earnings.md"
       ],
+      "search_query": "Which city is Kestrel Freight Analytics based in?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -336,7 +396,7 @@
       "source_id": "g003",
       "style": "casual",
       "category": "factual",
-      "question": "Kestrel HQ location?",
+      "question": "Where's Kestrel located?",
       "retrieval_hit": false,
       "passage_hit": false,
       "retrieved_sources": [
@@ -344,6 +404,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Where's Kestrel located?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -361,6 +425,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "Where is Kestrel Freight Anlytics headquartered?",
+      "corrections": {
+        "anlytics": "analytics"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -371,13 +441,21 @@
       "style": "typos3",
       "category": "factual",
       "question": "Where is Kestrel Freiggt Analtics heaadquartered?",
-      "retrieval_hit": false,
-      "passage_hit": false,
+      "retrieval_hit": true,
+      "passage_hit": true,
       "retrieved_sources": [
+        "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md",
-        "risk_factors_2026.md"
+        "q2_2026_earnings.md"
       ],
+      "search_query": "Where is Kestrel Freiggt Analtics heaadquartered?",
+      "corrections": {
+        "freiggt": "freight",
+        "analtics": "analytics",
+        "heaadquartered": "headquartered"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -395,6 +473,10 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "where is kestrel freight analytics headquartered",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -412,6 +494,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How many full-time employees did Kestrel have at the end of 2025?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -421,13 +507,17 @@
       "source_id": "g004",
       "style": "reworded",
       "category": "numeric",
-      "question": "What was Kestrel's full-time headcount on December 31, 2025?",
+      "question": "How large was Kestrel's full-time workforce at the close of 2025?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "How large was Kestrel's full-time workforce at the close of 2025?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -437,13 +527,18 @@
       "source_id": "g004",
       "style": "casual",
       "category": "numeric",
-      "question": "How many people worked at Kestrel at the end of 2025?",
+      "question": "Kestrel employee count end of 2025?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "annual_report_2025.md",
-        "risk_factors_2026.md"
+        "annual_report_2025.md"
       ],
+      "search_query": "Kestrel employee count end of 2025?",
+      "corrections": {
+        "employee": "employees"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -458,8 +553,15 @@
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
+      "search_query": "How mayn full-time employees did Kestrel have at the end of 2025?",
+      "corrections": {
+        "mayn": "many"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -473,8 +575,18 @@
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "annual_report_2025.md"
+        "annual_report_2025.md",
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
+      "search_query": "How manyy fyll-tmie employees did Kestrel have at the end of 2025?",
+      "corrections": {
+        "manyy": "many",
+        "fyll": "full",
+        "tmie": "time"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -492,6 +604,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "how many full-time employees did kestrel have at the end of 2025",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -508,6 +624,10 @@
         "annual_report_2025.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What percentage of 2025 revenue came from the Route Optimization Software segment?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -517,13 +637,17 @@
       "source_id": "g005",
       "style": "reworded",
       "category": "numeric",
-      "question": "As a percentage, how much of Kestrel's 2025 revenue did Route Optimization Software account for?",
+      "question": "What portion of Kestrel's 2025 sales did the Route Optimization Software business make up?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
-        "risk_factors_2026.md"
+        "q1_2026_earnings.md"
       ],
+      "search_query": "What portion of Kestrel's 2025 sales did the Route Optimization Software business make up?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -533,14 +657,17 @@
       "source_id": "g005",
       "style": "casual",
       "category": "numeric",
-      "question": "Route Optimization Software share of 2025 revenue?",
+      "question": "How much of 2025 revenue was route optimization software?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
-        "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "risk_factors_2026.md"
       ],
+      "search_query": "How much of 2025 revenue was route optimization software?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -557,6 +684,10 @@
         "annual_report_2025.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What percentage of 2025 revenue caame from the Route Optimization Software segment?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -573,6 +704,13 @@
         "annual_report_2025.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What percentage of 2025 revenue camw from the Roue Optimization Software segmetn?",
+      "corrections": {
+        "roue": "route",
+        "segmetn": "segment"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -589,6 +727,10 @@
         "annual_report_2025.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "what percentage of 2025 revenue came from the route optimization software segment",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -604,6 +746,10 @@
       "retrieved_sources": [
         "q1_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's revenue in Q1 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -613,14 +759,16 @@
       "source_id": "g006",
       "style": "reworded",
       "category": "numeric",
-      "question": "How much revenue did Kestrel report for the first quarter of 2026?",
+      "question": "What were Kestrel's sales for the three months ending March 2026, i.e. Q1 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "annual_report_2025.md",
-        "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q1_2026_earnings.md"
       ],
+      "search_query": "What were Kestrel's sales for the three months ending March 2026, i.e. Q1 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -630,12 +778,18 @@
       "source_id": "g006",
       "style": "casual",
       "category": "numeric",
-      "question": "Q1 2026 sales for Kestrel?",
+      "question": "Q1 2026 top line?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md"
       ],
+      "search_query": "Q1 2026 top line?",
+      "corrections": {
+        "line": "lane"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -651,6 +805,12 @@
       "retrieved_sources": [
         "q1_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's revebue in Q1 2026?",
+      "corrections": {
+        "revebue": "revenue"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -666,6 +826,12 @@
       "retrieved_sources": [
         "q1_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's rebenue in Q1 2026?",
+      "corrections": {
+        "rebenue": "revenue"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -681,6 +847,12 @@
       "retrieved_sources": [
         "q1_2026_earnings.md"
       ],
+      "search_query": "what was kestrels revenue in q1 2026",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -697,6 +869,10 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's gross margin in Q1 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -706,13 +882,17 @@
       "source_id": "g007",
       "style": "reworded",
       "category": "numeric",
-      "question": "What gross margin did Kestrel post for the first quarter of 2026?",
+      "question": "What gross margin percentage did Kestrel achieve in the first quarter of 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What gross margin percentage did Kestrel achieve in the first quarter of 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -722,13 +902,16 @@
       "source_id": "g007",
       "style": "casual",
       "category": "numeric",
-      "question": "Kestrel Q1 2026 gross margin?",
+      "question": "Q1 2026 GM%?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q1_2026_earnings.md"
       ],
+      "search_query": "Q1 2026 GM%?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -745,6 +928,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's gross marggin in Q1 2026?",
+      "corrections": {
+        "marggin": "margin"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -758,8 +947,16 @@
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "q1_2026_earnings.md"
+        "q1_2026_earnings.md",
+        "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's grross margi in Q1 2026?",
+      "corrections": {
+        "grross": "gross",
+        "margi": "margin"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -776,6 +973,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "what was kestrels gross margin in q1 2026",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -792,6 +995,10 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What product did Kestrel launch in February 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -801,13 +1008,17 @@
       "source_id": "g008",
       "style": "reworded",
       "category": "factual",
-      "question": "Which new product did Kestrel release in February 2026?",
+      "question": "What new offering did Kestrel introduce in February 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What new offering did Kestrel introduce in February 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -817,13 +1028,17 @@
       "source_id": "g008",
       "style": "casual",
       "category": "factual",
-      "question": "What did Kestrel launch in Feb 2026?",
+      "question": "New Kestrel product Feb 2026?",
       "retrieval_hit": true,
-      "passage_hit": false,
+      "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "New Kestrel product Feb 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -840,6 +1055,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What product did Kestrel launch in Februayr 2026?",
+      "corrections": {
+        "februayr": "february"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -851,11 +1072,18 @@
       "category": "factual",
       "question": "What prdouct did Kestrel lunch in Feburary 2026?",
       "retrieval_hit": true,
-      "passage_hit": false,
+      "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What prdouct did Kestrel lunch in Feburary 2026?",
+      "corrections": {
+        "prdouct": "product",
+        "feburary": "february"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -872,6 +1100,10 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "what product did kestrel launch in february 2026",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -888,6 +1120,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What revenue range did Kestrel expect for Q2 2026?",
+      "corrections": {
+        "expect": "expects"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -897,13 +1135,17 @@
       "source_id": "g009",
       "style": "reworded",
       "category": "numeric",
-      "question": "What was Kestrel's revenue outlook for the second quarter of 2026?",
+      "question": "What sales range was Kestrel projecting for the second quarter of 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What sales range was Kestrel projecting for the second quarter of 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -913,13 +1155,17 @@
       "source_id": "g009",
       "style": "casual",
       "category": "numeric",
-      "question": "Expected Q2 2026 revenue range?",
+      "question": "Q2 2026 revenue guidance from Q1?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "Q2 2026 revenue guidance from Q1?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -936,6 +1182,13 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What revene range did Kestrel expect for Q2 2026?",
+      "corrections": {
+        "revene": "revenue",
+        "expect": "expects"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -952,6 +1205,14 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What reveneu ranhe did Kestrel expectt for Q2 2026?",
+      "corrections": {
+        "reveneu": "revenue",
+        "ranhe": "range",
+        "expectt": "expects"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -968,6 +1229,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "what revenue range did kestrel expect for q2 2026",
+      "corrections": {
+        "expect": "expects"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -984,6 +1251,10 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's diluted EPS in Q2 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -993,7 +1264,7 @@
       "source_id": "g010",
       "style": "reworded",
       "category": "numeric",
-      "question": "How much were Kestrel's diluted earnings per share for the second quarter of 2026?",
+      "question": "What were Kestrel's diluted earnings per share in the second quarter of 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
@@ -1001,6 +1272,10 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What were Kestrel's diluted earnings per share in the second quarter of 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1010,13 +1285,17 @@
       "source_id": "g010",
       "style": "casual",
       "category": "numeric",
-      "question": "Q2 2026 diluted EPS?",
+      "question": "EPS Q2 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "EPS Q2 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1033,6 +1312,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's doluted EPS in Q2 2026?",
+      "corrections": {
+        "doluted": "diluted"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1049,6 +1334,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's diluetd EPS in Q2 2026?",
+      "corrections": {
+        "diluetd": "diluted"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1065,6 +1356,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "what was kestrels diluted eps in q2 2026",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1081,6 +1378,12 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Which company did Kestrel acquire in June 2026?",
+      "corrections": {
+        "acquire": "acquired"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1090,13 +1393,17 @@
       "source_id": "g011",
       "style": "reworded",
       "category": "factual",
-      "question": "What business did Kestrel buy in June 2026?",
+      "question": "Which firm did Kestrel purchase in June 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Which firm did Kestrel purchase in June 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1106,13 +1413,17 @@
       "source_id": "g011",
       "style": "casual",
       "category": "factual",
-      "question": "Who did Kestrel acquire in June 2026?",
+      "question": "Kestrel acquisition June 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Kestrel acquisition June 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1129,6 +1440,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Which company did Kestrel acuqire in June 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1140,11 +1455,18 @@
       "category": "factual",
       "question": "Which compay did Kestrel acquirr in Jume 2026?",
       "retrieval_hit": true,
-      "passage_hit": false,
+      "passage_hit": true,
       "retrieved_sources": [
-        "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
+      "search_query": "Which compay did Kestrel acquirr in Jume 2026?",
+      "corrections": {
+        "compay": "company",
+        "jume": "june"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1161,6 +1483,12 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "which company did kestrel acquire in june 2026",
+      "corrections": {
+        "acquire": "acquired"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1178,6 +1506,12 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How much did Kestrel pay to acquire Bramblecote Telematics?",
+      "corrections": {
+        "acquire": "acquired"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1187,7 +1521,7 @@
       "source_id": "g012",
       "style": "reworded",
       "category": "numeric",
-      "question": "What was the purchase price for Bramblecote Telematics?",
+      "question": "What price did Kestrel pay for Bramblecote Telematics?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
@@ -1195,6 +1529,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What price did Kestrel pay for Bramblecote Telematics?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1204,14 +1542,18 @@
       "source_id": "g012",
       "style": "casual",
       "category": "numeric",
-      "question": "How much did Bramblecote cost Kestrel?",
+      "question": "Bramblecote deal size?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "q1_2026_earnings.md",
+        "annual_report_2025.md",
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Bramblecote deal size?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1229,6 +1571,13 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How much did Kestrel pay to acquire Bramblecote Telemmatics?",
+      "corrections": {
+        "acquire": "acquired",
+        "telemmatics": "telematics"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1240,13 +1589,20 @@
       "category": "numeric",
       "question": "How much did Kestrel pay to acquirre Bramblecot Telematiccs?",
       "retrieval_hit": true,
-      "passage_hit": false,
+      "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
-        "q1_2026_earnings.md",
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How much did Kestrel pay to acquirre Bramblecot Telematiccs?",
+      "corrections": {
+        "acquirre": "acquired",
+        "bramblecot": "bramblecote",
+        "telematiccs": "telematics"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1264,6 +1620,12 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "how much did kestrel pay to acquire bramblecote telematics",
+      "corrections": {
+        "acquire": "acquired"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1281,6 +1643,10 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What is Kestrel's updated full-year 2026 revenue guidance?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1290,15 +1656,20 @@
       "source_id": "g013",
       "style": "reworded",
       "category": "numeric",
-      "question": "What is Kestrel's latest revenue forecast for all of 2026?",
-      "retrieval_hit": true,
-      "passage_hit": true,
+      "question": "What does Kestrel now expect its total 2026 revenue to be?",
+      "retrieval_hit": false,
+      "passage_hit": false,
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What does Kestrel now expect its total 2026 revenue to be?",
+      "corrections": {
+        "expect": "expects"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1308,7 +1679,7 @@
       "source_id": "g013",
       "style": "casual",
       "category": "numeric",
-      "question": "Current 2026 revenue guidance?",
+      "question": "FY2026 revenue outlook?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
@@ -1317,6 +1688,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "FY2026 revenue outlook?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1332,9 +1707,14 @@
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md",
-        "risk_factors_2026.md"
+        "q2_2026_earnings.md"
       ],
+      "search_query": "What is Kestrel's updated full-yearr 2026 revenue guidance?",
+      "corrections": {
+        "yearr": "year"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1350,9 +1730,16 @@
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md",
-        "risk_factors_2026.md"
+        "q2_2026_earnings.md"
       ],
+      "search_query": "What is Kestrel's updated fulll-yeear 2026 revenue guidancee?",
+      "corrections": {
+        "fulll": "full",
+        "yeear": "year",
+        "guidancee": "guidance"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1370,6 +1757,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "what is kestrels updated full-year 2026 revenue guidance",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1387,6 +1780,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How many enterprise customers did Kestrel have at the end of Q2 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1396,14 +1793,19 @@
       "source_id": "g014",
       "style": "reworded",
       "category": "numeric",
-      "question": "How many enterprise clients did Kestrel have as of the end of the second quarter of 2026?",
+      "question": "How many enterprise accounts did Kestrel have on June 30, 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "annual_report_2025.md",
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How many enterprise accounts did Kestrel have on June 30, 2026?",
+      "corrections": {
+        "accounts": "accounted"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1413,13 +1815,17 @@
       "source_id": "g014",
       "style": "casual",
       "category": "numeric",
-      "question": "Number of enterprise customers at end of Q2 2026?",
+      "question": "Enterprise customers Q2 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "Enterprise customers Q2 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1434,8 +1840,15 @@
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
+      "search_query": "How maany enterprise customers did Kestrel have at the end of Q2 2026?",
+      "corrections": {
+        "maany": "many"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1450,8 +1863,17 @@
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
+      "search_query": "How maany enterpride cutsomers did Kestrel have at the end of Q2 2026?",
+      "corrections": {
+        "maany": "many",
+        "enterpride": "enterprise",
+        "cutsomers": "customers"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1469,6 +1891,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "how many enterprise customers did kestrel have at the end of q2 2026",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1487,6 +1913,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What share of Kestrel's 2025 revenue came from its largest customer?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1496,13 +1926,19 @@
       "source_id": "g015",
       "style": "reworded",
       "category": "numeric",
-      "question": "How much of Kestrel's 2025 revenue did its single biggest customer represent?",
+      "question": "How dependent was Kestrel's 2025 revenue on its top customer, as a percentage?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How dependent was Kestrel's 2025 revenue on its top customer, as a percentage?",
+      "corrections": {
+        "dependent": "dependency"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1512,15 +1948,18 @@
       "source_id": "g015",
       "style": "casual",
       "category": "numeric",
-      "question": "Biggest customer's share of 2025 revenue?",
+      "question": "Top customer % of 2025 revenue?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Top customer % of 2025 revenue?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1536,8 +1975,15 @@
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
+        "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What shhare of Kestrel's 2025 revenue came from its largest customer?",
+      "corrections": {
+        "shhare": "share"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1552,8 +1998,18 @@
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
+        "q1_2026_earnings.md",
+        "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What shate of Kestrel's 2025 revvenue came from its largest custoemr?",
+      "corrections": {
+        "shate": "share",
+        "revvenue": "revenue",
+        "custoemr": "customer"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1572,6 +2028,12 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "what share of kestrels 2025 revenue came from its largest customer",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1589,6 +2051,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How large is Kestrel's revolving credit facility?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1598,14 +2064,20 @@
       "source_id": "g016",
       "style": "reworded",
       "category": "numeric",
-      "question": "What is the size of Kestrel's revolver?",
+      "question": "How much can Kestrel borrow in total under its revolving credit line?",
       "retrieval_hit": true,
-      "passage_hit": false,
+      "passage_hit": true,
       "retrieved_sources": [
+        "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How much can Kestrel borrow in total under its revolving credit line?",
+      "corrections": {
+        "line": "lane"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1615,7 +2087,7 @@
       "source_id": "g016",
       "style": "casual",
       "category": "numeric",
-      "question": "How big is Kestrel's credit facility?",
+      "question": "Size of Kestrel's credit line?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
@@ -1623,6 +2095,12 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Size of Kestrel's credit line?",
+      "corrections": {
+        "line": "lane"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1640,6 +2118,12 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How large is Kestrel's revolving crediit facility?",
+      "corrections": {
+        "crediit": "credit"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1657,6 +2141,13 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How larg is Kestrel's revolving credut faccility?",
+      "corrections": {
+        "credut": "credit",
+        "faccility": "facility"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1670,9 +2161,16 @@
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "annual_report_2025.md",
+        "q1_2026_earnings.md",
+        "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "how large is kestrels revolving credit facility",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1690,6 +2188,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How much had Kestrel drawn on its credit facility as of June 30, 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1699,7 +2201,7 @@
       "source_id": "g017",
       "style": "reworded",
       "category": "numeric",
-      "question": "How much of its credit line had Kestrel borrowed by June 30, 2026?",
+      "question": "What amount was outstanding on Kestrel's credit facility at the end of June 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
@@ -1707,6 +2209,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What amount was outstanding on Kestrel's credit facility at the end of June 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1716,13 +2222,17 @@
       "source_id": "g017",
       "style": "casual",
       "category": "numeric",
-      "question": "Amount drawn on the credit facility at June 30, 2026?",
+      "question": "How much debt was drawn at June 30, 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How much debt was drawn at June 30, 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1740,6 +2250,12 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How much had Kestrel drawn on its crdeit facility as of June 30, 2026?",
+      "corrections": {
+        "crdeit": "credit"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1757,6 +2273,14 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How much had Kestrel dran on its crdeit facility as of Juen 30, 2026?",
+      "corrections": {
+        "dran": "drawn",
+        "crdeit": "credit",
+        "juen": "june"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1774,6 +2298,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "how much had kestrel drawn on its credit facility as of june 30 2026",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1790,6 +2318,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "Did Kestrel's Q2 2026 revenue come in above the Q2 revenue range it expected in its Q1 2026 outlook?",
+      "corrections": {
+        "expected": "expects"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1799,13 +2333,17 @@
       "source_id": "g018",
       "style": "reworded",
       "category": "multi_hop",
-      "question": "Did Kestrel's actual Q2 2026 revenue beat the range it forecast in the Q1 2026 release?",
+      "question": "Was Kestrel's Q2 2026 revenue higher than the Q2 range it had projected in its Q1 2026 release?",
       "retrieval_hit": true,
-      "passage_hit": false,
+      "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "Was Kestrel's Q2 2026 revenue higher than the Q2 range it had projected in its Q1 2026 release?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1815,13 +2353,17 @@
       "source_id": "g018",
       "style": "casual",
       "category": "multi_hop",
-      "question": "Did Q2 2026 revenue beat the Q1 outlook?",
+      "question": "Did Q2 2026 revenue exceed guidance?",
       "retrieval_hit": true,
-      "passage_hit": false,
+      "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "Did Q2 2026 revenue exceed guidance?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1838,6 +2380,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "Did Kestrel's Q2 2026 revenue comme in above the Q2 revenue range it expected in its Q1 2026 outlook?",
+      "corrections": {
+        "expected": "expects"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1854,6 +2402,13 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "Did Kestrel's Q2 2026 revenue come in above the Q2 revenue rage it exppected in its Q1 2026 outloko?",
+      "corrections": {
+        "rage": "range",
+        "outloko": "outlook"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1870,6 +2425,13 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "did kestrels q2 2026 revenue come in above the q2 revenue range it expected in its q1 2026 outlook",
+      "corrections": {
+        "kestrels": "kestrel",
+        "expected": "expects"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1887,6 +2449,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What is Kestrel's stock ticker symbol?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1896,7 +2462,7 @@
       "source_id": "g019",
       "style": "reworded",
       "category": "out_of_scope",
-      "question": "Under what ticker does Kestrel's stock trade?",
+      "question": "What symbol is Kestrel listed under on the stock exchange?",
       "retrieval_hit": null,
       "passage_hit": null,
       "retrieved_sources": [
@@ -1904,6 +2470,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What symbol is Kestrel listed under on the stock exchange?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1913,7 +2483,7 @@
       "source_id": "g019",
       "style": "casual",
       "category": "out_of_scope",
-      "question": "Kestrel ticker?",
+      "question": "Kestrel stock symbol?",
       "retrieval_hit": null,
       "passage_hit": null,
       "retrieved_sources": [
@@ -1921,6 +2491,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Kestrel stock symbol?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1938,6 +2512,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What is Kestrel's stokc ticker symbol?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1955,6 +2533,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What is Kestrel's stoc ticjer symol?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1968,8 +2550,16 @@
       "retrieval_hit": null,
       "passage_hit": null,
       "retrieved_sources": [
-        "annual_report_2025.md"
+        "q1_2026_earnings.md",
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
+      "search_query": "what is kestrels stock ticker symbol",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1986,6 +2576,10 @@
         "annual_report_2025.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Who will succeed Dana Whitfield as CEO in 2027?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -1995,13 +2589,17 @@
       "source_id": "g020",
       "style": "reworded",
       "category": "out_of_scope",
-      "question": "Who is going to replace Dana Whitfield as CEO in 2027?",
+      "question": "Who has been named as Dana Whitfield's successor as CEO in 2027?",
       "retrieval_hit": null,
       "passage_hit": null,
       "retrieved_sources": [
         "annual_report_2025.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Who has been named as Dana Whitfield's successor as CEO in 2027?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2011,7 +2609,7 @@
       "source_id": "g020",
       "style": "casual",
       "category": "out_of_scope",
-      "question": "Next Kestrel CEO in 2027?",
+      "question": "Who takes over as CEO in 2027?",
       "retrieval_hit": null,
       "passage_hit": null,
       "retrieved_sources": [
@@ -2020,6 +2618,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Who takes over as CEO in 2027?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2036,6 +2638,10 @@
         "annual_report_2025.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Who will scceed Dana Whitfield as CEO in 2027?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2052,6 +2658,12 @@
         "annual_report_2025.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Who wlil suceced Dnaa Whitfield as CEO in 2027?",
+      "corrections": {
+        "dnaa": "dana"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2068,6 +2680,10 @@
         "annual_report_2025.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "who will succeed dana whitfield as ceo in 2027",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2085,6 +2701,10 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's net profit margin for fiscal year 2025?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2094,7 +2714,7 @@
       "source_id": "g021",
       "style": "reworded",
       "category": "calculation",
-      "question": "What percentage of its fiscal 2025 revenue did Kestrel keep as net income?",
+      "question": "What share of its fiscal 2025 revenue did Kestrel turn into net income, as a percentage?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
@@ -2102,6 +2722,10 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What share of its fiscal 2025 revenue did Kestrel turn into net income, as a percentage?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2111,7 +2735,7 @@
       "source_id": "g021",
       "style": "casual",
       "category": "calculation",
-      "question": "Kestrel net margin FY2025?",
+      "question": "FY2025 net profit margin?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
@@ -2119,6 +2743,10 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "FY2025 net profit margin?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2136,6 +2764,10 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's net profti margin for fiscal year 2025?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2153,6 +2785,13 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's net progit margn for fiscal yrar 2025?",
+      "corrections": {
+        "margn": "margin",
+        "yrar": "year"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2170,6 +2809,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "what was kestrels net profit margin for fiscal year 2025",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2187,6 +2832,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What was Kestrel's combined revenue for the first half of 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2196,14 +2845,17 @@
       "source_id": "g022",
       "style": "reworded",
       "category": "calculation",
-      "question": "What was Kestrel's total revenue across Q1 and Q2 of 2026?",
-      "retrieval_hit": false,
-      "passage_hit": false,
+      "question": "What did Kestrel's Q1 2026 and Q2 2026 revenue add up to?",
+      "retrieval_hit": true,
+      "passage_hit": true,
       "retrieved_sources": [
-        "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "risk_factors_2026.md"
+        "q2_2026_earnings.md"
       ],
+      "search_query": "What did Kestrel's Q1 2026 and Q2 2026 revenue add up to?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2213,15 +2865,18 @@
       "source_id": "g022",
       "style": "casual",
       "category": "calculation",
-      "question": "H1 2026 revenue for Kestrel?",
-      "retrieval_hit": true,
+      "question": "Kestrel revenue Jan-Jun 2026 total?",
+      "retrieval_hit": false,
       "passage_hit": false,
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Kestrel revenue Jan-Jun 2026 total?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2239,6 +2894,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What was Kestrel's combine revenue for the first half of 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2253,8 +2912,15 @@
       "passage_hit": false,
       "retrieved_sources": [
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
+      "search_query": "What was Kestrel's comibned rveenue for the first halff of 2026?",
+      "corrections": {
+        "rveenue": "revenue"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2272,6 +2938,12 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "what was kestrels combined revenue for the first half of 2026",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2289,6 +2961,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "By how many percentage points did Kestrel's gross margin change from Q1 2026 to Q2 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2298,13 +2974,21 @@
       "source_id": "g023",
       "style": "reworded",
       "category": "comparison",
-      "question": "In percentage points, how much did Kestrel's gross margin move between the first and second quarters of 2026?",
+      "question": "How many percentage points did Kestrel's gross margin rise or fall from Q1 2026 to Q2 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
+      "search_query": "How many percentage points did Kestrel's gross margin rise or fall from Q1 2026 to Q2 2026?",
+      "corrections": {
+        "rise": "risk",
+        "fall": "full"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2314,13 +2998,17 @@
       "source_id": "g023",
       "style": "casual",
       "category": "comparison",
-      "question": "Gross margin change Q1 to Q2 2026?",
+      "question": "GM change Q1 vs Q2 2026, in points?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "GM change Q1 vs Q2 2026, in points?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2335,8 +3023,15 @@
       "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
+      "search_query": "By how maany percentage points did Kestrel's gross margin change from Q1 2026 to Q2 2026?",
+      "corrections": {
+        "maany": "many"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2354,6 +3049,12 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "By how many percnetage poitns did Kestrel's grross margin change from Q1 2026 to Q2 2026?",
+      "corrections": {
+        "grross": "gross"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2371,6 +3072,12 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "by how many percentage points did kestrels gross margin change from q1 2026 to q2 2026",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2388,6 +3095,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How many enterprise customers did Kestrel add between the end of 2025 and the end of Q2 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2397,13 +3108,18 @@
       "source_id": "g024",
       "style": "reworded",
       "category": "comparison",
-      "question": "How many net new enterprise customers did Kestrel gain from year-end 2025 through the end of Q2 2026?",
+      "question": "By how much did Kestrel's enterprise customer count grow between December 31, 2025 and June 30, 2026?",
       "retrieval_hit": true,
-      "passage_hit": true,
+      "passage_hit": false,
       "retrieved_sources": [
         "annual_report_2025.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
+      "search_query": "By how much did Kestrel's enterprise customer count grow between December 31, 2025 and June 30, 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2413,7 +3129,7 @@
       "source_id": "g024",
       "style": "casual",
       "category": "comparison",
-      "question": "How many enterprise customers were added from end of 2025 to end of Q2 2026?",
+      "question": "Net enterprise customer adds, end of 2025 to Q2 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
@@ -2421,6 +3137,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Net enterprise customer adds, end of 2025 to Q2 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2438,6 +3158,12 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How many enterprise customers did Kestrel add betweenn the end of 2025 and the end of Q2 2026?",
+      "corrections": {
+        "betweenn": "between"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2449,11 +3175,18 @@
       "category": "comparison",
       "question": "How mny enteprise cstomers did Kestrel add between the end of 2025 and the end of Q2 2026?",
       "retrieval_hit": true,
-      "passage_hit": false,
+      "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "How mny enteprise cstomers did Kestrel add between the end of 2025 and the end of Q2 2026?",
+      "corrections": {
+        "enteprise": "enterprise",
+        "cstomers": "customers"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2471,6 +3204,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "how many enterprise customers did kestrel add between the end of 2025 and the end of q2 2026",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2487,6 +3224,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How much undrawn capacity remained on Kestrel's credit facility as of June 30, 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2496,13 +3237,19 @@
       "source_id": "g025",
       "style": "reworded",
       "category": "calculation",
-      "question": "How much was still available to borrow on Kestrel's credit facility at June 30, 2026?",
+      "question": "How much borrowing capacity did Kestrel still have left on its credit facility as of June 30, 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How much borrowing capacity did Kestrel still have left on its credit facility as of June 30, 2026?",
+      "corrections": {
+        "borrowing": "borrowings"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2512,13 +3259,18 @@
       "source_id": "g025",
       "style": "casual",
       "category": "calculation",
-      "question": "Unused credit facility capacity as of June 30, 2026?",
+      "question": "Remaining room on the revolver at June 30, 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
+        "annual_report_2025.md",
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "Remaining room on the revolver at June 30, 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2535,6 +3287,12 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How much undrawn capacity remained on Kestrel's credit faciliy as of June 30, 2026?",
+      "corrections": {
+        "faciliy": "facility"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2548,10 +3306,16 @@
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "q1_2026_earnings.md",
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "How much undrawn capaciity remained on Kestrel's crdit facility as of Jnue 30, 2026?",
+      "corrections": {
+        "crdit": "credit",
+        "jnue": "june"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2568,6 +3332,12 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "how much undrawn capacity remained on kestrels credit facility as of june 30 2026",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2584,6 +3354,10 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "Why did Kestrel's revenue decline in Q2 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2593,14 +3367,17 @@
       "source_id": "g026",
       "style": "reworded",
       "category": "false_premise",
-      "question": "What caused Kestrel's revenue to fall in the second quarter of 2026?",
+      "question": "Why did Kestrel's sales shrink in Q2 2026?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md",
-        "risk_factors_2026.md"
+        "q2_2026_earnings.md"
       ],
+      "search_query": "Why did Kestrel's sales shrink in Q2 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2610,13 +3387,17 @@
       "source_id": "g026",
       "style": "casual",
       "category": "false_premise",
-      "question": "Why did Q2 2026 revenue drop?",
+      "question": "What made Q2 2026 revenue go down?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What made Q2 2026 revenue go down?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2633,6 +3414,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "Why did Kestrel's revene decline in Q2 2026?",
+      "corrections": {
+        "revene": "revenue"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2649,6 +3436,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "Why did Kestrel's reveenue dceline in Q2 2026?",
+      "corrections": {
+        "reveenue": "revenue"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2665,6 +3458,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "why did kestrels revenue decline in q2 2026",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2680,6 +3479,12 @@
       "retrieved_sources": [
         "annual_report_2025.md"
       ],
+      "search_query": "How much did Kestrel pay in dividends in 2025?",
+      "corrections": {
+        "dividends": "dividend"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2689,12 +3494,18 @@
       "source_id": "g027",
       "style": "reworded",
       "category": "false_premise",
-      "question": "What dividend did Kestrel pay its shareholders for 2025?",
+      "question": "How much did Kestrel pay out to shareholders as dividends in 2025?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md"
       ],
+      "search_query": "How much did Kestrel pay out to shareholders as dividends in 2025?",
+      "corrections": {
+        "dividends": "dividend"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2704,12 +3515,18 @@
       "source_id": "g027",
       "style": "casual",
       "category": "false_premise",
-      "question": "Kestrel 2025 dividend amount?",
+      "question": "2025 dividends paid?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md"
       ],
+      "search_query": "2025 dividends paid?",
+      "corrections": {
+        "dividends": "dividend"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2725,6 +3542,12 @@
       "retrieved_sources": [
         "annual_report_2025.md"
       ],
+      "search_query": "How much did Kestrel pay in divvidends in 2025?",
+      "corrections": {
+        "divvidends": "dividend"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2740,6 +3563,12 @@
       "retrieved_sources": [
         "annual_report_2025.md"
       ],
+      "search_query": "How much did Kestrel pay in dividensd in 2025?",
+      "corrections": {
+        "dividensd": "dividend"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2755,6 +3584,12 @@
       "retrieved_sources": [
         "annual_report_2025.md"
       ],
+      "search_query": "how much did kestrel pay in dividends in 2025",
+      "corrections": {
+        "dividends": "dividend"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2771,6 +3606,10 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's gross margin in Q1 2025?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2780,14 +3619,17 @@
       "source_id": "g028",
       "style": "reworded",
       "category": "numeric",
-      "question": "What gross margin did Kestrel report for the first quarter of 2025?",
+      "question": "What was Kestrel's gross margin in the first quarter of 2025?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "annual_report_2025.md",
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's gross margin in the first quarter of 2025?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2797,13 +3639,16 @@
       "source_id": "g028",
       "style": "casual",
       "category": "numeric",
-      "question": "Q1 2025 gross margin?",
+      "question": "GM Q1 2025?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q1_2026_earnings.md"
       ],
+      "search_query": "GM Q1 2025?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2820,6 +3665,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's gross margim in Q1 2025?",
+      "corrections": {
+        "margim": "margin"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2833,8 +3684,16 @@
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "q1_2026_earnings.md"
+        "q1_2026_earnings.md",
+        "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's gtoss marin in Q1 2025?",
+      "corrections": {
+        "gtoss": "gross",
+        "marin": "margin"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2851,6 +3710,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "what was kestrels gross margin in q1 2025",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2868,6 +3733,10 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's revenue in Q2 2025?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2877,15 +3746,18 @@
       "source_id": "g029",
       "style": "reworded",
       "category": "numeric",
-      "question": "How much revenue did Kestrel have in the second quarter of 2025?",
+      "question": "What were Kestrel's sales in the second quarter of 2025?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md",
-        "risk_factors_2026.md"
+        "q2_2026_earnings.md"
       ],
+      "search_query": "What were Kestrel's sales in the second quarter of 2025?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2895,13 +3767,18 @@
       "source_id": "g029",
       "style": "casual",
       "category": "numeric",
-      "question": "Kestrel Q2 2025 sales?",
+      "question": "Q2 2025 revenue?",
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
+        "annual_report_2025.md",
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "Q2 2025 revenue?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2915,9 +3792,16 @@
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
+        "annual_report_2025.md",
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's rwvenue in Q2 2025?",
+      "corrections": {
+        "rwvenue": "revenue"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2931,9 +3815,16 @@
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
+        "annual_report_2025.md",
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's revneue in Q2 2025?",
+      "corrections": {
+        "revneue": "revenue"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2951,6 +3842,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "what was kestrels revenue in q2 2025",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2969,6 +3866,10 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What was Kestrel's revenue in Q3 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2978,15 +3879,18 @@
       "source_id": "g030",
       "style": "reworded",
       "category": "out_of_scope",
-      "question": "How much revenue did Kestrel report for the third quarter of 2026?",
+      "question": "What were Kestrel's sales for the third quarter of 2026?",
       "retrieval_hit": null,
       "passage_hit": null,
       "retrieved_sources": [
-        "annual_report_2025.md",
         "q1_2026_earnings.md",
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "What were Kestrel's sales for the third quarter of 2026?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -2996,15 +3900,17 @@
       "source_id": "g030",
       "style": "casual",
       "category": "out_of_scope",
-      "question": "Q3 2026 revenue?",
+      "question": "Kestrel Q3 2026 sales?",
       "retrieval_hit": null,
       "passage_hit": null,
       "retrieved_sources": [
-        "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md",
-        "risk_factors_2026.md"
+        "q2_2026_earnings.md"
       ],
+      "search_query": "Kestrel Q3 2026 sales?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -3018,9 +3924,17 @@
       "retrieval_hit": null,
       "passage_hit": null,
       "retrieved_sources": [
+        "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
+      "search_query": "What was Kestrel's revenye in Q3 2026?",
+      "corrections": {
+        "revenye": "revenue"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -3034,9 +3948,17 @@
       "retrieval_hit": null,
       "passage_hit": null,
       "retrieved_sources": [
+        "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
+      "search_query": "What was Kestrel's revenu in Q3 2026?",
+      "corrections": {
+        "revenu": "revenue"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -3055,6 +3977,12 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
+      "search_query": "what was kestrels revenue in q3 2026",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -3072,6 +4000,10 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's net income in fiscal year 2024?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -3081,15 +4013,18 @@
       "source_id": "g031",
       "style": "reworded",
       "category": "out_of_scope",
-      "question": "What was Kestrel's profit for fiscal 2024?",
+      "question": "How much net income did Kestrel earn in fiscal year 2024?",
       "retrieval_hit": null,
       "passage_hit": null,
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md",
-        "risk_factors_2026.md"
+        "q2_2026_earnings.md"
       ],
+      "search_query": "How much net income did Kestrel earn in fiscal year 2024?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -3099,14 +4034,19 @@
       "source_id": "g031",
       "style": "casual",
       "category": "out_of_scope",
-      "question": "FY2024 net income?",
+      "question": "Kestrel 2024 profit?",
       "retrieval_hit": null,
       "passage_hit": null,
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
+      "search_query": "Kestrel 2024 profit?",
+      "corrections": {},
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -3124,6 +4064,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's net incomw in fiscal year 2024?",
+      "corrections": {
+        "incomw": "income"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -3141,6 +4087,14 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "What was Kestrel's net imcome in fisca yesr 2024?",
+      "corrections": {
+        "imcome": "income",
+        "fisca": "fiscal",
+        "yesr": "year"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null
@@ -3158,6 +4112,12 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
+      "search_query": "what was kestrels net income in fiscal year 2024",
+      "corrections": {
+        "kestrels": "kestrel"
+      },
+      "rewrite_input_tokens": 0,
+      "rewrite_output_tokens": 0,
       "answer": null,
       "passed": null,
       "reason": null

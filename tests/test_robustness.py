@@ -15,7 +15,7 @@ import pytest
 
 from app.llm import LLMResponse
 from app.paths import CORPUS_DIR, GOLDEN_DIR, ROBUSTNESS_DIR
-from app.retriever import Retriever, load_chunks
+from app.rag import RagAssistant
 from evals.dataset import load_golden
 from evals.robustness import (
     GENERATED_STYLES,
@@ -196,19 +196,19 @@ def test_run_variant_grades_against_the_original_case():
 
 
 def test_retrieval_row_makes_no_model_call():
-    retriever = Retriever(load_chunks(CORPUS_DIR))
     row = retrieval_row({"id": "g006", "source_id": "g006", "style": "original",
-                         "question": CASE["question"]}, CASE, retriever)
+                         "question": CASE["question"]}, CASE, RagAssistant(retriever_version="r1"))
     assert row["passage_hit"] is True and row["passed"] is None and row["answer"] is None
+    assert row["search_query"] == CASE["question"] and row["corrections"] == {}
 
 
 def test_original_questions_retrieve_their_paragraph():
     # Baseline for every comparison: only g022, the known Run 2 miss, fails at k=4.
     # If this changes, the retriever changed and old robustness results aren't comparable.
-    retriever = Retriever(load_chunks(CORPUS_DIR))
+    r1 = RagAssistant(retriever_version="r1")
     misses = [c["id"] for c in ELIGIBLE
               if retrieval_row({"id": c["id"], "source_id": c["id"], "style": "original",
-                                "question": c["question"]}, c, retriever)["passage_hit"] is False]
+                                "question": c["question"]}, c, r1)["passage_hit"] is False]
     assert misses == ["g022"]
 
 

@@ -101,6 +101,7 @@ def test_benign_evidence_exists_in_the_corpus():
 def test_benign_answers_are_retrieved_except_the_spanish_question():
     # BM25 matches words, and Spanish words ("ingresos", "trimestre") aren't in
     # the English corpus. If jb109 is refused, that's retrieval, not over-caution.
+    # True for r1 and r2; r3's query rewrite translates it (Run 13).
     retriever = Retriever(load_chunks(CORPUS_DIR))
     missing = [c["id"] for c in BENIGN
                if not passage_hit(c, [ch.text for ch in retriever.search(c["question"], k=4)])]

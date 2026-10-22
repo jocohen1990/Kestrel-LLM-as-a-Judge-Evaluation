@@ -3,6 +3,7 @@
 | Field | Value |
 |---|---|
 | Current version | `paraphrases_v1.jsonl` (62 hand-written variants: 31 reworded, 31 casual) |
+| Held-out set | `paraphrases_v2.jsonl` (62 more, same styles, new wording). Written after Run 12 and **before** the retriever fix, and never used to tune it |
 | Source questions | The 31 golden v3 cases except g032 (ambiguous) |
 | Generated variants | `typo`, `typos3`, `lower`, made in code (`evals/robustness.py`) from a fixed seed per case |
 | Runner | `python robustness.py` (`--retrieval-only` checks retrieval for free) |
@@ -46,6 +47,14 @@
 A test checks every eligible golden case has exactly one variant of each hand-written style,
 no variant is identical to its original, and every generated variant differs from its original.
 
+## Why a held-out set (v2)
+
+Run 9's failures were found with v1, so any fix designed after reading them is at risk of fitting
+v1's exact words ("HQ", "revolver", "Feb") instead of fixing the problem. The same caveat applied
+to prompt v2 in Run 3. v2 was written before retrievers r2 and r3 existed, and nothing in them was
+changed after looking at v2's results. A fix that helps on v1 but not on v2 has been tuned to the
+test. Run with `python robustness.py --variants data/robustness/paraphrases_v2.jsonl`.
+
 ## Versioning rules
 
 Same as the golden set: never edit a published version in place. The typo generator is part of
@@ -53,4 +62,5 @@ the dataset too: changing it changes the questions, so any change to it is logge
 
 ## Changelog
 
+- **v2**: 62 held-out variants for checking the retriever fix (Run 13). v1 unchanged.
 - **v1**: 62 hand-written variants. Typo generator v1 (company name excluded from typos).

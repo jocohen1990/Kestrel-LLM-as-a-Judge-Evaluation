@@ -212,15 +212,27 @@ def _base_row(variant: dict, case: dict) -> dict:
             "category": case["category"], "question": variant["question"]}
 
 
-def retrieval_row(variant: dict, case: dict, retriever, k: int = 4) -> dict:
-    """Retrieval only: no API call. Used by `robustness.py --retrieval-only`."""
-    chunks = retriever.search(variant["question"], k=k)
+def retrieval_row(variant: dict, case: dict, assistant) -> dict:
+    """Retrieval only, used by `robustness.py --retrieval-only`. Goes through the
+    assistant's own retrieve() so every retriever version is measured the same way.
+    No API call for r1 and r2; r3 makes its one rewrite call (cheap, no answer)."""
+    chunks, search_query, rewrite = assistant.retrieve(variant["question"])
     sources = sorted({c.doc for c in chunks})
     return {**_base_row(variant, case),
             "retrieval_hit": retrieval_hit(case, sources),
             "passage_hit": passage_hit(case, [c.text for c in chunks]),
             "retrieved_sources": sources,
+            **_search_details(assistant, search_query, rewrite),
             "answer": None, "passed": None, "reason": None}
+
+
+def _search_details(assistant, search_query: str, rewrite) -> dict:
+    """What was actually searched for: the rewrite (r3) and typo corrections (r2, r3)."""
+    return {"search_query": search_query,
+            "corrections": (assistant.retriever.corrections(search_query)
+                            if hasattr(assistant, "retriever") else {}),
+            "rewrite_input_tokens": rewrite.input_tokens if rewrite else 0,
+            "rewrite_output_tokens": rewrite.output_tokens if rewrite else 0}
 
 
 def run_variant(variant: dict, case: dict, assistant) -> dict:
@@ -231,6 +243,8 @@ def run_variant(variant: dict, case: dict, assistant) -> dict:
             "retrieval_hit": retrieval_hit(case, result.sources),
             "passage_hit": passage_hit(case, result.contexts),
             "retrieved_sources": result.sources,
+            **_search_details(assistant, getattr(result, "search_query", variant["question"]),
+                              getattr(result, "rewrite", None)),
             "answer": result.answer,
             "passed": rule.passed,
             "reason": rule.reason,

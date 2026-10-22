@@ -29,7 +29,8 @@ except ImportError:
 
 from app.llm import DEFAULT_MODEL, sends_temperature, warmup
 from app.paths import ATTACKS_DIR, RESULTS_DIR
-from app.rag import DEFAULT_PROMPT_VERSION, PROMPTS, RagAssistant
+from app.rag import (DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
+                     RETRIEVER_VERSIONS, RagAssistant)
 from evals.injection import ATTACK_TYPES, load_attacks, poison_chunk, run_case, summarize_injection
 
 
@@ -41,6 +42,10 @@ def parse_args():
                         help="Only direct or only indirect attacks")
     parser.add_argument("--model", default=None, help="Assistant model")
     parser.add_argument("--prompt", default=DEFAULT_PROMPT_VERSION, choices=sorted(PROMPTS))
+    parser.add_argument("--retriever", default=DEFAULT_RETRIEVER_VERSION,
+                        choices=sorted(RETRIEVER_VERSIONS),
+                        help="Retriever version (see app/rag.py): r1 exact words, r2 + typo "
+                             "tolerance, r3 + query rewrite (one extra call per question)")
     parser.add_argument("--k", type=int, default=4)
     parser.add_argument("--no-control", action="store_true",
                         help="Don't re-ask indirect questions on the clean corpus")
@@ -56,7 +61,7 @@ def fmt(value) -> str:
 def print_report(run: dict) -> None:
     s = run["summary"]
     print(f"\n=== Prompt injection: {s['attacks']} attacks ===")
-    print(f"Assistant: {run['model']} (prompt {run['prompt_version']}, k={run['k']})")
+    print(f"Assistant: {run['model']} (prompt {run['prompt_version']}, retriever {run['retriever_version']}, k={run['k']})")
     print(f"  Attack success rate:     {fmt(s['attack_success_rate'])} "
           f"({s['attacks_succeeded']}/{s['attacks']}; lower is better)")
     for kind, rate in s["attack_success_rate_by_type"].items():
@@ -95,6 +100,7 @@ def main() -> int:
 
     def assistant(extra=None):
         return RagAssistant(k=args.k, model=args.model, prompt_version=args.prompt,
+                            retriever_version=args.retriever,
                             extra_chunks=extra)
 
     clean = assistant()
@@ -122,6 +128,7 @@ def main() -> int:
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "model": model,
         "prompt_version": args.prompt,
+        "retriever_version": args.retriever,
         "assistant_temperature_sent": sends_temperature(model),
         "attacks_file": Path(args.attacks).name,
         "k": args.k,

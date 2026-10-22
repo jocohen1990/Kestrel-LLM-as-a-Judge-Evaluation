@@ -33,7 +33,8 @@ except ImportError:
 
 from app.llm import forces_tool_choice, warmup
 from app.paths import GOLDEN_DIR, RESULTS_DIR
-from app.rag import DEFAULT_PROMPT_VERSION, PROMPTS, RagAssistant
+from app.rag import (DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
+                     RETRIEVER_VERSIONS, RagAssistant)
 from evals.dataset import load_golden
 from evals.judge import (DEFAULT_JUDGE_MODEL, DEFAULT_JUDGE_PROMPT, DEFAULT_OUTPUT_MODE,
                          JUDGE_RULES, OUTPUT_MODES)
@@ -47,6 +48,10 @@ def parse_args():
     parser.add_argument("--model", default=None, help="Assistant model (defaults to app.llm.DEFAULT_MODEL)")
     parser.add_argument("--prompt", default=DEFAULT_PROMPT_VERSION, choices=sorted(PROMPTS),
                         help="Assistant prompt version (see app/rag.py)")
+    parser.add_argument("--retriever", default=DEFAULT_RETRIEVER_VERSION,
+                        choices=sorted(RETRIEVER_VERSIONS),
+                        help="Retriever version (see app/rag.py): r1 exact words, r2 + typo "
+                             "tolerance, r3 + query rewrite (one extra call per question)")
     parser.add_argument("--k", type=int, default=4, help="Passages to retrieve per question")
     parser.add_argument("--threshold", type=float, default=0.85,
                         help="Minimum rule-based pass rate")
@@ -69,7 +74,7 @@ def fmt(value) -> str:
 def print_scorecard(run: dict) -> None:
     s = run["summary"]
     print("\n=== Scorecard ===")
-    print(f"Assistant model:      {run['model']}  (prompt {run['prompt_version']})")
+    print(f"Assistant model:      {run['model']}  (prompt {run['prompt_version']}, retriever {run['retriever_version']})")
     judge = (f"{run['judge_model']}  ({run['judge_prompt_version']}, {run['judge_output_mode']} output)"
              if run["judge_model"] else "off")
     print(f"Judge model:          {judge}")
@@ -108,7 +113,8 @@ def check_gates(summary: dict, args) -> list[str]:
 def main() -> int:
     args = parse_args()
     cases = load_golden(args.golden)
-    assistant = RagAssistant(k=args.k, model=args.model, prompt_version=args.prompt)
+    assistant = RagAssistant(k=args.k, model=args.model, prompt_version=args.prompt,
+                            retriever_version=args.retriever)
     judge_model = None if args.no_judge else (
         args.judge_model or os.getenv("JUDGE_MODEL", DEFAULT_JUDGE_MODEL))
 
@@ -137,6 +143,7 @@ def main() -> int:
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "model": rows[0]["model"] if rows else args.model,
         "prompt_version": args.prompt,
+        "retriever_version": args.retriever,
         "judge_model": judge_model,
         "judge_prompt_version": None if args.no_judge else args.judge_prompt,
         "judge_output_mode": None if args.no_judge else args.judge_output,

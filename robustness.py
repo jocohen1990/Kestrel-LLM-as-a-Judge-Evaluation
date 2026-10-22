@@ -25,9 +25,9 @@ except ImportError:
     pass
 
 from app.llm import DEFAULT_MODEL, sends_temperature, warmup
-from app.paths import CORPUS_DIR, GOLDEN_DIR, RESULTS_DIR, ROBUSTNESS_DIR
-from app.rag import DEFAULT_PROMPT_VERSION, PROMPTS, RagAssistant
-from app.retriever import Retriever, load_chunks
+from app.paths import GOLDEN_DIR, RESULTS_DIR, ROBUSTNESS_DIR
+from app.rag import (DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
+                     RETRIEVER_VERSIONS, RagAssistant)
 from evals.dataset import load_golden
 from evals.robustness import (STYLES, build_variants, load_hand_variants, retrieval_row,
                               run_variant, summarize_robustness)
@@ -41,6 +41,10 @@ def parse_args():
     parser.add_argument("--ids", nargs="*", default=None, help="Only these golden case ids")
     parser.add_argument("--model", default=None, help="Assistant model")
     parser.add_argument("--prompt", default=DEFAULT_PROMPT_VERSION, choices=sorted(PROMPTS))
+    parser.add_argument("--retriever", default=DEFAULT_RETRIEVER_VERSION,
+                        choices=sorted(RETRIEVER_VERSIONS),
+                        help="Retriever version (see app/rag.py): r1 exact words, r2 + typo "
+                             "tolerance, r3 + query rewrite (one extra call per question)")
     parser.add_argument("--k", type=int, default=4)
     parser.add_argument("--retrieval-only", action="store_true",
                         help="Only check retrieval (free, no API key needed)")
@@ -57,9 +61,9 @@ def print_report(run: dict) -> None:
     s = run["summary"]
     print(f"\n=== Robustness: {s['questions']} questions, {s['variants']} variants ===")
     if run["retrieval_only"]:
-        print("Retrieval only (no model calls)")
+        print(f"Retrieval only, retriever {run['retriever_version']} (no answer calls)")
     else:
-        print(f"Assistant: {run['model']} (prompt {run['prompt_version']}, k={run['k']})")
+        print(f"Assistant: {run['model']} (prompt {run['prompt_version']}, retriever {run['retriever_version']}, k={run['k']})")
         print(f"  Overall robustness: {fmt(s['overall_robustness'])} "
               f"({s['flips']} flips: {s['flips_retrieval']} retrieval, {s['flips_model']} model)")
     print(f"  {'style':<10} {'passages':>9} {'pass':>6} {'robust':>7}  flips")
@@ -95,11 +99,14 @@ def main() -> int:
 
     rows = []
     if args.retrieval_only:
-        retriever = Retriever(load_chunks(CORPUS_DIR))
+        # Same retrieval path as a real answer, minus the answer call.
+        assistant = RagAssistant(k=args.k, model=args.model, prompt_version=args.prompt,
+                                 retriever_version=args.retriever)
         for v in variants:
-            rows.append(retrieval_row(v, cases[v["source_id"]], retriever, k=args.k))
+            rows.append(retrieval_row(v, cases[v["source_id"]], assistant))
     else:
-        assistant = RagAssistant(k=args.k, model=args.model, prompt_version=args.prompt)
+        assistant = RagAssistant(k=args.k, model=args.model, prompt_version=args.prompt,
+                            retriever_version=args.retriever)
         print(f"{len(variants)} assistant calls ({len(golden)} questions x up to {len(styles)} styles)")
         warmup(args.model)
         for v in variants:
@@ -114,6 +121,7 @@ def main() -> int:
         "retrieval_only": args.retrieval_only,
         "model": None if args.retrieval_only else model,
         "prompt_version": None if args.retrieval_only else args.prompt,
+        "retriever_version": args.retriever,
         "assistant_temperature_sent": None if args.retrieval_only else sends_temperature(model),
         "golden_file": Path(args.golden).name,
         "variants_file": Path(args.variants).name,

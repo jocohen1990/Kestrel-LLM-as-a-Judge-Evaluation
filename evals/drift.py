@@ -20,7 +20,7 @@ from datetime import datetime
 
 from evals.consistency import normalize_answer
 
-ASSISTANT_SETTINGS = ("model", "prompt_version", "k", "golden_file")
+ASSISTANT_SETTINGS = ("model", "prompt_version", "retriever_version", "k", "golden_file")
 JUDGE_SETTINGS = ("judge_model", "judge_prompt_version", "judge_output_mode")
 
 
@@ -29,6 +29,9 @@ def settings(run: dict) -> dict:
     # Files written before output modes existed used free-text judge replies.
     if s["judge_model"] and not s["judge_output_mode"]:
         s["judge_output_mode"] = "text"
+    # Files written before retriever versions existed (Runs 1-12) all used r1.
+    if not s["retriever_version"]:
+        s["retriever_version"] = "r1"
     return s
 
 

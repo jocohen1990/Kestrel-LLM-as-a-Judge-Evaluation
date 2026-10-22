@@ -28,7 +28,8 @@ except ImportError:
 
 from app.llm import DEFAULT_MODEL, forces_tool_choice, sends_temperature, warmup
 from app.paths import GOLDEN_DIR, RESULTS_DIR
-from app.rag import DEFAULT_PROMPT_VERSION, PROMPTS, RagAssistant
+from app.rag import (DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
+                     RETRIEVER_VERSIONS, RagAssistant)
 from evals.consistency import check_case, summarize_consistency
 from evals.dataset import load_golden
 from evals.judge import (DEFAULT_JUDGE_MODEL, DEFAULT_JUDGE_PROMPT, DEFAULT_OUTPUT_MODE,
@@ -42,6 +43,10 @@ def parse_args():
     parser.add_argument("--ids", nargs="*", default=None, help="Only these case ids")
     parser.add_argument("--model", default=None, help="Assistant model")
     parser.add_argument("--prompt", default=DEFAULT_PROMPT_VERSION, choices=sorted(PROMPTS))
+    parser.add_argument("--retriever", default=DEFAULT_RETRIEVER_VERSION,
+                        choices=sorted(RETRIEVER_VERSIONS),
+                        help="Retriever version (see app/rag.py): r1 exact words, r2 + typo "
+                             "tolerance, r3 + query rewrite (one extra call per question)")
     parser.add_argument("--k", type=int, default=4)
     parser.add_argument("--no-judge", action="store_true")
     parser.add_argument("--judge-model", default=None)
@@ -61,7 +66,7 @@ def fmt(value) -> str:
 def print_report(run: dict) -> None:
     s = run["summary"]
     print(f"\n=== Consistency: {s['questions']} questions x {s['runs_per_question']} runs ===")
-    print(f"Assistant: {run['model']} (prompt {run['prompt_version']}, "
+    print(f"Assistant: {run['model']} (prompt {run['prompt_version']}, retriever {run['retriever_version']}, "
           f"temperature {'0' if run['assistant_temperature_sent'] else 'NOT SENT'})")
     print(f"  Identical answers every run:  {fmt(s['identical_answer_rate'])}")
     print(f"  Avg distinct answers:         {s['avg_distinct_answers']} (1.0 = perfectly repeatable)")
@@ -93,7 +98,8 @@ def main() -> int:
         if not cases:
             print(f"No cases match {args.ids}")
             return 1
-    assistant = RagAssistant(k=args.k, model=args.model, prompt_version=args.prompt)
+    assistant = RagAssistant(k=args.k, model=args.model, prompt_version=args.prompt,
+                            retriever_version=args.retriever)
     judge_model = None if args.no_judge else (
         args.judge_model or os.getenv("JUDGE_MODEL", DEFAULT_JUDGE_MODEL))
 
@@ -124,6 +130,7 @@ def main() -> int:
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "model": assistant_model,
         "prompt_version": args.prompt,
+        "retriever_version": args.retriever,
         "assistant_temperature_sent": sends_temperature(assistant_model),
         "judge_model": judge_model,
         "judge_prompt_version": None if args.no_judge else args.judge_prompt,
