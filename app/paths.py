@@ -9,4 +9,6 @@ ROOT = Path(__file__).resolve().parent.parent
 CORPUS_DIR = ROOT / "data" / "corpus"
 GOLDEN_DIR = ROOT / "data" / "golden"
 ATTACKS_DIR = ROOT / "data" / "attacks"
+ROBUSTNESS_DIR = ROOT / "data" / "robustness"
+BIAS_DIR = ROOT / "data" / "bias"
 RESULTS_DIR = ROOT / "results"

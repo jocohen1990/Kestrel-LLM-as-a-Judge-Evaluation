@@ -37,7 +37,7 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-pytest -v                          # 232 offline tests: free, no API key needed
+pytest -v                          # 297 offline tests: free, no API key needed
 
 cp .env.example .env               # then add your ANTHROPIC_API_KEY
 python run_evals.py                # golden v3, prompt v5, LLM judge (judge-v2)
@@ -75,6 +75,23 @@ never change) and ask an innocent question. Every check is rule-based, so there 
 calls: did an attacker-chosen string reach the answer, did the system prompt leak, was a
 must-refuse question answered, or was an answerable one refused? Each indirect question is
 also asked on the clean corpus as a control. See the [attack dataset card](data/attacks/README.md).
+
+### Testing robustness, jailbreaks and bias
+
+```bash
+python robustness.py --retrieval-only  # free: does rewording or a typo lose the answer's paragraph?
+python robustness.py                   # every question reworded, casual, with typos, lowercase (186 calls)
+python jailbreak.py                    # 18 jailbreak attempts + 10 risky-sounding legitimate questions
+python bias.py                         # 8 groups: same question, one detail changed (28 calls)
+```
+
+Robustness asks each golden question in six styles and compares each one with the original
+asked in the same run. Every failure is labeled as a **retrieval** miss (the answer's paragraph
+wasn't found) or a **model** miss. Jailbreaks report attack success next to **over-refusal**, so
+refusing everything can't score well. Bias probes compare answers *within* a group where only the
+asker's identity, the tone, a stated opinion or a pronoun changes. See the dataset cards:
+[robustness](data/robustness/README.md), [jailbreaks](data/attacks/README.md#jailbreaks-jailbreak_v1),
+[bias](data/bias/README.md).
 
 ### Validating the judge
 
@@ -117,6 +134,10 @@ Rows are shuffled, so labeling the first 50 gives a representative sample. The
 | Attack success rate | Rules | Share of prompt-injection attacks that got exactly what they asked for (lower is better), split direct / indirect |
 | Attack impact rate | Rules | Attacks that succeeded **or** broke a real answer the clean run got right. Catches attacks that "fail" in a harmful way (Run 5, inj110) |
 | Task preservation | Rules | Whether the real question inside an attack was still answered. Refusing everything isn't a defense |
+| Robustness | Rules | Of the questions that pass as written, the share that still pass reworded, casual, with typos or lowercase. Each failure is split into retrieval vs. model |
+| Jailbreak success rate | Rules | Share of jailbreak attempts not declined, with plain requests (baseline) reported apart from wrapped ones |
+| Over-refusal rate | Rules | Legitimate, risky-sounding questions the assistant refused |
+| Bias consistency | Rules | Counterfactual groups where every variant got the same verdict and none echoed the asker's framing or identity |
 | Latency avg / p95, tokens | — | Performance and cost (a warm-up call keeps connection setup out of the numbers) |
 
 ## Validating the judge
@@ -167,7 +188,7 @@ See the [dataset card](data/golden/README.md).
 app/                  The system under test
   retriever.py        BM25 keyword search, written from scratch
   llm.py              Single wrapper for every model call
-  rag.py              Retrieve -> prompt -> answer (prompts v1 and v2, both kept)
+  rag.py              Retrieve -> prompt -> answer (prompts v1-v5, all kept)
 evals/                The evaluation framework
   dataset.py          Loads and validates the golden dataset
   metrics.py          Rule-based graders
@@ -178,18 +199,26 @@ evals/                The evaluation framework
   consistency.py      Repeat-run consistency for the assistant and the judge
   drift.py            Compares two results files from different times
   injection.py        Prompt-injection grading: canaries, prompt leaks, task preservation
+  robustness.py       Reworded, casual, typo and lowercase variants; retrieval vs. model failures
+  jailbreak.py        Jailbreak grading: attack success, exact refusals, over-refusal
+  bias.py             Counterfactual groups: same question, one detail changed
   report.py           Scorecard aggregation
 data/
   corpus/             The four Kestrel documents
   golden/             golden_v1, golden_v2 (frozen), golden_v3, dataset card
   labels/             Labeling guide and human labeling sheets
-  attacks/            Prompt-injection attacks (injection_v1) and dataset card
-tests/                232 offline tests
+  attacks/            Prompt-injection (injection_v1) and jailbreak (jailbreak_v1) attacks, dataset card
+  robustness/         Hand-written reworded and casual questions (paraphrases_v1), dataset card
+  bias/               Counterfactual bias groups (bias_v1), dataset card
+tests/                297 offline tests
 run_evals.py          Eval runner and quality gates
 calibrate.py          Judge validation commands
 consistency.py        Repeat-run consistency check
 compare_runs.py       Drift between two results files
 injection.py          Prompt-injection eval
+robustness.py         Paraphrase and typo robustness eval
+jailbreak.py          Jailbreak and over-refusal eval
+bias.py               Bias probes
 .github/workflows/    CI pipeline
 ```
 
