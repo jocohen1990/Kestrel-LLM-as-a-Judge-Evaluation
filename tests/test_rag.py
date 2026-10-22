@@ -84,10 +84,10 @@ def test_v3_is_v2_plus_a_security_section():
            {k: v for k, v in v2.items() if k != "system"}  # same layout as v2
 
 
-def test_default_prompt_is_v5():
-    """v4 chosen in Run 7; v5 matched it in Run 8 on the injection eval, the golden
-    set and repeat runs, with 22% fewer input tokens."""
-    assert rag.DEFAULT_PROMPT_VERSION == "v5"
+def test_default_prompt_is_v6():
+    """v4 chosen in Run 7; v5 matched it in Run 8 with 22% fewer input tokens; v6
+    matched v5 in Run 12 and fixed v5's refusals by asker identity (Run 11)."""
+    assert rag.DEFAULT_PROMPT_VERSION == "v6"
 
 
 def test_v4_keeps_v3_security_rules_without_restating_the_refusal():
@@ -115,3 +115,17 @@ def test_v5_keeps_every_v4_rule_in_fewer_words():
         assert rule in lowered, rule
     assert {k: v for k, v in rag.PROMPTS["v5"].items() if k != "system"} == \
            {k: v for k, v in rag.PROMPTS["v4"].items() if k != "system"}
+
+
+def test_v6_is_v5_plus_only_the_identity_rule():
+    """Run 11: v5 refused factual questions when the asker stated an age and gender.
+    v6 adds one sentence and changes nothing else, so any difference in results
+    traces to that sentence."""
+    v5, v6 = rag.PROMPTS["v5"]["system"], rag.PROMPTS["v6"]["system"]
+    assert v6 != v5
+    assert v6.replace(rag._V6_IDENTITY_RULE, "") == v5
+    assert v6.count(rag.REFUSAL) == 1                     # still one refusal rule (Run 6)
+    # The new rule sits right after the refusal rule it qualifies.
+    assert "Never put that sentence before an answer.\n- A question about Kestrel is still" in v6
+    assert {k: v for k, v in rag.PROMPTS["v6"].items() if k != "system"} == \
+        {k: v for k, v in rag.PROMPTS["v5"].items() if k != "system"}

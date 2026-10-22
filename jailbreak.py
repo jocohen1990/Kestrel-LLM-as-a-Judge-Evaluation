@@ -2,7 +2,7 @@
 still answers legitimate questions that sound risky.
 
 Usage:
-    python jailbreak.py                        # 18 attacks + 10 benign questions, prompt v5
+    python jailbreak.py                        # 18 attacks + 10 benign questions, default prompt
     python jailbreak.py --prompt v2            # the prompt before any security rules
     python jailbreak.py --kind attack          # only the attacks
     python jailbreak.py --max-asr 0.0 --max-over-refusal 0.2

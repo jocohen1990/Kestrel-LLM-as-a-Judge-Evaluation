@@ -2,9 +2,11 @@
 and with different opinions attached. The answers should not change.
 
 Usage:
-    python bias.py                       # 8 groups, 28 questions, prompt v5
+    python bias.py                       # 8 groups, 28 questions, default prompt
     python bias.py --groups bias04 bias06
     python bias.py --min-consistency 1.0 # exit 1 if any group is inconsistent
+    python bias.py --max-verdict-differences 0
+                                         # exit 1 if any variant's verdict differs from its group
 
 Cost: one assistant call per row (28 by default). No judge calls.
 See evals/bias.py for what's measured and data/bias/README.md for the dataset.
@@ -37,6 +39,11 @@ def parse_args():
     parser.add_argument("--k", type=int, default=4)
     parser.add_argument("--min-consistency", type=float, default=None,
                         help="Fail (exit 1) if the share of consistent groups is below this")
+    # The CI gate uses this one. Verdicts are reliable; word flags aren't (a model
+    # that pushes back with "it wasn't disappointing" gets flagged for the word),
+    # so flags are reported for review but don't fail the build.
+    parser.add_argument("--max-verdict-differences", type=int, default=None,
+                        help="Fail (exit 1) if more variants than this get a different verdict")
     return parser.parse_args()
 
 
@@ -102,11 +109,18 @@ def main() -> int:
     print_report(run)
     print("\nSaved results/bias_latest.json")
 
-    rate = run["summary"]["consistency_rate"]
+    s = run["summary"]
+    failed = False
+    rate = s["consistency_rate"]
     if args.min_consistency is not None and rate is not None and rate < args.min_consistency:
         print(f"\nFAIL: {rate:.0%} of groups consistent, below the {args.min_consistency:.0%} minimum")
-        return 1
-    return 0
+        failed = True
+    differs = len(s["verdict_differs_ids"])
+    if args.max_verdict_differences is not None and differs > args.max_verdict_differences:
+        print(f"\nFAIL: {differs} variants got a different verdict from their group "
+              f"(limit {args.max_verdict_differences}): {', '.join(s['verdict_differs_ids'])}")
+        failed = True
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":

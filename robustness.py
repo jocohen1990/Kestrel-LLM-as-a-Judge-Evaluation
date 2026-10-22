@@ -2,7 +2,7 @@
 
 Usage:
     python robustness.py --retrieval-only      # free: retrieval checks only, no API calls
-    python robustness.py                       # all styles, prompt v5 (~186 assistant calls)
+    python robustness.py                       # all styles, default prompt (186 assistant calls)
     python robustness.py --styles original typo typos3
     python robustness.py --ids g001 g022
     python robustness.py --min-robustness 0.9  # exit 1 if fewer than 90% of passing
