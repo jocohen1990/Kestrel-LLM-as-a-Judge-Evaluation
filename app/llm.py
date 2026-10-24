@@ -259,3 +259,65 @@ def generate_structured(system: str, user: str, schema: dict, tool_name: str,
     # a reply cut off by max_tokens, or a refusal, can still arrive without it.
     raise StructuredOutputError(
         f"no {tool_name!r} tool call in reply (stop_reason={getattr(response, 'stop_reason', None)!r})")
+
+
+# ---- Tool calling (the Phase 4 agent) ---------------------------------------
+
+@dataclass
+class ToolTurn:
+    """One model reply in a tool-calling conversation.
+
+    `content` holds the reply's blocks as plain dicts, in the exact shape the
+    API expects them back: the agent appends this list to the conversation as
+    the assistant's turn, then answers each tool_use block with a tool_result.
+    Plain dicts (not SDK objects) keep the agent's state easy to save as JSON
+    and easy to fake in tests.
+    """
+    content: list[dict]
+    model: str
+    input_tokens: int
+    output_tokens: int
+    latency_s: float
+    stop_reason: str | None = None
+    cache_read_input_tokens: int = 0
+    cache_creation_input_tokens: int = 0
+
+    @property
+    def text(self) -> str:
+        return "".join(b["text"] for b in self.content if b["type"] == "text")
+
+    @property
+    def tool_calls(self) -> list[dict]:
+        return [b for b in self.content if b["type"] == "tool_use"]
+
+
+def _block_to_dict(block) -> dict | None:
+    if block.type == "text":
+        return {"type": "text", "text": block.text}
+    if block.type == "tool_use":
+        return {"type": "tool_use", "id": block.id, "name": block.name, "input": dict(block.input)}
+    return None   # any other block type isn't sent back
+
+
+def generate_with_tools(system: str, messages: list[dict], tools: list[dict],
+                        model: str | None = None, max_tokens: int = 600,
+                        temperature: float = 0.0) -> ToolTurn:
+    """One step of a tool-using conversation: send the whole conversation so
+    far plus the tool definitions, get back text and/or tool calls.
+
+    Unlike generate_structured, nothing is forced: tool_choice is left at
+    "auto", so the model decides whether to call a tool, which one, and with
+    what arguments. Those decisions are exactly what the agent eval grades.
+    """
+    model = model or os.getenv("LLM_MODEL", DEFAULT_MODEL)
+    request = {"model": model, "max_tokens": max_tokens, "system": system, "messages": messages}
+    response, latency = _create(request, model, temperature, extra={"tools": tools})
+    content = [d for d in (_block_to_dict(b) for b in response.content) if d is not None]
+    return ToolTurn(
+        content=content,
+        model=model,
+        output_tokens=response.usage.output_tokens,
+        latency_s=latency,
+        stop_reason=getattr(response, "stop_reason", None),
+        **_input_usage(response.usage),
+    )

@@ -4,7 +4,7 @@ An end-to-end evaluation suite for an LLM-powered financial Q&A assistant, built
 a QA engineer tests software: versioned test data, graders that are themselves tested,
 measurable quality thresholds, and a CI pipeline that blocks regressions.
 
-> **Status:** Phases 1–3 of 6 complete. Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
+> **Status:** Phases 1–3 of 6 complete; Phase 4 (agent evaluation) in progress: the agent and its tools are built, the graded eval is next. Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
 
 ## What's being tested
 
@@ -37,7 +37,7 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-pytest -v                          # 330 offline tests: free, no API key needed
+pytest -v                          # 390 offline tests: free, no API key needed
 
 cp .env.example .env               # then add your ANTHROPIC_API_KEY
 python run_evals.py                # golden v3, prompt v6, retriever r3, LLM judge (judge-v2)
@@ -77,6 +77,22 @@ never change) and ask an innocent question. Every check is rule-based, so there 
 calls: did an attacker-chosen string reach the answer, did the system prompt leak, was a
 must-refuse question answered, or was an answerable one refused? Each indirect question is
 also asked on the clean corpus as a control. See the [attack dataset card](data/attacks/README.md).
+
+### Running the agent (Phase 4)
+
+```bash
+python agent.py                        # 4 demo questions; prints every tool call and its result
+python agent.py "Who is Kestrel's CFO?"
+```
+
+The agent (`app/agent.py`) is a LangGraph graph with two nodes: the model decides the next step,
+and a tool node runs what it asked for, until the model answers or hits `--max-turns` (default 6).
+Its three tools (`app/tools.py`) each have one job, so every question has a right tool:
+`get_financial_metric` (one reported figure for one period), `search_documents` (BM25 over the
+filings) and `calculator` (all arithmetic, parsed safely rather than run with `eval`). Every run
+records its **trajectory**: each tool call, its arguments and its result, in order. This command
+only shows the trajectory; the graded eval (tool choice, arguments, trajectory, answer) is the
+next step.
 
 ### Testing robustness, jailbreaks and bias
 
@@ -191,6 +207,8 @@ app/                  The system under test
   retriever.py        BM25 keyword search, written from scratch, with optional typo tolerance
   llm.py              Single wrapper for every model call
   rag.py              Retrieve -> prompt -> answer (prompts v1-v6, retrievers r1-r3, all kept)
+  tools.py            The agent's tools: metric lookup, document search, safe calculator
+  agent.py            LangGraph agent: model and tool nodes, records each run's trajectory (prompt a1)
 evals/                The evaluation framework
   dataset.py          Loads and validates the golden dataset
   metrics.py          Rule-based graders
@@ -212,7 +230,7 @@ data/
   attacks/            Prompt-injection (injection_v1) and jailbreak (jailbreak_v1) attacks, dataset card
   robustness/         Hand-written reworded and casual questions (paraphrases_v1, held-out v2), dataset card
   bias/               Counterfactual bias groups (bias_v1), dataset card
-tests/                330 offline tests
+tests/                390 offline tests
 run_evals.py          Eval runner and quality gates
 calibrate.py          Judge validation commands
 consistency.py        Repeat-run consistency check
@@ -221,6 +239,7 @@ injection.py          Prompt-injection eval
 robustness.py         Paraphrase and typo robustness eval
 jailbreak.py          Jailbreak and over-refusal eval
 bias.py               Bias probes
+agent.py              Ask the agent questions and print its trajectory (Phase 4 smoke test)
 .github/workflows/    CI pipeline
 ```
 
@@ -231,7 +250,7 @@ bias.py               Bias probes
 | 1 | RAG app, golden dataset v1, rule-based correctness, CI pipeline | ✅ Done |
 | 2 | Golden v2, LLM-as-judge (faithfulness, correctness), format checks, mutation testing, human calibration | ✅ Done |
 | 3 | Safety and robustness: repeat-run consistency (Run 4), prompt injection including injections hidden in documents (Runs 5–8), paraphrase and typo robustness (Run 9), jailbreaks (Run 10), bias probes (Run 11) | ✅ Done |
-| 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | ⬜ |
+| 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | 🔄 Agent and tools built; graded eval next |
 | 5 | Model comparison scorecard and a results dashboard | ⬜ |
 | 6 | Production-style tracing and monitoring | ⬜ |
 

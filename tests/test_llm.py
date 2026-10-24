@@ -227,3 +227,38 @@ def test_usage_without_cache_fields_still_works(monkeypatch):
     use_client(monkeypatch, FakeClient())   # older SDKs / fakes have no cache fields
     result = llm.generate("sys", "hi", model="m")
     assert result.input_tokens == 3 and result.cache_read_input_tokens == 0
+
+
+# ---- generate_with_tools (the Phase 4 agent) ---------------------------------
+
+def test_generate_with_tools_returns_blocks_as_plain_dicts(monkeypatch):
+    client = FakeClient()
+    client.content = [
+        SimpleNamespace(type="text", text="Let me check."),
+        SimpleNamespace(type="tool_use", id="t1", name="calculator", input={"expression": "1+1"}),
+    ]
+    client.stop_reason = "tool_use"
+    use_client(monkeypatch, client)
+    messages = [{"role": "user", "content": "1+1?"}]
+    tools = [{"name": "calculator", "description": "d", "input_schema": {"type": "object"}}]
+
+    turn = llm.generate_with_tools("sys", messages, tools, model="model-a")
+
+    assert turn.content == [
+        {"type": "text", "text": "Let me check."},
+        {"type": "tool_use", "id": "t1", "name": "calculator", "input": {"expression": "1+1"}},
+    ]
+    assert turn.text == "Let me check." and len(turn.tool_calls) == 1
+    assert turn.stop_reason == "tool_use"
+    sent = client.calls[0]
+    assert sent["messages"] == messages and sent["system"] == "sys"
+    assert sent["extra_body"]["tools"] == tools
+    assert "tool_choice" not in sent["extra_body"]   # the model decides: nothing forced
+
+
+def test_generate_with_tools_still_falls_back_on_temperature(monkeypatch):
+    client = FakeClient(reject_temperature=True)
+    use_client(monkeypatch, client)
+    turn = llm.generate_with_tools("sys", [{"role": "user", "content": "hi"}], [], model="model-b")
+    assert turn.text == "hello" and turn.tool_calls == []
+    assert "temperature" not in client.calls[-1]["extra_body"]

@@ -1,0 +1,320 @@
+{
+  "timestamp": "2026-10-24T04:22:52.680706+00:00",
+  "model": "claude-haiku-4-5-20251001",
+  "agent_version": "a1",
+  "max_turns": 6,
+  "cases": [
+    {
+      "question": "How much net income did Kestrel make in the second quarter of 2026?",
+      "answer": "Kestrel made $11.4 million in net income in the second quarter of 2026, according to the Q2 2026 earnings release.",
+      "steps": [
+        {
+          "turn": 1,
+          "tool": "get_financial_metric",
+          "args": {
+            "metric": "net_income",
+            "period": "Q2 2026"
+          },
+          "output": "net_income, Q2 2026: $11.4 million (source: Q2 2026 Earnings Release)",
+          "is_error": false
+        }
+      ],
+      "turns": 2,
+      "stopped": "answered",
+      "model": "claude-haiku-4-5-20251001",
+      "agent_version": "a1",
+      "input_tokens": 3139,
+      "output_tokens": 117,
+      "latency_s": 1.7323157000355422,
+      "messages": [
+        {
+          "role": "user",
+          "content": "How much net income did Kestrel make in the second quarter of 2026?"
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "toolu_01JWNqpbPMZYcuxsaKjiXAti",
+              "name": "get_financial_metric",
+              "input": {
+                "metric": "net_income",
+                "period": "Q2 2026"
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "toolu_01JWNqpbPMZYcuxsaKjiXAti",
+              "content": "net_income, Q2 2026: $11.4 million (source: Q2 2026 Earnings Release)",
+              "is_error": false
+            }
+          ]
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kestrel made $11.4 million in net income in the second quarter of 2026, according to the Q2 2026 earnings release."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "question": "Does Kestrel carry life insurance on its key executives?",
+      "answer": "No, Kestrel does not maintain key-person life insurance on its executives, according to the Risk Factors 2026 document.",
+      "steps": [
+        {
+          "turn": 1,
+          "tool": "search_documents",
+          "args": {
+            "query": "life insurance key executives"
+          },
+          "output": "Kestrel Freight Analytics Risk Factors 2026\nKey personnel: Kestrel depends on its CEO, Dana Whitfield, and other senior leaders. The company does not maintain key-person life insurance.\n\nKestrel Freight Analytics Annual Report 2025\nLeadership: Dana Whitfield serves as Chief Executive Officer (CEO). Marcus Oyelaran serves as Chief Financial Officer (CFO).\n\nKestrel Freight Analytics Annual Report 2025\nKestrel Freight Analytics, Inc. is headquartered in Omaha, Nebraska. The company was founded in 2017 and sells software and data products that help shipping and logistics companies plan freight routes more efficiently.",
+          "is_error": false
+        }
+      ],
+      "turns": 2,
+      "stopped": "answered",
+      "model": "claude-haiku-4-5-20251001",
+      "agent_version": "a1",
+      "input_tokens": 3227,
+      "output_tokens": 90,
+      "latency_s": 1.3943672999739647,
+      "messages": [
+        {
+          "role": "user",
+          "content": "Does Kestrel carry life insurance on its key executives?"
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "toolu_01JUUxDXpH8kgqcEEoKGTtL4",
+              "name": "search_documents",
+              "input": {
+                "query": "life insurance key executives"
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "toolu_01JUUxDXpH8kgqcEEoKGTtL4",
+              "content": "Kestrel Freight Analytics Risk Factors 2026\nKey personnel: Kestrel depends on its CEO, Dana Whitfield, and other senior leaders. The company does not maintain key-person life insurance.\n\nKestrel Freight Analytics Annual Report 2025\nLeadership: Dana Whitfield serves as Chief Executive Officer (CEO). Marcus Oyelaran serves as Chief Financial Officer (CFO).\n\nKestrel Freight Analytics Annual Report 2025\nKestrel Freight Analytics, Inc. is headquartered in Omaha, Nebraska. The company was founded in 2017 and sells software and data products that help shipping and logistics companies plan freight routes more efficiently.",
+              "is_error": false
+            }
+          ]
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "No, Kestrel does not maintain key-person life insurance on its executives, according to the Risk Factors 2026 document."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "question": "By how many percentage points did Kestrel's gross margin improve from Q1 2025 to Q1 2026?",
+      "answer": "Kestrel's gross margin improved by 1.6 percentage points from Q1 2025 to Q1 2026, rising from 69.8% to 71.4%.",
+      "steps": [
+        {
+          "turn": 1,
+          "tool": "get_financial_metric",
+          "args": {
+            "metric": "gross_margin",
+            "period": "Q1 2025"
+          },
+          "output": "gross_margin, Q1 2025: 69.8% (source: Q1 2026 Earnings Release)",
+          "is_error": false
+        },
+        {
+          "turn": 1,
+          "tool": "get_financial_metric",
+          "args": {
+            "metric": "gross_margin",
+            "period": "Q1 2026"
+          },
+          "output": "gross_margin, Q1 2026: 71.4% (source: Q1 2026 Earnings Release)",
+          "is_error": false
+        },
+        {
+          "turn": 2,
+          "tool": "calculator",
+          "args": {
+            "expression": "71.4 - 69.8"
+          },
+          "output": "71.4 - 69.8 = 1.6",
+          "is_error": false
+        }
+      ],
+      "turns": 3,
+      "stopped": "answered",
+      "model": "claude-haiku-4-5-20251001",
+      "agent_version": "a1",
+      "input_tokens": 5173,
+      "output_tokens": 253,
+      "latency_s": 2.85119749995647,
+      "messages": [
+        {
+          "role": "user",
+          "content": "By how many percentage points did Kestrel's gross margin improve from Q1 2025 to Q1 2026?"
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "toolu_01AqR3Rsx2E6BHKsENAvULDa",
+              "name": "get_financial_metric",
+              "input": {
+                "metric": "gross_margin",
+                "period": "Q1 2025"
+              }
+            },
+            {
+              "type": "tool_use",
+              "id": "toolu_015utFN8RRtpSVBa388Bi8bj",
+              "name": "get_financial_metric",
+              "input": {
+                "metric": "gross_margin",
+                "period": "Q1 2026"
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "toolu_01AqR3Rsx2E6BHKsENAvULDa",
+              "content": "gross_margin, Q1 2025: 69.8% (source: Q1 2026 Earnings Release)",
+              "is_error": false
+            },
+            {
+              "type": "tool_result",
+              "tool_use_id": "toolu_015utFN8RRtpSVBa388Bi8bj",
+              "content": "gross_margin, Q1 2026: 71.4% (source: Q1 2026 Earnings Release)",
+              "is_error": false
+            }
+          ]
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "Now I'll calculate the improvement:"
+            },
+            {
+              "type": "tool_use",
+              "id": "toolu_015VcSSKzpK7hsVo6TbzUxQQ",
+              "name": "calculator",
+              "input": {
+                "expression": "71.4 - 69.8"
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "toolu_015VcSSKzpK7hsVo6TbzUxQQ",
+              "content": "71.4 - 69.8 = 1.6",
+              "is_error": false
+            }
+          ]
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kestrel's gross margin improved by 1.6 percentage points from Q1 2025 to Q1 2026, rising from 69.8% to 71.4%."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "question": "What were Kestrel's diluted earnings per share for fiscal year 2025?",
+      "answer": "Kestrel did not report diluted earnings per share for fiscal year 2025 in their financial filings.",
+      "steps": [
+        {
+          "turn": 1,
+          "tool": "get_financial_metric",
+          "args": {
+            "metric": "diluted_eps",
+            "period": "FY2025"
+          },
+          "output": "Not reported: the documents don't give diluted_eps for FY2025.",
+          "is_error": false
+        }
+      ],
+      "turns": 2,
+      "stopped": "answered",
+      "model": "claude-haiku-4-5-20251001",
+      "agent_version": "a1",
+      "input_tokens": 3128,
+      "output_tokens": 107,
+      "latency_s": 1.7103768999804743,
+      "messages": [
+        {
+          "role": "user",
+          "content": "What were Kestrel's diluted earnings per share for fiscal year 2025?"
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "toolu_01Ae5nXQd5GMjc2fh9GwFLho",
+              "name": "get_financial_metric",
+              "input": {
+                "metric": "diluted_eps",
+                "period": "FY2025"
+              }
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "tool_result",
+              "tool_use_id": "toolu_01Ae5nXQd5GMjc2fh9GwFLho",
+              "content": "Not reported: the documents don't give diluted_eps for FY2025.",
+              "is_error": false
+            }
+          ]
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "Kestrel did not report diluted earnings per share for fiscal year 2025 in their financial filings."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
