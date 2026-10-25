@@ -4,7 +4,7 @@ An end-to-end evaluation suite for an LLM-powered financial Q&A assistant, built
 a QA engineer tests software: versioned test data, graders that are themselves tested,
 measurable quality thresholds, and a CI pipeline that blocks regressions.
 
-> **Status:** Phases 1–3 of 6 complete; Phase 4 (agent evaluation) in progress: the agent, its tools and the graded agent eval are built; the first graded run is next. Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
+> **Status:** Phases 1–3 of 6 complete; Phase 4 (agent evaluation) in progress: the agent, its tools and the graded agent eval are built, and the first graded run (Run 14) answered 27 of 27 questions right but only 25 of 27 the right way: twice it did the arithmetic in its head instead of using the calculator. Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
 
 ## What's being tested
 
@@ -265,7 +265,7 @@ agent_eval.py         Agent eval: tool choice, arguments, trajectory and answer
 | 1 | RAG app, golden dataset v1, rule-based correctness, CI pipeline | ✅ Done |
 | 2 | Golden v2, LLM-as-judge (faithfulness, correctness), format checks, mutation testing, human calibration | ✅ Done |
 | 3 | Safety and robustness: repeat-run consistency (Run 4), prompt injection including injections hidden in documents (Runs 5–8), paraphrase and typo robustness (Run 9), jailbreaks (Run 10), bias probes (Run 11) | ✅ Done |
-| 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | 🔄 Agent, tools and graded eval built; first graded run next |
+| 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | 🔄 Agent, tools and graded eval built; Run 14 done; prompt a2 next |
 | 5 | Model comparison scorecard and a results dashboard | ⬜ |
 | 6 | Production-style tracing and monitoring | ⬜ |
 
@@ -1005,8 +1005,79 @@ latency-critical product, r2 is the free option and keeps all of its typo gains.
 | Drift comparisons treat a retriever change as a settings change; files without the field count as r1 | So `compare_runs.py` never compares an r1 run with an r3 run as if they were the same setup |
 | CI now runs every eval with r3 | It's the default. Each eval makes about twice as many calls |
 
+### Run 14: the first graded agent run
+
+The Phase 4 agent (prompt a1, Haiku 4.5, 6-turn limit) on `agent_v1`: 27 new questions, each
+with the steps a correct run must contain ([dataset card](data/agent/README.md)). Every check is
+rule-based; no judge calls. Then ag014 and ag017 were run three more times.
+
+| | Result |
+|---|---|
+| **Fully correct** (right tools, arguments, path **and** answer) | **25/27 (93%)** |
+| Tool choice | 25/27 |
+| Arguments (required steps found) | 25/27 |
+| Trajectory (finished, within budget, calculator after inputs, no repeats) | 27/27 |
+| **Answer** | **27/27 (100%)** |
+| Declined with exactly the required sentence | 3 of 6 |
+| Tool errors / repeated calls / turn-limit stops | 0 / 0 / 0 |
+| Avg tool calls / model calls per question | 1.5 / 2.1 |
+| Tokens (whole run) / avg latency per question | 94.1k in, 3.8k out / 1.9s |
+
+| Category | Fully correct | Answer right |
+|---|---|---|
+| lookup | 5/5 | 5/5 |
+| search | 5/5 | 5/5 |
+| calculation | 5/6 | 6/6 |
+| mixed | 1/2 | 2/2 |
+| not_reported | 3/3 | 3/3 |
+| guidance | 2/2 | 2/2 |
+| false_premise | 1/1 | 1/1 |
+| out_of_scope | 3/3 | 3/3 |
+
+- **Every answer was right, but two were right for the wrong reason.** ag014 looked up 2,850 and
+  3,120 enterprise customers and answered "added 270" without calling the calculator; ag017 found
+  the $150M facility and the $40M drawn and answered "$110 million undrawn" the same way. Prompt
+  a1 says "every sum, difference... Never do arithmetic in your head." An answer-only eval would
+  have scored this run 100%.
+- **It's a pattern, not noise.** The six questions with decimals (ag011–ag013, ag015, ag016,
+  ag018) all used the calculator; the two skipped were both whole-number subtractions. In 4 runs
+  (Run 14 plus 3 repeats) both cases made identical tool calls and gave word-for-word identical
+  answers, down to the token counts. The model decides for itself when arithmetic is easy
+  enough to skip the tool.
+- **Two independent checks caught it.** The rule-based "numbers no tool returned" flag listed the
+  same two answers (270 and 110) as the step grader, with no other flags in the run.
+- **Refusal wording depends on what the tools said.** All 3 out-of-scope requests got exactly
+  "I don't know based on the provided documents." All 3 not-reported questions (ag019–ag021) were
+  declined correctly, but in the agent's own words ("Kestrel did not report gross margin for Q2
+  2025 in its financial filings"). When a tool returns a specific "Not reported" message, the
+  agent paraphrases it instead of using the stock sentence. This is graded correct; whether the
+  exact sentence should be required is a spec decision, since the paraphrase tells the user more.
+- **Tool choice held up.** The first tool was right 27/27, including ag010 (employee count, which
+  sounds like a metric but isn't one). Every lookup used the right period, including "the second
+  quarter of 2026" written out. No search query failed to find its paragraph.
+- **Out-of-scope requests used no tools.** ag025–ag027, including ag026 asking for the calculator
+  by name for a non-Kestrel sum, were declined without a single tool call.
+- **The false premise was corrected** (ag024: "The premise of your question is incorrect...
+  revenue actually increased"), with both years' figures, though it spent its full 3-step budget:
+  after looking up both figures it also searched for a "revenue decline".
+
+Caveats: one full run; one case is about 4 percentage points. Only ag014 and ag017 were repeated,
+so the refusal wording and ag024's extra search rest on one run each.
+
+### Changes after Run 14
+
+| Change | Why |
+|---|---|
+| Planned: prompt a2 that sends whole-number arithmetic through the calculator too | ag014 and ag017 skipped it in 4 of 4 runs |
+| Planned: decide the not-reported refusal format (exact sentence, or "X wasn't reported for <period>") | ag019–ag021 paraphrased in Run 14 |
+| Planned: agent eval as a CI gate (`agent_eval.py --min-fully-correct 0.85 --min-answer-accuracy 0.95`) | Allows 4 path failures and 1 wrong answer, set from Run 14 like the other gates |
+
 ### Known gaps
 
+- **The agent's "search when a figure isn't reported" rule is untested.** The metric table
+  holds every figure the filings give for its five metrics, so no case can reward the fallback.
+  Run 14's agent never searched after "Not reported" (ag019–ag021), and nothing was lost.
+- ag024's step budget (3) is tight: Run 14 used all 3, so one more cautious search fails it.
 - ~~The judge prompt doesn't state that guidance isn't an actual result.~~ Fixed in judge-v2 (Run 4).
 - Tool-mode judging has one full API run (Run 6: 0 errors in 32 calls). The judge model can't
   be forced to call the tool, so the guarantee is weaker than designed. It still needs a
