@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-28T03:07:42.521740+00:00",
+  "timestamp": "2026-10-28T03:36:21.688178+00:00",
   "model": "claude-haiku-4-5-20251001",
   "agent_version": "a3",
   "tools_version": "t2",
@@ -10,15 +10,14 @@
     "fully_correct_rate": 0.625,
     "tool_choice_accuracy": 0.875,
     "argument_accuracy": 0.875,
-    "trajectory_ok_rate": 1.0,
-    "answer_accuracy": 0.75,
+    "trajectory_ok_rate": 0.75,
+    "answer_accuracy": 1.0,
     "right_answer_wrong_path_ids": [
-      "cp01"
-    ],
-    "right_path_wrong_answer_ids": [
+      "cp01",
       "cp07",
       "cp08"
     ],
+    "right_path_wrong_answer_ids": [],
     "wrong_tool_ids": [
       "cp01"
     ],
@@ -29,16 +28,14 @@
     "first_tool_wrong_ids": [],
     "over_budget_ids": [],
     "out_of_order_ids": [],
+    "answered_before_calculating_ids": [
+      "cp07",
+      "cp08"
+    ],
     "repeated_call_ids": [],
     "step_limit_ids": [],
-    "empty_answer_ids": [
-      "cp07",
-      "cp08"
-    ],
-    "wrong_answer_ids": [
-      "cp07",
-      "cp08"
-    ],
+    "empty_answer_ids": [],
+    "wrong_answer_ids": [],
     "exact_refusal_rate": null,
     "inexact_refusal_ids": [],
     "unsupported_number_ids": [
@@ -50,7 +47,7 @@
     "tool_errors": 0,
     "input_tokens": 42173,
     "output_tokens": 1393,
-    "avg_latency_s": 2.8,
+    "avg_latency_s": 2.51,
     "by_category": {
       "calculation": {
         "cases": 1,
@@ -60,7 +57,7 @@
       "mixed": {
         "cases": 7,
         "fully_correct": 4,
-        "answer_ok": 5
+        "answer_ok": 7
       }
     }
   },
@@ -87,6 +84,7 @@
       ],
       "trajectory_ok": true,
       "order_ok": null,
+      "answered_before_calculating": null,
       "within_budget": true,
       "repeated_calls": 0,
       "answer_ok": true,
@@ -130,7 +128,8 @@
           "tool_calls": 0
         }
       ],
-      "latency_s": 1.691,
+      "answer_turn": 2,
+      "latency_s": 1.702,
       "input_tokens": 3637,
       "output_tokens": 113
     },
@@ -147,6 +146,7 @@
       "unmatched_steps": [],
       "trajectory_ok": true,
       "order_ok": true,
+      "answered_before_calculating": false,
       "within_budget": true,
       "repeated_calls": 0,
       "answer_ok": true,
@@ -204,7 +204,8 @@
           "tool_calls": 0
         }
       ],
-      "latency_s": 4.841,
+      "answer_turn": 3,
+      "latency_s": 3.046,
       "input_tokens": 5749,
       "output_tokens": 212
     },
@@ -221,6 +222,7 @@
       "unmatched_steps": [],
       "trajectory_ok": true,
       "order_ok": true,
+      "answered_before_calculating": false,
       "within_budget": true,
       "repeated_calls": 0,
       "answer_ok": true,
@@ -289,7 +291,8 @@
           "tool_calls": 0
         }
       ],
-      "latency_s": 3.317,
+      "answer_turn": 3,
+      "latency_s": 3.386,
       "input_tokens": 5949,
       "output_tokens": 257
     },
@@ -306,6 +309,7 @@
       "unmatched_steps": [],
       "trajectory_ok": true,
       "order_ok": true,
+      "answered_before_calculating": false,
       "within_budget": true,
       "repeated_calls": 0,
       "answer_ok": true,
@@ -373,7 +377,8 @@
           "tool_calls": 0
         }
       ],
-      "latency_s": 3.169,
+      "answer_turn": 3,
+      "latency_s": 3.07,
       "input_tokens": 6265,
       "output_tokens": 239
     },
@@ -390,6 +395,7 @@
       "unmatched_steps": [],
       "trajectory_ok": true,
       "order_ok": true,
+      "answered_before_calculating": false,
       "within_budget": true,
       "repeated_calls": 0,
       "answer_ok": true,
@@ -447,7 +453,8 @@
           "tool_calls": 0
         }
       ],
-      "latency_s": 2.659,
+      "answer_turn": 3,
+      "latency_s": 2.555,
       "input_tokens": 5719,
       "output_tokens": 168
     },
@@ -464,6 +471,7 @@
       "unmatched_steps": [],
       "trajectory_ok": true,
       "order_ok": null,
+      "answered_before_calculating": false,
       "within_budget": true,
       "repeated_calls": 0,
       "answer_ok": true,
@@ -505,7 +513,8 @@
           "tool_calls": 0
         }
       ],
-      "latency_s": 1.463,
+      "answer_turn": 2,
+      "latency_s": 1.548,
       "input_tokens": 3459,
       "output_tokens": 76
     },
@@ -513,18 +522,19 @@
       "id": "cp07",
       "category": "mixed",
       "question": "How much more could Kestrel still borrow under its revolving credit facility as of June 30, 2026?",
-      "answer": "",
+      "answer": "Based on the documents, Kestrel has a $150 million revolving credit facility with $40 million drawn as of June 30, 2026, leaving $110 million available to borrow.",
       "tool_choice_ok": true,
       "missing_tools": [],
       "forbidden_tools_used": [],
       "first_tool_ok": true,
       "args_ok": true,
       "unmatched_steps": [],
-      "trajectory_ok": true,
+      "trajectory_ok": false,
       "order_ok": true,
+      "answered_before_calculating": true,
       "within_budget": true,
       "repeated_calls": 0,
-      "answer_ok": false,
+      "answer_ok": true,
       "declined": false,
       "fully_correct": false,
       "refusal_exact": null,
@@ -558,7 +568,7 @@
       "num_steps": 2,
       "max_steps": 3,
       "turns": 3,
-      "stopped": "empty_answer",
+      "stopped": "answered",
       "turn_log": [
         {
           "turn": 1,
@@ -579,7 +589,8 @@
           "tool_calls": 0
         }
       ],
-      "latency_s": 2.641,
+      "answer_turn": 2,
+      "latency_s": 2.3,
       "input_tokens": 5711,
       "output_tokens": 171
     },
@@ -587,18 +598,19 @@
       "id": "cp08",
       "category": "mixed",
       "question": "What was the remaining availability on Kestrel's revolving credit facility at June 30, 2026?",
-      "answer": "",
+      "answer": "With a $150 million revolving credit facility and $40 million drawn as of June 30, 2026, the remaining availability was $110 million.",
       "tool_choice_ok": true,
       "missing_tools": [],
       "forbidden_tools_used": [],
       "first_tool_ok": true,
       "args_ok": true,
       "unmatched_steps": [],
-      "trajectory_ok": true,
+      "trajectory_ok": false,
       "order_ok": true,
+      "answered_before_calculating": true,
       "within_budget": true,
       "repeated_calls": 0,
-      "answer_ok": false,
+      "answer_ok": true,
       "declined": false,
       "fully_correct": false,
       "refusal_exact": null,
@@ -632,7 +644,7 @@
       "num_steps": 2,
       "max_steps": 3,
       "turns": 3,
-      "stopped": "empty_answer",
+      "stopped": "answered",
       "turn_log": [
         {
           "turn": 1,
@@ -653,7 +665,8 @@
           "tool_calls": 0
         }
       ],
-      "latency_s": 2.59,
+      "answer_turn": 2,
+      "latency_s": 2.454,
       "input_tokens": 5684,
       "output_tokens": 157
     }

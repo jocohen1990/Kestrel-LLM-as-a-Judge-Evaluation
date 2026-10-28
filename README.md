@@ -4,7 +4,7 @@ An end-to-end evaluation suite for an LLM-powered financial Q&A assistant, built
 a QA engineer tests software: versioned test data, graders that are themselves tested,
 measurable quality thresholds, and a CI pipeline that blocks regressions.
 
-> **Status:** Phases 1–3 of 6 complete; Phase 4 (agent evaluation) in progress: the agent, its tools and the graded agent eval are built, and the first graded run (Run 14) answered 27 of 27 questions right but only 25 of 27 the right way: twice it did the arithmetic in its head instead of using the calculator. Prompt a2 (Run 15) fixed one of the two calculator skips (ag014, 4 of 4 runs) but not ag017, and followed the new not-reported sentence word for word, copying the tool's internal metric names into it; the agent eval is now a CI gate. Prompt a3 (Run 17) made every not-reported answer exact, but the calculator probes showed the agent still does what's-left sums in its head, and on two of them answers first and only then "checks" with the calculator, which the path checks can't yet see. Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
+> **Status:** Phases 1–4 of 6 complete; Phase 5 (model comparison scorecard and dashboard) is next. Phase 4 (agent evaluation, Runs 14–18) grades a LangGraph agent's tool choice, arguments, path and answer: the default prompt a3 is fully correct on 26 of 27 cases and answers all 27, and every run showed answer accuracy alone would have hidden the cases right for the wrong reason, such as arithmetic done in the model's head. One kind of question (what's left on the credit facility) is still done in the model's head and is recorded as a known limit; the eval catches it even when the agent calls the calculator afterwards to check. See the [Phase 4 summary](#phase-4-summary). Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
 
 ## What's being tested
 
@@ -267,8 +267,8 @@ agent_eval.py         Agent eval: tool choice, arguments, trajectory and answer
 | 1 | RAG app, golden dataset v1, rule-based correctness, CI pipeline | ✅ Done |
 | 2 | Golden v2, LLM-as-judge (faithfulness, correctness), format checks, mutation testing, human calibration | ✅ Done |
 | 3 | Safety and robustness: repeat-run consistency (Run 4), prompt injection including injections hidden in documents (Runs 5–8), paraphrase and typo robustness (Run 9), jailbreaks (Run 10), bias probes (Run 11) | ✅ Done |
-| 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | 🔄 Agent, tools, graded eval and CI gate built; Runs 14–17 done; a3 default; "answered before calculating" check and answer fallback built, Run 18 next |
-| 5 | Model comparison scorecard and a results dashboard | ⬜ |
+| 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | ✅ Done (Runs 14–18, [summary](#phase-4-summary)) |
+| 5 | Model comparison scorecard and a results dashboard | ⬜ Next |
 | 6 | Production-style tracing and monitoring | ⬜ |
 
 ## Findings
@@ -1255,12 +1255,73 @@ untested, since the corpus has no second fact of that kind.
 | **a3 is the default** | Best of a1–a3 on every agent_v1 number (Run 17, one run). The CI gate's thresholds still hold: 26/27 fully correct (0.85 needed), 27/27 answers (0.95 needed) |
 | ag017 is recorded as a **known limit**, and no a4 is planned for it | Two prompt rules (a2, a3) fixed ag014 but not the credit-facility what's-left questions, in 12 runs between them |
 
+### Run 18: confirming the new path check and the answer fallback
+
+Prompt a3 (now the default) with tools t2, the full agent_v1 set and `calc_probes_v2`, once
+each, with the "answered before calculating" check and the empty-turn fallback switched on. The
+model made the same calls, wrote the same text and used the same tokens as in Run 17 (105.9k in,
+3.8k out on agent_v1; 42.2k in, 1.4k out on the probes), so every difference below comes from the
+two changes, not from the model.
+
+| | Run 17 | Run 18 |
+|---|---|---|
+| agent_v1 fully correct / answers | 26/27 / 27/27 | 26/27 / 27/27 |
+| agent_v1 flagged *answered before calculating* | (not checked) | none of 7 calculations |
+| Probes fully correct / answers | 5/8 / 6/8 | 5/8 / **8/8** |
+| Probes *right answer, wrong path* | cp01 | cp01, **cp07, cp08** |
+| Probes *wrong answer* / empty answers | cp07, cp08 / cp07, cp08 | none / none |
+
+- **Both changes did what they were built for.** cp07 and cp08 now return the answer they wrote
+  on turn 2 ("...the remaining availability was $110 million"), and the new check fails their
+  path because that figure was written before the calculator returned it. They now score as the
+  skip they are, *right answer, wrong path*, instead of *wrong answer*.
+- **No false positives.** None of agent_v1's 7 calculations, or the probes' other 5, was flagged.
+  Every one of them gives its figure only after the calculator returns.
+- **The CI gate holds:** 96% fully correct (0.85 needed) and 100% answers (0.95 needed).
+
+Caveats: one run each. With the model's behavior unchanged from Run 17, this confirms the two
+changes on live output; it doesn't add evidence about the agent itself.
+
+### Phase 4 summary
+
+Five graded runs (14–18) of a LangGraph agent with three tools, plus 8 calculator probes.
+
+| | Run 14 (a1, t1) | Run 18 (a3, t2) |
+|---|---|---|
+| **Fully correct** (right tools, arguments, path and answer) | 25/27 (93%) | **26/27 (96%)** |
+| Answer | 27/27 | 27/27 |
+| Exact not-reported / out-of-scope sentence | 3 of 6 | **6 of 6** |
+| Arithmetic done in its head | ag014, ag017 | ag017 (known limit) |
+| Internal names in answers | 0 (not checked) | 0 (checked) |
+
+What Phase 4 showed:
+
+- **Answer accuracy hides path failures.** Every run answered 27 of 27 right. The step graders
+  found the answers that were right for the wrong reason, which an answer-only eval scores 100%.
+- **Prompt rules fixed some failures and not others, and only repeat runs showed which.**
+  "Even simple whole numbers" fixed ag014 (0 of 4 to 4 of 4). Neither a2 nor a3 moved the
+  credit-facility what's-left questions in 24 runs (ag017, cp01, cp07, cp08), so that's recorded as a known limit instead
+  of a fourth prompt.
+- **Diagnostic probes beat guessing.** Six one-change variants of ag017 ruled out the
+  numbers, their source and the paragraph, and pointed at the kind of question.
+- **The eval needed its own fixes along the way**, each found from a run: exact not-reported
+  sentences (Run 14), code identifiers in answers (Run 15), a per-turn log and the empty-answer
+  outcome (Run 16), and the answered-before-calculating check (Run 17). The last one closed a
+  hole where the agent *looked* like it used the calculator but had already done the sum in its
+  head.
+- **The agent copies what it sees.** Internal metric keys reached answers from the tool's message
+  *and* from its own tool calls; fixing one source fixed one case of three (Runs 15–17).
+
+Open at the end of Phase 4 (see Known gaps): ag017-type questions; the "numbers no tool
+returned" flag on small whole numbers; the metric key in successful lookups; the untested
+"search when a figure isn't reported" path; every what's-left case resting on one paragraph.
+
 ### Known gaps
 
 - **Known limit: what's left on the credit facility is done in the model's head.** ag017, cp01,
   cp07 and cp08 ask how much of the $150 million facility is left after $40 million drawn. Under
-  a1, a2 and a3 the agent either skips the calculator (ag017, cp01: 0 of 16 runs, 4 under a1 and 12 under a2 and a3) or states $110
-  million first and calculates afterwards (cp07, cp08: 8 of 8). Only the outright "size minus
+  a1, a2 and a3 the agent either skips the calculator (ag017, cp01: 18 of 18 runs, 4 under a1 and 14 under a2 and a3) or states $110
+  million first and calculates afterwards (cp07, cp08: 10 of 10). Only the outright "size minus
   amount drawn" (cp02) is calculated first. The answer is right every time; the eval scores
   every one as *right answer, wrong path*. Two prompt rules didn't move it, so a fix would need
   something other than wording, such as a dedicated tool for it or a check that rejects an
