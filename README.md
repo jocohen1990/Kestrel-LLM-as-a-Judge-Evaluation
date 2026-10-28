@@ -4,7 +4,7 @@ An end-to-end evaluation suite for an LLM-powered financial Q&A assistant, built
 a QA engineer tests software: versioned test data, graders that are themselves tested,
 measurable quality thresholds, and a CI pipeline that blocks regressions.
 
-> **Status:** Phases 1–3 of 6 complete; Phase 4 (agent evaluation) in progress: the agent, its tools and the graded agent eval are built, and the first graded run (Run 14) answered 27 of 27 questions right but only 25 of 27 the right way: twice it did the arithmetic in its head instead of using the calculator. Prompt a2 (calculator for all arithmetic, a fixed not-reported sentence) and the agent CI gate are built; Run 15 tests a2. Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
+> **Status:** Phases 1–3 of 6 complete; Phase 4 (agent evaluation) in progress: the agent, its tools and the graded agent eval are built, and the first graded run (Run 14) answered 27 of 27 questions right but only 25 of 27 the right way: twice it did the arithmetic in its head instead of using the calculator. Prompt a2 (Run 15) fixed one of the two calculator skips (ag014, 4 of 4 runs) but not ag017, and followed the new not-reported sentence word for word, copying the tool's internal metric names into it; the agent eval is now a CI gate. Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
 
 ## What's being tested
 
@@ -266,7 +266,7 @@ agent_eval.py         Agent eval: tool choice, arguments, trajectory and answer
 | 1 | RAG app, golden dataset v1, rule-based correctness, CI pipeline | ✅ Done |
 | 2 | Golden v2, LLM-as-judge (faithfulness, correctness), format checks, mutation testing, human calibration | ✅ Done |
 | 3 | Safety and robustness: repeat-run consistency (Run 4), prompt injection including injections hidden in documents (Runs 5–8), paraphrase and typo robustness (Run 9), jailbreaks (Run 10), bias probes (Run 11) | ✅ Done |
-| 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | 🔄 Agent, tools and graded eval built; Run 14 done; prompt a2 and agent CI gate built, Run 15 next |
+| 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | 🔄 Agent, tools, graded eval and CI gate built; Runs 14–15 done; not-reported tool message and ag017 next |
 | 5 | Model comparison scorecard and a results dashboard | ⬜ |
 | 6 | Production-style tracing and monitoring | ⬜ |
 
@@ -1080,16 +1080,67 @@ calculator example (60 − 25) shares no number with any case, and the not-repor
 (diluted EPS for FY2024) is a real gap no case asks about. Tests check both. a1 stays the
 default until a2 has a graded run.
 
+### Run 15: prompt a2
+
+Prompt a2 on the same 27 cases, same model and settings as Run 14. Then ag014, ag017 and
+ag019–ag021 were run three more times.
+
+| | Run 14 (a1) | Run 15 (a2) |
+|---|---|---|
+| **Fully correct** | 25/27 (93%) | **26/27 (96%)** |
+| Tool choice / arguments | 25/27 / 25/27 | 26/27 / 26/27 |
+| Trajectory | 27/27 | 27/27 |
+| **Answer** | 27/27 | 27/27 |
+| Declined with exactly the required sentence | 3 of 6 | 3 of 6 |
+| Avg tool calls / model calls per question | 1.48 / 2.11 | 1.52 / 2.15 |
+| Tokens (whole run) / avg latency per question | 94.1k in, 3.8k out / 1.9s | 103.6k in, 3.8k out / 2.0s |
+
+- **The calculator rule fixed one case and missed the other, 4 times out of 4 each.** ag014
+  (customers added, two metric lookups) now calls `calculator(3120 - 2850)` in every run. ag017
+  (undrawn credit, one search) still answers "$110 million undrawn" with no calculation in every
+  run. The source paragraph says only "$150 million revolving credit facility" and "$40 million
+  was drawn", so 110 appears nowhere in the filings; the case is right. What separates the two:
+  in ag017 both numbers arrive in one search paragraph and the answer comes on the next turn.
+  That's a guess, not a tested cause.
+- **The not-reported sentence was followed word for word, with the tool's internal names.**
+  All three answers were "Kestrel did not report net_income for FY2024." (and `gross_margin`,
+  `enterprise_customers`), identical in all 4 runs. The tool's message says "the documents don't
+  give net_income for FY2024", and a2 told the agent to write "the period as the tool wrote it",
+  so it copied the metric from the same place. The prompt's list of plain names lost to the text
+  sitting right in front of it. The format is right; exact refusals stay at 3 of 6 because the
+  names are wrong.
+- **The internals check missed it.** `mentions_internals` looks for words like "tool" and
+  "search", not code identifiers, so "net_income" in a user-facing answer went unflagged.
+- **The worry about extra searches didn't happen.** a2's not-reported wording reads like an
+  instruction to search first, but ag019–ag021 made one call each in all 4 runs, the same as a1.
+- **Small side effects.** ag011 and ag005 dropped details they gave before (the two quarters'
+  figures, the document name), and ag018 looked up revenue before searching instead of after.
+  All still correct. a2 costs about 10% more input tokens (a longer prompt, plus ag014's extra
+  turn).
+
+Caveats: one full run. The five repeated cases are fully deterministic so far (identical calls,
+answers and token counts in all 4 runs), so the other 22 rest on one run each. One case is
+about 4 percentage points: 25 vs. 26 of 27 isn't a measured improvement on its own, but ag014
+going from 0 of 4 to 4 of 4 is.
+
+### Changes after Run 15
+
+| Change | Why |
+|---|---|
+| Planned: fix the name at the source. The metric tool's "Not reported" message uses the plain name ("net income") instead of the key (`net_income`) | ag019–ag021 copied the key in 4 of 4 runs. The alternative, a prompt a3 that says "translate the key", asks the model to override text it's looking at, which is what just failed |
+| Planned: `mentions_internals` flags code identifiers (snake_case metric keys) in answers | "net_income" reached the user unflagged in Run 15 |
+| Planned: find out why ag017 skips the calculator (e.g. a variant where the two figures come from two searches) before writing a3 | One wording change fixed ag014 and not ag017; another guess at wording could fix nothing |
+| Not yet: make a2 the default | One case better, nothing worse, but its not-reported answers leak internal names |
+
 ### Known gaps
 
 - **Exact refusals are reported, not gated.** a2's not-reported sentence counts toward
   "Declined with exactly the required sentence" but not toward fully correct, the same as the
   stock sentence. A paraphrased decline still passes the CI gate.
-- **a2 may search more on not-reported questions.** Its rule declines once "a search doesn't
-  find it either", which reads more like an instruction to search than a1's "search when the
-  metric tool says a figure isn't reported". Run 14 never searched after "Not reported". A search
-  still fits the 3-step budget, but watch ag019–ag021's step counts in Run 15: a change there is
-  from this wording, not the calculator rule.
+- a2's not-reported wording ("and a search doesn't find it either") could push the agent to
+  search first. It didn't in Run 15 (one call each, 4 of 4 runs), but nothing forces a search, so
+  the "search when a figure isn't reported" path is still untested (below).
+- **Code identifiers in answers aren't flagged** ("net_income", Run 15).
 - **The agent's "search when a figure isn't reported" rule is untested.** The metric table
   holds every figure the filings give for its five metrics, so no case can reward the fallback.
   Run 14's agent never searched after "Not reported" (ag019–ag021), and nothing was lost.
