@@ -48,7 +48,13 @@ heuristic that can misfire (read the flagged answers before reporting them):
 And one strict format check, like the RAG evals' exact-refusal rate:
 
   refusal_exact  For questions with no answer: declined with exactly the
-                 sentence prompt a1 demands, and nothing else.
+                 required sentence, and nothing else. Out of scope: the stock
+                 "I don't know based on the provided documents." Not reported
+                 (spec decided after Run 14): "Kestrel did not report <metric>
+                 for <period>.", built from the case's metric step with
+                 app.agent.not_reported_answer, so the agent's prompt and the
+                 grader can't drift apart. Prompt a1 never asked for that
+                 sentence, so a1 isn't expected to pass it; a2 is.
 
 Everything here is a pure function of (case, AgentResult): no API calls.
 """
@@ -57,6 +63,7 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
+from app.agent import not_reported_answer
 from app.rag import REFUSAL
 from app.tools import METRICS, PERIODS, TOOLS
 from evals.injection import declined, task_check
@@ -158,6 +165,9 @@ def load_agent_cases(path: Path) -> list[dict]:
             fail("a question with no answer can't have expected answer values")
         if case["category"] not in DECLINE_CATEGORIES and not has_answer:
             fail("an answerable question needs something to check the answer against")
+        if case["category"] == "not_reported" and not _metric_step(case):
+            fail("a not_reported case needs a get_financial_metric step: "
+                 "its exact refusal names that metric and period")
         seen.add(case["id"])
         cases.append(case)
     return cases
@@ -229,6 +239,22 @@ def repeated_calls(steps: list[dict]) -> int:
 
 
 # ---- Answer checks --------------------------------------------------------------
+
+def _metric_step(case: dict) -> dict | None:
+    return next((r for r in case["required_steps"]
+                 if "any_of" not in r and r["tool"] == "get_financial_metric"), None)
+
+
+def expected_refusal(case: dict) -> str | None:
+    """The exact sentence a no-answer case must decline with, or None for a
+    question that has an answer."""
+    if case["category"] == "not_reported":
+        args = _metric_step(case)["args"]
+        return not_reported_answer(args["metric"], args["period"])
+    if case["category"] in DECLINE_CATEGORIES:
+        return REFUSAL
+    return None
+
 
 def declined_agent(answer: str) -> bool:
     text = " ".join((answer or "").replace("’", "'").lower().split())
@@ -315,7 +341,8 @@ def grade_agent(case: dict, result) -> dict:
         "answer_ok": answer_ok,
         "declined": did_decline,
         "fully_correct": tool_choice_ok and args_ok and trajectory_ok and answer_ok,
-        "refusal_exact": refusal_is_exact(result.answer, REFUSAL) if should_decline else None,
+        "refusal_exact": (refusal_is_exact(result.answer, expected_refusal(case))
+                          if should_decline else None),
         "unsupported_numbers": unsupported_numbers(result.answer, case["question"], steps),
         "mentions_internals": agent_mentions_internals(result.answer),
         "tool_errors": sum(bool(s["is_error"]) for s in steps),

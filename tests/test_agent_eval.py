@@ -23,7 +23,7 @@ from app.tools import METRIC_TABLE, run_tool
 from evals import agent_eval
 from evals.agent_eval import (AgentDatasetError, DECLINE_CATEGORIES, agent_mentions_internals,
                               calculator_after_inputs, calculator_value, declined_agent,
-                              grade_agent, load_agent_cases, match_steps, repeated_calls,
+                              expected_refusal, grade_agent, load_agent_cases, match_steps, repeated_calls,
                               run_case, summarize_agent, unsupported_numbers)
 
 CASES = load_agent_cases(AGENT_DIR / "agent_v1.jsonl")
@@ -83,7 +83,18 @@ def perfect_steps(case):
     return steps
 
 
+# The exact not-reported sentences, written out by hand (not built with the
+# template), so a mistake in app.agent.METRIC_NAMES or the template fails here.
+NOT_REPORTED_SENTENCES = {
+    "ag019": "Kestrel did not report net income for FY2024.",
+    "ag020": "Kestrel did not report gross margin for Q2 2025.",
+    "ag021": "Kestrel did not report enterprise customers for Q1 2026.",
+}
+
+
 def perfect_answer(case):
+    if case["category"] == "not_reported":
+        return NOT_REPORTED_SENTENCES[case["id"]]
     if case["category"] in DECLINE_CATEGORIES:
         return REFUSAL
     parts = [f"{n:g}" for n in case["expected_numbers"]] + case["must_include"]
@@ -241,6 +252,51 @@ def test_not_reported_in_its_own_words_is_right_but_not_exact():
     assert grade["answer_ok"] and grade["fully_correct"] and grade["refusal_exact"] is False
 
 
+# ---- The not-reported sentence (spec decided after Run 14) ---------------------------
+
+def test_every_not_reported_case_has_a_hand_written_sentence():
+    assert {c["id"] for c in CASES if c["category"] == "not_reported"} == set(NOT_REPORTED_SENTENCES)
+
+
+@pytest.mark.parametrize("case_id,sentence", NOT_REPORTED_SENTENCES.items())
+def test_expected_refusal_for_not_reported_names_the_metric_and_period(case_id, sentence):
+    assert expected_refusal(BY_ID[case_id]) == sentence
+
+
+def test_expected_refusal_out_of_scope_is_the_stock_sentence_and_answerable_is_none():
+    assert expected_refusal(BY_ID["ag025"]) == REFUSAL
+    assert expected_refusal(BY_ID["ag001"]) is None
+
+
+@pytest.mark.parametrize("case_id,answer", [
+    # Run 14's actual a1 answers: declined correctly, but not in the a2 format.
+    ("ag019", "Kestrel's net income for fiscal year 2024 was not reported in the available documents."),
+    ("ag020", "Kestrel did not report gross margin for Q2 2025 in its financial filings."),
+    ("ag021", "Kestrel did not report the number of enterprise customers at the end of Q1 2026 in its filings."),
+    # The stock sentence is a correct decline, but not the required one here.
+    ("ag019", REFUSAL),
+    # Right format, wrong period or metric: it named something the user didn't ask about.
+    ("ag019", "Kestrel did not report net income for FY2025."),
+    ("ag020", "Kestrel did not report revenue for Q2 2025."),
+])
+def test_not_reported_declines_that_arent_the_sentence_are_right_but_not_exact(case_id, answer):
+    case = BY_ID[case_id]
+    grade = grade_agent(case, result(perfect_steps(case), answer))
+    assert grade["answer_ok"] and grade["fully_correct"]
+    assert grade["refusal_exact"] is False
+
+
+def test_not_reported_sentence_on_an_out_of_scope_question_isnt_exact():
+    grade = grade_agent(BY_ID["ag025"], result([], "Kestrel did not report net income for FY2024."))
+    assert grade["answer_ok"] and grade["refusal_exact"] is False
+
+
+def test_curly_apostrophes_and_whitespace_dont_break_the_exact_match():
+    case = BY_ID["ag019"]
+    grade = grade_agent(case, result(perfect_steps(case), "  Kestrel did not report net income for FY2024.\n"))
+    assert grade["refusal_exact"] is True
+
+
 def test_estimating_a_not_reported_figure_fails():
     case = BY_ID["ag019"]
     grade = grade_agent(case, result([metric("net_income", "FY2024")],
@@ -355,6 +411,8 @@ def test_good_case_loads(tmp_path):
     ({"forbidden_tools": ["shell"]}, "unknown tool"),
     ({"category": "out_of_scope"}, "no answer"),
     ({"expected_numbers": []}, "check the answer"),
+    ({"category": "not_reported", "expected_numbers": [],
+      "required_steps": [{"tool": "search_documents", "evidence": "x"}]}, "needs a get_financial_metric"),
 ])
 def test_bad_cases_fail_loudly(tmp_path, change, message):
     with pytest.raises(AgentDatasetError, match=message):

@@ -4,7 +4,7 @@ An end-to-end evaluation suite for an LLM-powered financial Q&A assistant, built
 a QA engineer tests software: versioned test data, graders that are themselves tested,
 measurable quality thresholds, and a CI pipeline that blocks regressions.
 
-> **Status:** Phases 1–3 of 6 complete; Phase 4 (agent evaluation) in progress: the agent, its tools and the graded agent eval are built, and the first graded run (Run 14) answered 27 of 27 questions right but only 25 of 27 the right way: twice it did the arithmetic in its head instead of using the calculator. Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
+> **Status:** Phases 1–3 of 6 complete; Phase 4 (agent evaluation) in progress: the agent, its tools and the graded agent eval are built, and the first graded run (Run 14) answered 27 of 27 questions right but only 25 of 27 the right way: twice it did the arithmetic in its head instead of using the calculator. Prompt a2 (calculator for all arithmetic, a fixed not-reported sentence) and the agent CI gate are built; Run 15 tests a2. Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
 
 ## What's being tested
 
@@ -37,7 +37,7 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-pytest -v                          # 529 offline tests: free, no API key needed
+pytest -v                          # 554 offline tests: free, no API key needed
 
 cp .env.example .env               # then add your ANTHROPIC_API_KEY
 python run_evals.py                # golden v3, prompt v6, retriever r3, LLM judge (judge-v2)
@@ -96,7 +96,8 @@ only shows the trajectory; `agent_eval.py` grades it:
 ```bash
 python agent_eval.py                          # 27 cases: tool choice, arguments, trajectory, answer
 python agent_eval.py --category calculation   # one category
-python agent_eval.py --min-fully-correct 0.85 # exit 1 below the threshold (a CI gate)
+python agent_eval.py --agent a2               # prompt a2 (a1 is the default)
+python agent_eval.py --min-fully-correct 0.85 --min-answer-accuracy 0.95   # the CI gate
 ```
 
 Each case ([dataset card](data/agent/README.md)) lists the steps a correct run must contain, graded
@@ -220,7 +221,7 @@ app/                  The system under test
   llm.py              Single wrapper for every model call
   rag.py              Retrieve -> prompt -> answer (prompts v1-v6, retrievers r1-r3, all kept)
   tools.py            The agent's tools: metric lookup, document search, safe calculator
-  agent.py            LangGraph agent: model and tool nodes, records each run's trajectory (prompt a1)
+  agent.py            LangGraph agent: model and tool nodes, records each run's trajectory (prompts a1, a2)
 evals/                The evaluation framework
   dataset.py          Loads and validates the golden dataset
   metrics.py          Rule-based graders
@@ -244,7 +245,7 @@ data/
   robustness/         Hand-written reworded and casual questions (paraphrases_v1, held-out v2), dataset card
   bias/               Counterfactual bias groups (bias_v1), dataset card
   agent/              Agent cases with required tool steps (agent_v1), dataset card
-tests/                529 offline tests
+tests/                554 offline tests
 run_evals.py          Eval runner and quality gates
 calibrate.py          Judge validation commands
 consistency.py        Repeat-run consistency check
@@ -265,7 +266,7 @@ agent_eval.py         Agent eval: tool choice, arguments, trajectory and answer
 | 1 | RAG app, golden dataset v1, rule-based correctness, CI pipeline | ✅ Done |
 | 2 | Golden v2, LLM-as-judge (faithfulness, correctness), format checks, mutation testing, human calibration | ✅ Done |
 | 3 | Safety and robustness: repeat-run consistency (Run 4), prompt injection including injections hidden in documents (Runs 5–8), paraphrase and typo robustness (Run 9), jailbreaks (Run 10), bias probes (Run 11) | ✅ Done |
-| 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | 🔄 Agent, tools and graded eval built; Run 14 done; prompt a2 next |
+| 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | 🔄 Agent, tools and graded eval built; Run 14 done; prompt a2 and agent CI gate built, Run 15 next |
 | 5 | Model comparison scorecard and a results dashboard | ⬜ |
 | 6 | Production-style tracing and monitoring | ⬜ |
 
@@ -1068,12 +1069,27 @@ so the refusal wording and ag024's extra search rest on one run each.
 
 | Change | Why |
 |---|---|
-| Planned: prompt a2 that sends whole-number arithmetic through the calculator too | ag014 and ag017 skipped it in 4 of 4 runs |
-| Planned: decide the not-reported refusal format (exact sentence, or "X wasn't reported for <period>") | ag019–ag021 paraphrased in Run 14 |
-| Planned: agent eval as a CI gate (`agent_eval.py --min-fully-correct 0.85 --min-answer-accuracy 0.95`) | Allows 4 path failures and 1 wrong answer, set from Run 14 like the other gates |
+| Prompt a2: the calculator rule now names "even simple whole numbers" and adds a self-check ("every figure in your answer was returned by a tool, either looked up or calculated") | ag014 and ag017 skipped it in 4 of 4 runs |
+| Not-reported spec decided: **"Kestrel did not report \<metric\> for \<period\>."**, with the metric's plain name and the period as the tool writes it. a2 asks for it; out-of-scope keeps the stock sentence | ag019–ag021 paraphrased in Run 14. The paraphrase told the user more than "I don't know", so the spec keeps the detail and fixes the wording, which makes it checkable |
+| The exact-refusal check builds each not-reported case's sentence from its metric step, with the same function the prompt uses (`app.agent.not_reported_answer`) | The prompt and the grader can't drift apart. Re-grading Run 14 changes nothing: 3 of 6 exact, before and after |
+| Agent eval as a CI gate (`agent_eval.py --min-fully-correct 0.85 --min-answer-accuracy 0.95`) | Allows 4 path failures and 1 wrong answer, set from Run 14 like the other gates |
+
+a2 changes two rules and leaves every other line of a1 word for word (a test checks this), so
+Run 15 can say what those two rules did. Neither example in a2 comes from the eval: the
+calculator example (60 − 25) shares no number with any case, and the not-reported example
+(diluted EPS for FY2024) is a real gap no case asks about. Tests check both. a1 stays the
+default until a2 has a graded run.
 
 ### Known gaps
 
+- **Exact refusals are reported, not gated.** a2's not-reported sentence counts toward
+  "Declined with exactly the required sentence" but not toward fully correct, the same as the
+  stock sentence. A paraphrased decline still passes the CI gate.
+- **a2 may search more on not-reported questions.** Its rule declines once "a search doesn't
+  find it either", which reads more like an instruction to search than a1's "search when the
+  metric tool says a figure isn't reported". Run 14 never searched after "Not reported". A search
+  still fits the 3-step budget, but watch ag019–ag021's step counts in Run 15: a change there is
+  from this wording, not the calculator rule.
 - **The agent's "search when a figure isn't reported" rule is untested.** The metric table
   holds every figure the filings give for its five metrics, so no case can reward the fallback.
   Run 14's agent never searched after "Not reported" (ag019–ag021), and nothing was lost.

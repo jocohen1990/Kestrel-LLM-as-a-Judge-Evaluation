@@ -1,7 +1,8 @@
 """Agent eval (Phase 4): grade the agent's tool choice, arguments, trajectory and answer.
 
 Usage:
-    python agent_eval.py                          # all 27 cases, agent a1
+    python agent_eval.py                          # all 27 cases, agent a1 (the default)
+    python agent_eval.py --agent a2               # the same cases with prompt a2
     python agent_eval.py --category calculation   # one category
     python agent_eval.py --ids ag013 ag016        # specific cases
     python agent_eval.py --max-turns 3            # tighter step limit

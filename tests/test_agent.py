@@ -9,12 +9,18 @@ Most tests step through the nodes directly (`step_through` below), so they run
 without LangGraph installed. The tests at the bottom build the real LangGraph
 graph and are skipped if the `langgraph` package isn't installed.
 """
+import difflib
+import re
+
 import pytest
 
 from app import agent as agent_module
-from app.agent import AGENT_PROMPTS, KestrelAgent, initial_state, to_result
+from app.agent import (AGENT_PROMPTS, DEFAULT_AGENT_VERSION, METRIC_NAMES, KestrelAgent,
+                       initial_state, not_reported_answer, to_result)
 from app.llm import ToolTurn
+from app.paths import AGENT_DIR
 from app.rag import REFUSAL
+from app.tools import METRIC_TABLE, METRICS
 
 
 def text(t):
@@ -151,6 +157,91 @@ def test_system_prompt_is_the_versioned_one(monkeypatch):
     step_through(KestrelAgent(agent_version="a1"), "?")
     assert fake.sent[0][0] == AGENT_PROMPTS["a1"]
     assert REFUSAL in AGENT_PROMPTS["a1"]
+
+
+@pytest.mark.parametrize("version", sorted(AGENT_PROMPTS))
+def test_every_version_is_sent_as_written(monkeypatch, version):
+    fake = use_model(monkeypatch, [text("ok")])
+    step_through(KestrelAgent(agent_version=version), "?")
+    assert fake.sent[0][0] == AGENT_PROMPTS[version]
+    assert REFUSAL in AGENT_PROMPTS[version]
+
+
+def test_default_stays_a1_until_a2_has_a_graded_run():
+    # Like the RAG prompts: a new version becomes the default only after a run
+    # shows it's better. Change this test in the same commit as the default.
+    assert DEFAULT_AGENT_VERSION == "a1"
+
+
+# ---- Prompt a2 (after Run 14) ------------------------------------------------------
+
+def _changed_lines(old, new):
+    return [l for l in difflib.ndiff(old.splitlines(), new.splitlines()) if l[:2] in ("- ", "+ ")]
+
+
+def test_a2_changes_only_the_calculator_and_not_reported_rules():
+    # One run can only say what a change did if nothing else changed with it.
+    removed = [l[2:] for l in _changed_lines(AGENT_PROMPTS["a1"], AGENT_PROMPTS["a2"]) if l[0] == "-"]
+    added = [l[2:] for l in _changed_lines(AGENT_PROMPTS["a1"], AGENT_PROMPTS["a2"]) if l[0] == "+"]
+    assert len(removed) == 2 and len(added) == 3
+    assert removed[0].startswith("- calculator:") and added[0].startswith("- calculator:")
+    assert removed[1].startswith("- If your tools don't give you the answer")
+    assert added[1].startswith("- If the metric tool says a figure isn't reported")
+    # The general refusal rule is unchanged apart from "Otherwise, " in front.
+    assert added[2] == "- Otherwise, i" + removed[1][3:]
+
+
+def test_a2_requires_the_calculator_for_whole_numbers():
+    calc_line = next(l for l in AGENT_PROMPTS["a2"].splitlines() if l.startswith("- calculator:"))
+    assert "whole numbers" in calc_line and "Never do arithmetic in your head" in calc_line
+
+
+def test_a2_states_the_not_reported_template_and_a_worked_example():
+    prompt = AGENT_PROMPTS["a2"]
+    assert '"Kestrel did not report <metric> for <period>."' in prompt
+    assert f'"{not_reported_answer("diluted_eps", "FY2024")}"' in prompt
+    # Every reader-facing metric name is the one the prompt's tool list uses.
+    tool_line = next(l for l in prompt.splitlines() if l.startswith("- get_financial_metric:"))
+    for name in METRIC_NAMES.values():
+        assert name in tool_line
+
+
+def _agent_cases():
+    import json
+    lines = (AGENT_DIR / "agent_v1.jsonl").read_text(encoding="utf-8").splitlines()
+    return [json.loads(l) for l in lines if l.strip()]
+
+
+def test_a2_examples_arent_taken_from_the_eval_cases():
+    # A prompt that quotes the test's own numbers would pass the test without
+    # learning the rule. The not-reported example must be a real gap that no
+    # case asks about; the calculator example's numbers must not appear in any
+    # case.
+    assert ("diluted_eps", "FY2024") not in METRIC_TABLE
+    asked = {(s["args"]["metric"], s["args"]["period"])
+             for c in _agent_cases() for s in c["required_steps"] if s.get("tool") == "get_financial_metric"}
+    assert ("diluted_eps", "FY2024") not in asked
+
+    example_numbers = {60.0, 25.0, 35.0}   # "60 - 25", and its result
+    case_numbers = set()
+    for c in _agent_cases():
+        case_numbers |= {float(n) for n in c["expected_numbers"]}
+        case_numbers |= {float(n) for s in c["required_steps"] for n in s.get("result", [])}
+        case_numbers |= {float(n) for n in re.findall(r"\d+(?:\.\d+)?", c["question"])}
+    assert not example_numbers & case_numbers
+
+
+def test_metric_names_cover_every_metric():
+    assert set(METRIC_NAMES) == set(METRICS)
+
+
+@pytest.mark.parametrize("metric,period,sentence", [
+    ("net_income", "FY2024", "Kestrel did not report net income for FY2024."),
+    ("diluted_eps", "FY2024", "Kestrel did not report diluted EPS for FY2024."),
+    ("enterprise_customers", "Q1 2026", "Kestrel did not report enterprise customers for Q1 2026."),
+])
+def test_not_reported_answer(metric, period, sentence):
+    assert not_reported_answer(metric, period) == sentence
 
 
 def test_unknown_version_and_bad_max_turns_are_rejected():

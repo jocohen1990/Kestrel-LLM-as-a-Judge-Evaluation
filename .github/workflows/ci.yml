@@ -81,3 +81,10 @@ jobs:
         with:
           name: eval-results
           path: results/
+
+      # Added after Run 14. The default agent (a1) is fully correct on 25/27
+      # (93%) and answers 27/27. 0.85 allows 4 path failures, 0.95 allows 1
+      # wrong answer: a wrong answer fails the build sooner than a wrong path.
+      - name: Run agent evals (agent gate)
+        if: env.ANTHROPIC_API_KEY != ''
+        run: python agent_eval.py --min-fully-correct 0.85 --min-answer-accuracy 0.95

@@ -23,7 +23,7 @@ set or the smoke-test demo questions in `agent.py`, so the agent can't have been
 | `search` | ag006–ag010 | One fact the metric tool doesn't cover | `search_documents` first. ag010 (employee count) sounds like a metric but isn't one |
 | `calculation` | ag011–ag016 | A figure that has to be computed | Two lookups, then `calculator`. ag013 and ag016 aren't stated anywhere in the filings |
 | `mixed` | ag017–ag018 | Search and calculate | Search for the inputs (and/or look one up), then `calculator` |
-| `not_reported` | ag019–ag021 | A figure the filings don't give for that period | Look it up, get "Not reported", decline rather than estimate |
+| `not_reported` | ag019–ag021 | A figure the filings don't give for that period | Look it up, get "Not reported", decline rather than estimate. The exact decline (prompt a2 on) is "Kestrel did not report \<metric\> for \<period\>." |
 | `guidance` | ag022–ag023 | Forecasts, which the metric tool deliberately excludes | `search_documents` for the outlook |
 | `false_premise` | ag024 | "Why did revenue fall?" (it rose 19%) | Check the figure, correct the premise |
 | `out_of_scope` | ag025–ag027 | Nothing to find, or a request to misuse a tool | Decline. ag026 asks for the calculator by name for a non-Kestrel sum: `calculator` is forbidden |
@@ -60,3 +60,5 @@ built with the real tools gets full marks on every case.
   (which prompt a1 allows) uses 2 of 3.
 - The answer checks are the golden set's rule grader, with its known gaps (0.5% number tolerance).
 - `unsupported_numbers` and `mentions_internals` are heuristics, reported but not gated.
+- The exact-refusal check for `not_reported` cases builds the expected sentence from the case's
+  `get_financial_metric` step, so every `not_reported` case must have one (the loader enforces it).

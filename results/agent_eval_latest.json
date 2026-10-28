@@ -1,27 +1,24 @@
 {
-  "timestamp": "2026-10-25T05:36:09.596686+00:00",
+  "timestamp": "2026-10-28T01:57:08.732568+00:00",
   "model": "claude-haiku-4-5-20251001",
-  "agent_version": "a1",
+  "agent_version": "a2",
   "max_turns": 6,
   "cases_file": "agent_v1.jsonl",
   "summary": {
-    "cases": 2,
-    "fully_correct_rate": 0.0,
-    "tool_choice_accuracy": 0.0,
-    "argument_accuracy": 0.0,
+    "cases": 5,
+    "fully_correct_rate": 0.8,
+    "tool_choice_accuracy": 0.8,
+    "argument_accuracy": 0.8,
     "trajectory_ok_rate": 1.0,
     "answer_accuracy": 1.0,
     "right_answer_wrong_path_ids": [
-      "ag014",
       "ag017"
     ],
     "right_path_wrong_answer_ids": [],
     "wrong_tool_ids": [
-      "ag014",
       "ag017"
     ],
     "wrong_args_ids": [
-      "ag014",
       "ag017"
     ],
     "forbidden_tool_ids": [],
@@ -31,29 +28,37 @@
     "repeated_call_ids": [],
     "step_limit_ids": [],
     "wrong_answer_ids": [],
-    "exact_refusal_rate": null,
-    "inexact_refusal_ids": [],
+    "exact_refusal_rate": 0.0,
+    "inexact_refusal_ids": [
+      "ag019",
+      "ag020",
+      "ag021"
+    ],
     "unsupported_number_ids": [
-      "ag014",
       "ag017"
     ],
     "mentions_internals_ids": [],
-    "avg_steps": 1.5,
-    "avg_turns": 2.0,
+    "avg_steps": 1.4,
+    "avg_turns": 2.2,
     "tool_errors": 0,
-    "input_tokens": 6588,
-    "output_tokens": 296,
-    "avg_latency_s": 1.94,
+    "input_tokens": 19315,
+    "output_tokens": 683,
+    "avg_latency_s": 1.93,
     "by_category": {
       "calculation": {
         "cases": 1,
-        "fully_correct": 0,
+        "fully_correct": 1,
         "answer_ok": 1
       },
       "mixed": {
         "cases": 1,
         "fully_correct": 0,
         "answer_ok": 1
+      },
+      "not_reported": {
+        "cases": 3,
+        "fully_correct": 3,
+        "answer_ok": 3
       }
     }
   },
@@ -62,33 +67,22 @@
       "id": "ag014",
       "category": "calculation",
       "question": "How many enterprise customers did Kestrel add between the end of 2025 and the end of Q2 2026?",
-      "answer": "Kestrel added 270 enterprise customers between the end of 2025 and the end of Q2 2026, growing from 2,850 to 3,120.",
-      "tool_choice_ok": false,
-      "missing_tools": [
-        "calculator"
-      ],
+      "answer": "Kestrel added 270 enterprise customers between the end of 2025 (2,850 customers) and the end of Q2 2026 (3,120 customers).",
+      "tool_choice_ok": true,
+      "missing_tools": [],
       "forbidden_tools_used": [],
       "first_tool_ok": true,
-      "args_ok": false,
-      "unmatched_steps": [
-        {
-          "tool": "calculator",
-          "result": [
-            270
-          ]
-        }
-      ],
+      "args_ok": true,
+      "unmatched_steps": [],
       "trajectory_ok": true,
-      "order_ok": null,
+      "order_ok": true,
       "within_budget": true,
       "repeated_calls": 0,
       "answer_ok": true,
       "declined": false,
-      "fully_correct": false,
+      "fully_correct": true,
       "refusal_exact": null,
-      "unsupported_numbers": [
-        "270"
-      ],
+      "unsupported_numbers": [],
       "mentions_internals": false,
       "tool_errors": 0,
       "steps": [
@@ -111,19 +105,29 @@
           },
           "output": "enterprise_customers, Q2 2026: 3,120 (source: Q2 2026 Earnings Release)",
           "is_error": false
+        },
+        {
+          "turn": 2,
+          "tool": "calculator",
+          "args": {
+            "expression": "3120 - 2850"
+          },
+          "output": "3120 - 2850 = 270",
+          "is_error": false
         }
       ],
       "tools_used": [
         "get_financial_metric",
-        "get_financial_metric"
+        "get_financial_metric",
+        "calculator"
       ],
-      "num_steps": 2,
+      "num_steps": 3,
       "max_steps": 4,
-      "turns": 2,
+      "turns": 3,
       "stopped": "answered",
-      "latency_s": 2.186,
-      "input_tokens": 3293,
-      "output_tokens": 183
+      "latency_s": 3.321,
+      "input_tokens": 5600,
+      "output_tokens": 275
     },
     {
       "id": "ag017",
@@ -176,9 +180,144 @@
       "max_steps": 3,
       "turns": 2,
       "stopped": "answered",
-      "latency_s": 1.703,
-      "input_tokens": 3295,
+      "latency_s": 1.712,
+      "input_tokens": 3557,
       "output_tokens": 113
+    },
+    {
+      "id": "ag019",
+      "category": "not_reported",
+      "question": "What was Kestrel's net income for fiscal year 2024?",
+      "answer": "Kestrel did not report net_income for FY2024.",
+      "tool_choice_ok": true,
+      "missing_tools": [],
+      "forbidden_tools_used": [],
+      "first_tool_ok": true,
+      "args_ok": true,
+      "unmatched_steps": [],
+      "trajectory_ok": true,
+      "order_ok": null,
+      "within_budget": true,
+      "repeated_calls": 0,
+      "answer_ok": true,
+      "declined": true,
+      "fully_correct": true,
+      "refusal_exact": false,
+      "unsupported_numbers": [],
+      "mentions_internals": false,
+      "tool_errors": 0,
+      "steps": [
+        {
+          "turn": 1,
+          "tool": "get_financial_metric",
+          "args": {
+            "metric": "net_income",
+            "period": "FY2024"
+          },
+          "output": "Not reported: the documents don't give net_income for FY2024.",
+          "is_error": false
+        }
+      ],
+      "tools_used": [
+        "get_financial_metric"
+      ],
+      "num_steps": 1,
+      "max_steps": 3,
+      "turns": 2,
+      "stopped": "answered",
+      "latency_s": 1.561,
+      "input_tokens": 3382,
+      "output_tokens": 97
+    },
+    {
+      "id": "ag020",
+      "category": "not_reported",
+      "question": "What was Kestrel's gross margin in Q2 2025?",
+      "answer": "Kestrel did not report gross_margin for Q2 2025.",
+      "tool_choice_ok": true,
+      "missing_tools": [],
+      "forbidden_tools_used": [],
+      "first_tool_ok": true,
+      "args_ok": true,
+      "unmatched_steps": [],
+      "trajectory_ok": true,
+      "order_ok": null,
+      "within_budget": true,
+      "repeated_calls": 0,
+      "answer_ok": true,
+      "declined": true,
+      "fully_correct": true,
+      "refusal_exact": false,
+      "unsupported_numbers": [],
+      "mentions_internals": false,
+      "tool_errors": 0,
+      "steps": [
+        {
+          "turn": 1,
+          "tool": "get_financial_metric",
+          "args": {
+            "metric": "gross_margin",
+            "period": "Q2 2025"
+          },
+          "output": "Not reported: the documents don't give gross_margin for Q2 2025.",
+          "is_error": false
+        }
+      ],
+      "tools_used": [
+        "get_financial_metric"
+      ],
+      "num_steps": 1,
+      "max_steps": 3,
+      "turns": 2,
+      "stopped": "answered",
+      "latency_s": 1.529,
+      "input_tokens": 3384,
+      "output_tokens": 99
+    },
+    {
+      "id": "ag021",
+      "category": "not_reported",
+      "question": "How many enterprise customers did Kestrel have at the end of Q1 2026?",
+      "answer": "Kestrel did not report enterprise_customers for Q1 2026.",
+      "tool_choice_ok": true,
+      "missing_tools": [],
+      "forbidden_tools_used": [],
+      "first_tool_ok": true,
+      "args_ok": true,
+      "unmatched_steps": [],
+      "trajectory_ok": true,
+      "order_ok": null,
+      "within_budget": true,
+      "repeated_calls": 0,
+      "answer_ok": true,
+      "declined": true,
+      "fully_correct": true,
+      "refusal_exact": false,
+      "unsupported_numbers": [],
+      "mentions_internals": false,
+      "tool_errors": 0,
+      "steps": [
+        {
+          "turn": 1,
+          "tool": "get_financial_metric",
+          "args": {
+            "metric": "enterprise_customers",
+            "period": "Q1 2026"
+          },
+          "output": "Not reported: the documents don't give enterprise_customers for Q1 2026.",
+          "is_error": false
+        }
+      ],
+      "tools_used": [
+        "get_financial_metric"
+      ],
+      "num_steps": 1,
+      "max_steps": 3,
+      "turns": 2,
+      "stopped": "answered",
+      "latency_s": 1.517,
+      "input_tokens": 3392,
+      "output_tokens": 99
     }
   ]
 }
