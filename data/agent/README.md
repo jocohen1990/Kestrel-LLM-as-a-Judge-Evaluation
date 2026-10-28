@@ -106,5 +106,8 @@ since reading a stated figure would be correct.
   (which prompt a1 allows) uses 2 of 3.
 - The answer checks are the golden set's rule grader, with its known gaps (0.5% number tolerance).
 - `unsupported_numbers` and `mentions_internals` are heuristics, reported but not gated.
+- Since Run 17 a calculator step also fails the path if its result was already written before the
+  calculator returned it (answered before calculating). This needs the turn log, so results from
+  before Run 17 are unchecked.
 - The exact-refusal check for `not_reported` cases builds the expected sentence from the case's
   `get_financial_metric` step, so every `not_reported` case must have one (the loader enforces it).

@@ -167,10 +167,10 @@ def test_every_version_is_sent_as_written(monkeypatch, version):
     assert REFUSAL in AGENT_PROMPTS[version]
 
 
-def test_default_stays_a1_until_a2_has_a_graded_run():
+def test_default_is_a3_since_run_17():
     # Like the RAG prompts: a new version becomes the default only after a run
     # shows it's better. Change this test in the same commit as the default.
-    assert DEFAULT_AGENT_VERSION == "a1"
+    assert DEFAULT_AGENT_VERSION == "a3"
 
 
 # ---- Prompt a2 (after Run 14) ------------------------------------------------------
@@ -299,15 +299,36 @@ def test_whitespace_only_reply_counts_as_empty(monkeypatch):
     assert step_through(KestrelAgent(), "?").stopped == "empty_answer"
 
 
-def test_answer_written_next_to_a_tool_call_stays_in_the_log(monkeypatch):
-    # One of the two explanations for cp06: the answer came with the last tool
-    # call, and the final turn had nothing to add. The answer is still the
-    # final turn's text (so this run fails), but the log shows what happened.
-    use_model(monkeypatch, [text("$110 million is undrawn."), call("calculator", {"expression": "150 - 40"}, "c")],
+def test_empty_last_turn_falls_back_to_the_last_turn_with_text(monkeypatch):
+    # cp07/cp08 in Run 17: the answer came with the calculator call, and the
+    # final turn had nothing to add. Since Run 17 that earlier text is the answer.
+    use_model(monkeypatch, [call("search_documents", {"query": "credit facility"}, "s")],
+              [text("$110 million is undrawn."), call("calculator", {"expression": "150 - 40"}, "c")],
               [])
     result = step_through(KestrelAgent(), "?")
-    assert result.stopped == "empty_answer"
-    assert result.turn_log[0]["text"] == "$110 million is undrawn."
+    assert result.answer == "$110 million is undrawn."
+    assert result.stopped == "answered" and result.answer_turn == 2
+    assert result.turn_log[-1]["text"] == ""
+
+
+def test_fallback_takes_the_latest_text_not_the_first(monkeypatch):
+    use_model(monkeypatch, [text("Let me look."), call("calculator", {"expression": "1+1"}, "a")],
+              [text("It's 2."), call("calculator", {"expression": "2*1"}, "b")],
+              [])
+    result = step_through(KestrelAgent(), "?")
+    assert result.answer == "It's 2." and result.answer_turn == 2
+
+
+def test_answer_turn_is_the_last_turn_when_it_has_text(monkeypatch):
+    use_model(monkeypatch, [call("calculator", {"expression": "2*3"}, "c")], [text("6")])
+    result = step_through(KestrelAgent(), "?")
+    assert result.answer == "6" and result.answer_turn == 2
+
+
+def test_no_text_on_any_turn_is_still_an_empty_answer(monkeypatch):
+    use_model(monkeypatch, [call("calculator", {"expression": "2*3"}, "c")], [])
+    result = step_through(KestrelAgent(), "?")
+    assert result.answer == "" and result.stopped == "empty_answer" and result.answer_turn == 0
 
 
 def test_stop_reason_is_recorded(monkeypatch):

@@ -22,7 +22,8 @@ from app.rag import REFUSAL
 from app.tools import METRIC_TABLE, run_tool
 from evals import agent_eval
 from evals.agent_eval import (AgentDatasetError, DECLINE_CATEGORIES, agent_mentions_internals,
-                              calculator_after_inputs, calculator_value, declined_agent,
+                              answered_before_calculating, calculator_after_inputs,
+                              calculator_value, declined_agent,
                               expected_refusal, grade_agent, load_agent_cases, match_steps, repeated_calls,
                               run_case, summarize_agent, unsupported_numbers)
 
@@ -534,6 +535,103 @@ def test_an_empty_answer_never_counts_as_a_decline():
     case = BY_ID["ag019"]
     grade = grade_agent(case, result(perfect_steps(case), "", stopped="empty_answer"))
     assert not grade["declined"] and not grade["answer_ok"]
+
+
+# ---- Answered before calculating (after Run 17) ------------------------------------
+
+def logged(steps, answer, turn_log):
+    return SimpleNamespace(question="q", answer=answer, steps=steps, stopped="answered",
+                           turn_log=turn_log)
+
+
+def turn(n, text, tool_calls):
+    return {"turn": n, "text": text, "stop_reason": "tool_use" if tool_calls else "end_turn",
+            "tool_calls": tool_calls}
+
+
+AG012_STEPS = [metric("net_income", "Q1 2026"), metric("net_income", "Q2 2026"),
+               {**calc("11.4 - 9.2"), "turn": 2}]
+
+
+def test_run_17s_cp07_pattern_fails_the_path():
+    # The real turn log: the answer is written next to the calculator call.
+    case = BY_ID["ag017"]
+    steps = [search("revolving credit facility drawn"), {**calc("150 - 40"), "turn": 2}]
+    answer = ("With a $150 million revolving credit facility and $40 million drawn as of June 30, "
+              "2026, the remaining availability was $110 million.")
+    log = [turn(1, "", 1), turn(2, answer, 1), turn(3, "", 0)]
+    grade = grade_agent(case, logged(steps, answer, log))
+    assert grade["answered_before_calculating"] is True
+    assert grade["answer_ok"] and grade["args_ok"] and grade["tool_choice_ok"]
+    assert not grade["trajectory_ok"] and not grade["fully_correct"]
+
+
+def test_announcing_the_calculation_is_fine():
+    log = [turn(1, "", 2), turn(2, "Now I'll calculate the increase:", 1),
+           turn(3, "Net income rose by $2.2 million.", 0)]
+    grade = grade_agent(BY_ID["ag012"], logged(AG012_STEPS, "Net income rose by $2.2 million.", log))
+    assert grade["answered_before_calculating"] is False and grade["fully_correct"]
+
+
+def test_restating_the_inputs_before_calculating_is_fine():
+    log = [turn(1, "", 2), turn(2, "Q1 was $9.2 million and Q2 was $11.4 million; now the difference.", 1),
+           turn(3, "It rose by $2.2 million.", 0)]
+    assert answered_before_calculating(BY_ID["ag012"]["required_steps"], AG012_STEPS, log) is False
+
+
+def test_a_rounded_or_percent_result_stated_early_still_counts():
+    # ag013's target is 9.827586 (or 0.0983); "about 9.8%" before the calculator ran is the same skip.
+    case = BY_ID["ag013"]
+    steps = [metric("net_income", "Q2 2026"), metric("revenue", "Q2 2026"), {**calc("11.4 / 116.0 * 100"), "turn": 2}]
+    log = [turn(1, "", 2), turn(2, "That's a margin of about 9.8%; let me confirm.", 1), turn(3, "", 0)]
+    assert answered_before_calculating(case["required_steps"], steps, log) is True
+
+
+@pytest.mark.parametrize("text", [
+    "Q2 was $11.4 million and Q1 was $9.2 million.",     # "Q2" is not 2 (target 2.2)
+    "Comparing Q1 2026 with Q2 2026 now.",
+    "FY2025 and the second half (H2) next.",
+])
+def test_period_labels_and_years_are_not_figures(text):
+    log = [turn(1, "", 2), turn(2, text, 1), turn(3, "It rose by $2.2 million.", 0)]
+    assert answered_before_calculating(BY_ID["ag012"]["required_steps"], AG012_STEPS, log) is False
+
+
+def test_the_result_after_the_calculator_turn_is_fine():
+    log = [turn(1, "", 2), turn(2, "", 1), turn(3, "It rose by $2.2 million.", 0)]
+    assert answered_before_calculating(BY_ID["ag012"]["required_steps"], AG012_STEPS, log) is False
+
+
+def test_no_turn_log_or_no_calculator_step_is_unknown():
+    req = BY_ID["ag012"]["required_steps"]
+    assert answered_before_calculating(req, AG012_STEPS, []) is None   # results before Run 17
+    assert answered_before_calculating(BY_ID["ag001"]["required_steps"], [], [turn(1, "x", 0)]) is None
+    # A calculator step that was never matched has nothing to compare against.
+    assert answered_before_calculating(req, AG012_STEPS[:2], [turn(1, "2.2", 0)]) is None
+
+
+def test_results_without_a_turn_log_grade_as_before():
+    # Re-grading Runs 14-16 must not change: no log, no new failure.
+    grade = grade_agent(BY_ID["ag012"], result(AG012_STEPS, "Net income rose by $2.2 million."))
+    assert grade["answered_before_calculating"] is None and grade["fully_correct"]
+
+
+def test_answer_first_end_to_end_with_the_fallback(monkeypatch):
+    # The agent change and the grader change together: the earlier text becomes
+    # the answer (so it's right), and the path fails (so it isn't fully correct).
+    monkeypatch.setattr("app.agent.generate_with_tools", ScriptedModel(
+        [tool_use("search_documents", {"query": "revolving credit facility drawn"}, "s")],
+        [text("Kestrel had $110 million undrawn."), tool_use("calculator", {"expression": "150 - 40"}, "c")],
+        [],
+    ))
+    row = run_case(BY_ID["ag017"], SteppingAgent())
+    assert row["answer"] == "Kestrel had $110 million undrawn." and row["answer_turn"] == 2
+    assert row["stopped"] == "answered" and row["answer_ok"]
+    assert row["answered_before_calculating"] is True and not row["fully_correct"]
+    s = summarize_agent([row])
+    assert s["answered_before_calculating_ids"] == ["ag017"]
+    assert s["right_answer_wrong_path_ids"] == ["ag017"] and s["empty_answer_ids"] == []
+    json.dumps(row)
 
 
 def test_run_case_through_the_real_graph(monkeypatch):

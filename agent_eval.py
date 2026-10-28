@@ -79,6 +79,7 @@ def print_report(run: dict) -> None:
                        ("first_tool_wrong_ids", "Wrong first tool"),
                        ("wrong_args_ids", "Required step missing"),
                        ("out_of_order_ids", "Calculated before looking up"),
+                       ("answered_before_calculating_ids", "Answered before calculating"),
                        ("over_budget_ids", "Over step budget"),
                        ("repeated_call_ids", "Repeated a call"),
                        ("step_limit_ids", "Hit the turn limit"),
@@ -118,7 +119,7 @@ def main() -> int:
             for step in row["steps"]:
                 print(f"      {describe(step)}")
             print(f"      A: {row['answer'][:160]!r}")
-            if row["stopped"] == "empty_answer":
+            if row["stopped"] == "empty_answer" or row.get("answered_before_calculating"):
                 for t in row["turn_log"]:
                     print(f"      turn {t['turn']} ({t['stop_reason']}, {t['tool_calls']} tool calls): "
                           f"{t['text'][:120]!r}")

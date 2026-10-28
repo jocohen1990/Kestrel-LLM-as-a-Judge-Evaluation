@@ -134,7 +134,9 @@ _A3_USER = ("- The user can't see your tools or their results. Write metrics in 
             "searches, lookups or passages;")
 assert AGENT_PROMPTS["a2"].count(_A2_CALC) == 1 and AGENT_PROMPTS["a2"].count(_A2_USER) == 1
 AGENT_PROMPTS["a3"] = AGENT_PROMPTS["a2"].replace(_A2_CALC, _A3_CALC).replace(_A2_USER, _A3_USER)
-DEFAULT_AGENT_VERSION = "a1"
+# a3 since Run 17: the best of a1-a3 on every agent_v1 number (26/27 fully
+# correct, 27/27 answers, 6/6 exact refusals, no metric keys in answers).
+DEFAULT_AGENT_VERSION = "a3"
 
 # A model call is one "turn". Six is enough for the hardest question in the
 # plan (two lookups, a calculation, an answer) with room for one retry; an
@@ -150,6 +152,7 @@ class AgentState(TypedDict):
     usage: dict            # tokens and latency, summed over every model call
     turn_log: list[dict]   # per model call: its text, why it stopped, how many tool calls
     answer: str
+    answer_turn: int       # which turn the answer's text came from (0 = none)
     stopped: str           # "" while running, then "answered", "empty_answer" or "step_limit"
 
 
@@ -167,6 +170,7 @@ class AgentResult:
     latency_s: float = 0.0
     messages: list[dict] = field(default_factory=list)
     turn_log: list[dict] = field(default_factory=list)
+    answer_turn: int = 0
 
     @property
     def tools_used(self) -> list[str]:
@@ -182,6 +186,7 @@ def initial_state(question: str) -> AgentState:
         "usage": {"input_tokens": 0, "output_tokens": 0, "latency_s": 0.0},
         "turn_log": [],
         "answer": "",
+        "answer_turn": 0,
         "stopped": "",
     }
 
@@ -219,16 +224,26 @@ class KestrelAgent:
         # and without this log that looks the same as never answering.
         entry = {"turn": turns, "text": reply.text.strip(), "stop_reason": reply.stop_reason,
                  "tool_calls": len(reply.tool_calls)}
+        log = state["turn_log"] + [entry]
         update = {
             "messages": state["messages"] + [{"role": "assistant", "content": reply.content}],
             "turns": turns,
             "usage": usage,
-            "turn_log": state["turn_log"] + [entry],
+            "turn_log": log,
             "answer": reply.text.strip(),
+            "answer_turn": turns if reply.text.strip() else 0,
         }
         if not reply.tool_calls:
-            # It finished. An empty final reply is its own outcome: the user
-            # gets nothing, which is a different failure from a wrong answer.
+            # It finished. If the last turn has no text, the answer is the last
+            # turn that did (decided after Run 17). In cp07 and cp08 the agent
+            # wrote its answer next to a calculator call, then ended with
+            # nothing; a user reading the conversation sees that earlier text,
+            # so that's what the agent returns. answer_turn records where it
+            # came from. Only a run with no text at all is "empty_answer".
+            if not update["answer"]:
+                earlier = next((t for t in reversed(log) if t["text"]), None)
+                if earlier:
+                    update["answer"], update["answer_turn"] = earlier["text"], earlier["turn"]
             update["stopped"] = "answered" if update["answer"] else "empty_answer"
         elif turns >= self.max_turns:
             # It still wants tools but is out of turns. Its text (often "Let me
@@ -296,4 +311,5 @@ def to_result(state: AgentState, model: str, agent_version: str) -> AgentResult:
         latency_s=state["usage"]["latency_s"],
         messages=state["messages"],
         turn_log=state.get("turn_log", []),
+        answer_turn=state.get("answer_turn", 0),
     )

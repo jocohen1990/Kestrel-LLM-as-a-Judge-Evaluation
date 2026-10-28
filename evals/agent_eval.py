@@ -13,8 +13,9 @@ four things, from the trajectory the agent records (app/agent.py):
                says what a correct call looks like (see "Required steps").
   trajectory   Was the PATH sound? It finished on its own (no step limit),
                stayed within the case's step budget, ran the calculator only
-               after it had the numbers to calculate with, and never repeated
-               an identical call.
+               after it had the numbers to calculate with, didn't state the
+               calculator's result before the calculator gave it (added after
+               Run 17), and never repeated an identical call.
   answer       Is the final ANSWER right? The golden-set rule grader for
                questions with an answer; for questions with no answer
                (not_reported, out_of_scope), it must decline.
@@ -231,6 +232,51 @@ def calculator_after_inputs(required_steps: list[dict], matched: list[int | None
     return min(calcs) > max(inputs)
 
 
+# Period labels and years aren't figures: "Q2" isn't 2, "2026" isn't a result.
+# This check fails the path, so unlike the reported-only number flags it
+# can't afford to read "Q2 was $11.4 million" as stating 2.2.
+PERIOD_PATTERN = re.compile(r"\b(?:Q[1-4]|H[12]|FY\s?(?:19|20)\d{2})\b|\b(?:19|20)\d{2}\b", re.IGNORECASE)
+
+
+def _states_value(text: str, targets: list[float]) -> bool:
+    """Does the text contain one of these values, at the precision it's
+    written with ("$110 million" for 110, "9.8%" for 9.827586 or 0.09827586)?
+    Period labels and years are ignored."""
+    for raw in NUMBER_RE.findall(PERIOD_PATTERN.sub(" ", text or "")):
+        n = float(raw.replace(",", ""))
+        tolerance = 0.5 * 10 ** -_decimals(raw) + 1e-9
+        if any(abs(v - n) <= tolerance for t in targets for v in (t, t * 100)):
+            return True
+    return False
+
+
+def answered_before_calculating(required_steps: list[dict], steps: list[dict],
+                                turn_log: list[dict]) -> bool | None:
+    """Did the agent write a calculation's result before the calculator gave it?
+
+    In Run 17 (cp07, cp08) the agent wrote "the remaining availability was
+    $110 million" in the same turn that called calculator("150 - 40"): the
+    arithmetic was done in its head and the calculator only confirmed it. The
+    other path checks pass that (right tool, right result, after its inputs).
+    This one looks at the text of every turn up to and including the one that
+    asked for the matching calculation. None when there's nothing to check: no
+    calculator step, no matching call, or no turn log (results before Run 17).
+    """
+    if not turn_log:
+        return None
+    found = None
+    for req in (r for r in required_steps if is_calculator_step(r)):
+        idx = next((i for i, s in enumerate(steps) if step_matches(req, s)), None)
+        if idx is None:
+            continue
+        calc_turn = steps[idx]["turn"]
+        early = any(t["turn"] <= calc_turn and _states_value(t["text"], req["result"]) for t in turn_log)
+        if early:
+            return True
+        found = False
+    return found
+
+
 def repeated_calls(steps: list[dict]) -> int:
     """How many calls repeat an earlier call exactly (same tool, same arguments)."""
     seen, repeats = set(), 0
@@ -330,12 +376,13 @@ def grade_agent(case: dict, result) -> dict:
 
     # Trajectory.
     order_ok = calculator_after_inputs(required, matched)
+    answered_first = answered_before_calculating(required, steps, getattr(result, "turn_log", []))
     repeats = repeated_calls(steps)
     within_budget = len(steps) <= case["max_steps"]
     # "Finished on its own" includes an empty final reply: that's an answer
     # failure (answer_ok is False), not a path failure, so it isn't counted twice.
     trajectory_ok = (result.stopped in ("answered", "empty_answer") and within_budget
-                     and order_ok is not False and repeats == 0)
+                     and order_ok is not False and answered_first is not True and repeats == 0)
 
     # Answer.
     should_decline = case["category"] in DECLINE_CATEGORIES
@@ -351,6 +398,7 @@ def grade_agent(case: dict, result) -> dict:
         "unmatched_steps": unmatched,
         "trajectory_ok": trajectory_ok,
         "order_ok": order_ok,
+        "answered_before_calculating": answered_first,
         "within_budget": within_budget,
         "repeated_calls": repeats,
         "answer_ok": answer_ok,
@@ -377,6 +425,7 @@ def run_case(case: dict, agent) -> dict:
         "turns": result.turns,
         "stopped": result.stopped,
         "turn_log": getattr(result, "turn_log", []),
+        "answer_turn": getattr(result, "answer_turn", None),
         "latency_s": round(result.latency_s, 3),
         "input_tokens": result.input_tokens,
         "output_tokens": result.output_tokens,
@@ -415,6 +464,8 @@ def summarize_agent(rows: list[dict]) -> dict:
         "first_tool_wrong_ids": [r["id"] for r in rows if r["first_tool_ok"] is False],
         "over_budget_ids": [r["id"] for r in rows if not r["within_budget"]],
         "out_of_order_ids": [r["id"] for r in rows if r["order_ok"] is False],
+        "answered_before_calculating_ids": [r["id"] for r in rows
+                                            if r.get("answered_before_calculating") is True],
         "repeated_call_ids": [r["id"] for r in rows if r["repeated_calls"]],
         "step_limit_ids": [r["id"] for r in rows if r["stopped"] == "step_limit"],
         "empty_answer_ids": [r["id"] for r in rows if r["stopped"] == "empty_answer"],

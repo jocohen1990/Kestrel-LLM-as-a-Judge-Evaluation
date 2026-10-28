@@ -37,7 +37,7 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-pytest -v                          # 620 offline tests: free, no API key needed
+pytest -v                          # 634 offline tests: free, no API key needed
 
 cp .env.example .env               # then add your ANTHROPIC_API_KEY
 python run_evals.py                # golden v3, prompt v6, retriever r3, LLM judge (judge-v2)
@@ -96,7 +96,7 @@ only shows the trajectory; `agent_eval.py` grades it:
 ```bash
 python agent_eval.py                          # 27 cases: tool choice, arguments, trajectory, answer
 python agent_eval.py --category calculation   # one category
-python agent_eval.py --agent a2               # prompt a2 (a1 is the default)
+python agent_eval.py --agent a1               # an older prompt (a3 is the default since Run 17)
 python agent_eval.py --agent a3 --cases data/agent/calc_probes_v2.jsonl   # the ag017 probes
 python agent_eval.py --min-fully-correct 0.85 --min-answer-accuracy 0.95   # the CI gate
 ```
@@ -104,7 +104,7 @@ python agent_eval.py --min-fully-correct 0.85 --min-answer-accuracy 0.95   # the
 Each case ([dataset card](data/agent/README.md)) lists the steps a correct run must contain, graded
 on outcome (a search must *find* the paragraph, a calculation must give the right value). A case
 is **fully correct** only with the right tools, the right arguments, a sound path (calculator after
-its inputs, within a step budget, no repeated calls) **and** the right answer. The gap between that
+its inputs and before any answer that states its result, within a step budget, no repeated calls) **and** the right answer. The gap between that
 and plain answer accuracy is the point: answers that are right for the wrong reasons, such as
 arithmetic done in the model's head, are listed separately as *right answer, wrong path*.
 
@@ -246,7 +246,7 @@ data/
   robustness/         Hand-written reworded and casual questions (paraphrases_v1, held-out v2), dataset card
   bias/               Counterfactual bias groups (bias_v1), dataset card
   agent/              Agent cases with required tool steps (agent_v1), calculator probes (calc_probes_v1, v2), dataset card
-tests/                620 offline tests
+tests/                634 offline tests
 run_evals.py          Eval runner and quality gates
 calibrate.py          Judge validation commands
 consistency.py        Repeat-run consistency check
@@ -267,7 +267,7 @@ agent_eval.py         Agent eval: tool choice, arguments, trajectory and answer
 | 1 | RAG app, golden dataset v1, rule-based correctness, CI pipeline | ✅ Done |
 | 2 | Golden v2, LLM-as-judge (faithfulness, correctness), format checks, mutation testing, human calibration | ✅ Done |
 | 3 | Safety and robustness: repeat-run consistency (Run 4), prompt injection including injections hidden in documents (Runs 5–8), paraphrase and typo robustness (Run 9), jailbreaks (Run 10), bias probes (Run 11) | ✅ Done |
-| 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | 🔄 Agent, tools, graded eval and CI gate built; Runs 14–17 done; "answered before calculating" check next |
+| 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | 🔄 Agent, tools, graded eval and CI gate built; Runs 14–17 done; a3 default; "answered before calculating" check and answer fallback built, Run 18 next |
 | 5 | Model comparison scorecard and a results dashboard | ⬜ |
 | 6 | Production-style tracing and monitoring | ⬜ |
 
@@ -1250,16 +1250,26 @@ untested, since the corpus has no second fact of that kind.
 
 | Change | Why |
 |---|---|
-| Planned: a path check, "answered before calculating". A calculator result (to the case's tolerance) that already appears in text from the turn that calls the calculator, or earlier, fails the trajectory | cp07 and cp08 under a2 and a3: a calculation that checks a figure the agent already gave isn't the calculator doing the arithmetic, and the current path checks pass it |
-| Decision needed: what the agent returns when its last turn is empty (keep "last turn's text", or fall back to the last turn that had text) | Changes what every answer is, and with the check above, which failure cp07/cp08 count as |
-| Decision needed: make a3 the default | Best of a1–a3 on every agent_v1 number, from one run |
-| Decision needed: stop rewording the prompt for ag017 | Two prompt rules (a2, a3) moved ag014 but not the credit-facility questions in 12 runs |
+| New path check, **answered before calculating**: if a calculation's result (at the precision it's written, or as a percent) appears in the text of the turn that calls the calculator or any earlier turn, the trajectory fails. Quarter labels and years ("Q2", "2026") aren't read as figures | cp07 and cp08 under a2 and a3: a calculation that confirms a figure the agent already gave isn't the calculator doing the arithmetic. Re-grading every saved Run 17 file flags exactly cp07 and cp08 (all 4 runs) and none of the 12 other calculations. Runs before 17 have no turn log, so they're unchecked and score as before |
+| When the last turn has no text, the agent's answer is the last turn that had text (`answer_turn` records which). Only a run with no text at all is `empty_answer` | A user reading the conversation sees that earlier text. With the check above, cp07 and cp08 now count as *right answer, wrong path* (the skip they are) instead of *wrong answer* |
+| **a3 is the default** | Best of a1–a3 on every agent_v1 number (Run 17, one run). The CI gate's thresholds still hold: 26/27 fully correct (0.85 needed), 27/27 answers (0.95 needed) |
+| ag017 is recorded as a **known limit**, and no a4 is planned for it | Two prompt rules (a2, a3) fixed ag014 but not the credit-facility what's-left questions, in 12 runs between them |
 
 ### Known gaps
 
-- **"Answered before calculating" passes the path checks.** A calculator call that verifies a
-  figure the agent already wrote counts as using the calculator (cp07, cp08, Run 17). Planned fix
-  above.
+- **Known limit: what's left on the credit facility is done in the model's head.** ag017, cp01,
+  cp07 and cp08 ask how much of the $150 million facility is left after $40 million drawn. Under
+  a1, a2 and a3 the agent either skips the calculator (ag017, cp01: 0 of 16 runs, 4 under a1 and 12 under a2 and a3) or states $110
+  million first and calculates afterwards (cp07, cp08: 8 of 8). Only the outright "size minus
+  amount drawn" (cp02) is calculated first. The answer is right every time; the eval scores
+  every one as *right answer, wrong path*. Two prompt rules didn't move it, so a fix would need
+  something other than wording, such as a dedicated tool for it or a check that rejects an
+  answer whose figures no tool returned.
+- ~~"Answered before calculating" passes the path checks.~~ Checked since Run 17.
+- The answered-before-calculating check ignores numbers that look like years (1900–2099), so a
+  result in that range stated early wouldn't be caught. No case's result is in it.
+- The answer fallback returns whatever text the last texted turn had. If that was only
+  "Now I'll calculate...", that's the answer, and it's graded (wrongly answered) as such.
 - Every what's-left case uses one credit-facility paragraph, so "what's-left questions are done in
   the head" rests on one fact.
 - **The "numbers no tool returned" flag misses small whole numbers.** Any nearby figure within
