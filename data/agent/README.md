@@ -80,7 +80,19 @@ How to read the results, against the control (cp01 skipping):
 
 The probes overlap (cp03 changes the numbers *and* keeps one paragraph), so a pattern is a lead
 for the next prompt, not proof. Run each probe more than once:
-`python agent_eval.py --agent a2 --cases data/agent/calc_probes_v1.jsonl`.
+`python agent_eval.py --agent a3 --cases data/agent/calc_probes_v2.jsonl`.
+
+**Run 16 (a2, 3 runs each): only cp01 skipped.** cp02–cp06 all used the calculator, so the
+wording ("undrawn") is the lead; cp06 calculated correctly but ended with an empty answer.
+
+**v2 (`calc_probes_v2.jsonl`)** is v1 unchanged plus two probes added after Run 16, which ask
+cp01's leftover question without its word, to test prompt a3's leftover rule on the idea and
+not the word:
+
+| Probe | Question |
+|---|---|
+| cp07 | How much more could Kestrel still borrow under its revolving credit facility as of June 30, 2026? |
+| cp08 | What was the remaining availability on Kestrel's revolving credit facility at June 30, 2026? |
 
 Each probe has a `probe` field saying what it changes. `tests/test_calc_probes.py` checks them
 like the main set (real evidence, hand-written arithmetic, perfect runs get full marks), plus two

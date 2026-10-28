@@ -332,7 +332,9 @@ def grade_agent(case: dict, result) -> dict:
     order_ok = calculator_after_inputs(required, matched)
     repeats = repeated_calls(steps)
     within_budget = len(steps) <= case["max_steps"]
-    trajectory_ok = (result.stopped == "answered" and within_budget
+    # "Finished on its own" includes an empty final reply: that's an answer
+    # failure (answer_ok is False), not a path failure, so it isn't counted twice.
+    trajectory_ok = (result.stopped in ("answered", "empty_answer") and within_budget
                      and order_ok is not False and repeats == 0)
 
     # Answer.
@@ -374,6 +376,7 @@ def run_case(case: dict, agent) -> dict:
         "max_steps": case["max_steps"],
         "turns": result.turns,
         "stopped": result.stopped,
+        "turn_log": getattr(result, "turn_log", []),
         "latency_s": round(result.latency_s, 3),
         "input_tokens": result.input_tokens,
         "output_tokens": result.output_tokens,
@@ -414,6 +417,7 @@ def summarize_agent(rows: list[dict]) -> dict:
         "out_of_order_ids": [r["id"] for r in rows if r["order_ok"] is False],
         "repeated_call_ids": [r["id"] for r in rows if r["repeated_calls"]],
         "step_limit_ids": [r["id"] for r in rows if r["stopped"] == "step_limit"],
+        "empty_answer_ids": [r["id"] for r in rows if r["stopped"] == "empty_answer"],
         "wrong_answer_ids": [r["id"] for r in rows if not r["answer_ok"]],
         "exact_refusal_rate": _rate([r["refusal_exact"] for r in declines]),
         "inexact_refusal_ids": [r["id"] for r in declines if not r["refusal_exact"]],

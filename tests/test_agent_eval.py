@@ -516,6 +516,26 @@ def test_summary_rates_and_categories(monkeypatch):
     assert s["avg_steps"] == pytest.approx(2.0)
 
 
+def test_empty_answer_fails_the_answer_not_the_path(monkeypatch):
+    monkeypatch.setattr("app.agent.generate_with_tools", ScriptedModel(*GOOD_RUN[:2], []))
+    row = run_case(BY_ID["ag012"], SteppingAgent())
+    assert row["stopped"] == "empty_answer"
+    assert row["trajectory_ok"] and row["args_ok"] and row["tool_choice_ok"]
+    assert not row["answer_ok"] and not row["fully_correct"]
+    assert [t["tool_calls"] for t in row["turn_log"]] == [2, 1, 0]
+    s = summarize_agent([row])
+    assert s["empty_answer_ids"] == ["ag012"] and s["step_limit_ids"] == []
+    assert s["right_path_wrong_answer_ids"] == ["ag012"]
+    json.dumps(row)
+
+
+def test_an_empty_answer_never_counts_as_a_decline():
+    # An empty reply to a not-reported question is not "declining".
+    case = BY_ID["ag019"]
+    grade = grade_agent(case, result(perfect_steps(case), "", stopped="empty_answer"))
+    assert not grade["declined"] and not grade["answer_ok"]
+
+
 def test_run_case_through_the_real_graph(monkeypatch):
     pytest.importorskip("langgraph")
     monkeypatch.setattr("app.agent.generate_with_tools", ScriptedModel(*GOOD_RUN))

@@ -1,4 +1,4 @@
-"""Offline tests for the ag017 calculator probes (data/agent/calc_probes_v1.jsonl).
+"""Offline tests for the ag017 calculator probes (data/agent/calc_probes_v1.jsonl, v2).
 
 The probes are a diagnostic, not a benchmark: each one changes one thing about
 ag017 (the case where the agent skips the calculator in every run), so that
@@ -16,7 +16,9 @@ from app.tools import METRIC_TABLE, run_tool
 from evals.agent_eval import calculator_value, grade_agent, load_agent_cases
 from types import SimpleNamespace
 
-PROBES = load_agent_cases(AGENT_DIR / "calc_probes_v1.jsonl")
+PROBES_V1 = load_agent_cases(AGENT_DIR / "calc_probes_v1.jsonl")
+# v2 = v1 unchanged + cp07 and cp08 (after Run 16). Every test below runs on v2.
+PROBES = load_agent_cases(AGENT_DIR / "calc_probes_v2.jsonl")
 AGENT_V1 = {c["id"]: c for c in load_agent_cases(AGENT_DIR / "agent_v1.jsonl")}
 CORPUS = "\n".join(p.read_text(encoding="utf-8") for p in CORPUS_DIR.glob("*.md"))
 
@@ -28,6 +30,8 @@ EXPRESSIONS = {
     "cp04": "64 - 25",
     "cp05": "480 - 470",
     "cp06": "150 - 40",
+    "cp07": "150 - 40",
+    "cp08": "150 - 40",
 }
 
 
@@ -57,9 +61,35 @@ def answer_for(case):
     return f"The answer is {case['expected_numbers'][0]:g}."
 
 
-def test_six_probes_each_naming_what_it_changes():
-    assert [c["id"] for c in PROBES] == [f"cp0{i}" for i in range(1, 7)]
+def test_probes_each_name_what_they_change():
+    assert [c["id"] for c in PROBES_V1] == [f"cp0{i}" for i in range(1, 7)]
+    assert [c["id"] for c in PROBES] == [f"cp0{i}" for i in range(1, 9)]
     assert all(c.get("probe") for c in PROBES)
+
+
+def test_v2_keeps_v1_unchanged():
+    # Runs on v1 (Run 16) stay comparable with runs on v2 only if the first six
+    # probes are byte-for-byte the same.
+    v1 = (AGENT_DIR / "calc_probes_v1.jsonl").read_text(encoding="utf-8").splitlines()
+    v2 = (AGENT_DIR / "calc_probes_v2.jsonl").read_text(encoding="utf-8").splitlines()
+    assert v2[:len(v1)] == v1 and len(v2) == len(v1) + 2
+
+
+def test_cp07_and_cp08_ask_cp01s_question_without_cp01s_words():
+    cp01, cp07, cp08 = (next(c for c in PROBES if c["id"] == i) for i in ("cp01", "cp07", "cp08"))
+    for probe in (cp07, cp08):
+        assert "undrawn" not in probe["question"].lower()
+        for key in ("required_steps", "max_steps", "expected_numbers"):
+            assert probe[key] == cp01[key], key
+
+
+def test_a3s_leftover_rule_uses_none_of_the_probe_words():
+    # If a3 said "undrawn" or "available", passing cp01/cp08 would show only
+    # that the agent matched a word.
+    from app.agent import AGENT_PROMPTS
+    calc_line = next(l for l in AGENT_PROMPTS["a3"].splitlines() if l.startswith("- calculator:")).lower()
+    for word in ("undrawn", "drawn", "borrow", "remaining", "availab", "credit", "facility"):
+        assert word not in calc_line, word
 
 
 def test_cp01_is_ag017_word_for_word():

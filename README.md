@@ -4,7 +4,7 @@ An end-to-end evaluation suite for an LLM-powered financial Q&A assistant, built
 a QA engineer tests software: versioned test data, graders that are themselves tested,
 measurable quality thresholds, and a CI pipeline that blocks regressions.
 
-> **Status:** Phases 1–3 of 6 complete; Phase 4 (agent evaluation) in progress: the agent, its tools and the graded agent eval are built, and the first graded run (Run 14) answered 27 of 27 questions right but only 25 of 27 the right way: twice it did the arithmetic in its head instead of using the calculator. Prompt a2 (Run 15) fixed one of the two calculator skips (ag014, 4 of 4 runs) but not ag017, and followed the new not-reported sentence word for word, copying the tool's internal metric names into it; the agent eval is now a CI gate. Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
+> **Status:** Phases 1–3 of 6 complete; Phase 4 (agent evaluation) in progress: the agent, its tools and the graded agent eval are built, and the first graded run (Run 14) answered 27 of 27 questions right but only 25 of 27 the right way: twice it did the arithmetic in its head instead of using the calculator. Prompt a2 (Run 15) fixed one of the two calculator skips (ag014, 4 of 4 runs) but not ag017, and followed the new not-reported sentence word for word, copying the tool's internal metric names into it; the agent eval is now a CI gate. Prompt a3 (Run 17) made every not-reported answer exact, but the calculator probes showed the agent still does what's-left sums in its head, and on two of them answers first and only then "checks" with the calculator, which the path checks can't yet see. Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
 
 ## What's being tested
 
@@ -37,7 +37,7 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-pytest -v                          # 597 offline tests: free, no API key needed
+pytest -v                          # 620 offline tests: free, no API key needed
 
 cp .env.example .env               # then add your ANTHROPIC_API_KEY
 python run_evals.py                # golden v3, prompt v6, retriever r3, LLM judge (judge-v2)
@@ -97,7 +97,7 @@ only shows the trajectory; `agent_eval.py` grades it:
 python agent_eval.py                          # 27 cases: tool choice, arguments, trajectory, answer
 python agent_eval.py --category calculation   # one category
 python agent_eval.py --agent a2               # prompt a2 (a1 is the default)
-python agent_eval.py --agent a2 --cases data/agent/calc_probes_v1.jsonl   # the ag017 probes
+python agent_eval.py --agent a3 --cases data/agent/calc_probes_v2.jsonl   # the ag017 probes
 python agent_eval.py --min-fully-correct 0.85 --min-answer-accuracy 0.95   # the CI gate
 ```
 
@@ -222,7 +222,7 @@ app/                  The system under test
   llm.py              Single wrapper for every model call
   rag.py              Retrieve -> prompt -> answer (prompts v1-v6, retrievers r1-r3, all kept)
   tools.py            The agent's tools: metric lookup, document search, safe calculator (tools t1, t2)
-  agent.py            LangGraph agent: model and tool nodes, records each run's trajectory (prompts a1, a2)
+  agent.py            LangGraph agent: model and tool nodes, records each run's trajectory and a per-turn log (prompts a1-a3)
 evals/                The evaluation framework
   dataset.py          Loads and validates the golden dataset
   metrics.py          Rule-based graders
@@ -245,8 +245,8 @@ data/
   attacks/            Prompt-injection (injection_v1) and jailbreak (jailbreak_v1) attacks, dataset card
   robustness/         Hand-written reworded and casual questions (paraphrases_v1, held-out v2), dataset card
   bias/               Counterfactual bias groups (bias_v1), dataset card
-  agent/              Agent cases with required tool steps (agent_v1), calculator probes (calc_probes_v1), dataset card
-tests/                597 offline tests
+  agent/              Agent cases with required tool steps (agent_v1), calculator probes (calc_probes_v1, v2), dataset card
+tests/                620 offline tests
 run_evals.py          Eval runner and quality gates
 calibrate.py          Judge validation commands
 consistency.py        Repeat-run consistency check
@@ -267,7 +267,7 @@ agent_eval.py         Agent eval: tool choice, arguments, trajectory and answer
 | 1 | RAG app, golden dataset v1, rule-based correctness, CI pipeline | ✅ Done |
 | 2 | Golden v2, LLM-as-judge (faithfulness, correctness), format checks, mutation testing, human calibration | ✅ Done |
 | 3 | Safety and robustness: repeat-run consistency (Run 4), prompt injection including injections hidden in documents (Runs 5–8), paraphrase and typo robustness (Run 9), jailbreaks (Run 10), bias probes (Run 11) | ✅ Done |
-| 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | 🔄 Agent, tools, graded eval and CI gate built; Runs 14–15 done; tools t2 and ag017 probes built, Run 16 next |
+| 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | 🔄 Agent, tools, graded eval and CI gate built; Runs 14–17 done; "answered before calculating" check next |
 | 5 | Model comparison scorecard and a results dashboard | ⬜ |
 | 6 | Production-style tracing and monitoring | ⬜ |
 
@@ -1133,8 +1133,135 @@ going from 0 of 4 to 4 of 4 is.
 | Calculator probes (`calc_probes_v1`, [card](data/agent/README.md#calculator-probes-calc_probes_v1jsonl)): 6 variants of ag017, each changing one thing (wording, harder numbers, two sources, a non-"leftover" question, numbers given by the user) | One wording change fixed ag014 and not ag017; another guess at wording could fix nothing |
 | Not yet: make a2 the default | One case better, nothing worse, but its not-reported answers leak internal names |
 
+### Run 16: tools t2 and the calculator probes
+
+Prompt a2 with tools t2 on the full agent_v1 set (once), then the 6 calculator probes
+(`calc_probes_v1`) three times. Same model and settings as Runs 14–15.
+
+**agent_v1: one of three names fixed.** Every score matched Run 15 except the not-reported
+answers:
+
+| Case | Run 15 (tools t1) | Run 16 (tools t2) |
+|---|---|---|
+| ag019 | "Kestrel did not report net_income for FY2024." | "Kestrel did not report net income for FY2024." **exact** |
+| ag020 | "...gross_margin for Q2 2025." | "...gross_margin for Q2 2025." (unchanged) |
+| ag021 | "...enterprise_customers for Q1 2026." | "...enterprise_customers for Q1 2026." (unchanged) |
+
+Exact refusals went from 3 of 6 to 4 of 6. The new internals check flagged ag020 and ag021.
+
+- **Run 15's explanation was only partly right.** The tool's message now says "the documents
+  don't give gross margin for Q2 2025", and ag020 still wrote `gross_margin`. The key is in two
+  places the agent can copy from: the tool's message and the agent's own tool call
+  (`{"metric": "gross_margin"}`). Fixing the message fixed one case out of three, so the tool call
+  is the likelier source for the other two. That's an inference: which text the model copied
+  can't be observed directly.
+
+**The probes: only the word "undrawn" skips the calculator.** All three runs were identical, down
+to the token counts:
+
+| Probe | What changes from ag017 | Calculator? |
+|---|---|---|
+| cp01 | Nothing (control) | **No**, 3 of 3, same answer as ag017 |
+| cp02 | "Size minus amount drawn" instead of "undrawn" | Yes, 3 of 3 |
+| cp03 | Harder numbers (2,850 − 1,240) | Yes, 3 of 3 |
+| cp04 | Easy numbers from two documents | Yes, 3 of 3 |
+| cp05 | Easy numbers in one paragraph, a range's width | Yes, 3 of 3 |
+| cp06 | cp01's numbers given in the question | Yes, 3 of 3, but **an empty answer** |
+
+- **It's the question, not the numbers or where they come from.** cp02 has the same facts,
+  numbers and paragraph as cp01; only the wording differs, and it calculates every time. Easy
+  round numbers (cp05) and numbers from one paragraph (cp05, cp03) don't cause skipping. "How much
+  is undrawn" seems to read as a fact to look up, and "$150 million facility, $40 million drawn"
+  as already answering it.
+- **cp06 returned nothing, 3 times out of 3.** It searched to check the figures, calculated
+  `150 - 40 = 110`, then ended its final turn with no text. The agent recorded that as
+  "answered", so the user would see a blank reply. The results don't say why: the agent kept only
+  the last turn's text and dropped the API's stop reason. The model may have written the answer
+  next to its calculator call and had nothing to add, or never written one at all.
+
+Caveats: agent_v1 ran once. The probes are 6 cases, each one change at a time, and some overlap
+(cp03 changes the numbers but keeps one paragraph). "The word 'undrawn'" rests on one pair (cp01
+and cp02): it says where to look next, not that every leftover question is skipped.
+
+### Changes after Run 16
+
+| Change | Why |
+|---|---|
+| Every turn is logged: its text, the API's stop reason, how many tool calls (`turn_log`, saved in results). An empty final reply now stops as `empty_answer`, listed separately in the report, and counts as a wrong answer but not a wrong path | cp06's empty answers can't be explained from what Run 16 saved |
+| Prompt a3: a2 with two lines changed. Calculator: "including what's left of a total once part of it is used". Names: "Write metrics in plain words, never as a tool's argument names ("diluted EPS", not "diluted_eps")" | cp01/ag017 is the one skip left; ag020 and ag021 still used keys under t2 |
+| `calc_probes_v2`: v1 unchanged, plus cp07 ("how much more could Kestrel still borrow") and cp08 ("remaining availability"), the same leftover question without the word "undrawn" | a3's rule avoids every probe word (a test checks), so cp07 and cp08 show whether a3 learned the idea or only cp01 is fixed |
+| Not yet: make a2 or a3 the default | a3 needs a graded run; a2 still leaks two metric keys |
+
+### Run 17: prompt a3
+
+Prompt a3 with tools t2 on the full agent_v1 set (once), then `calc_probes_v2` under a3 three
+times, plus cp07 and cp08 once under a2 as a baseline. Same model and settings as before. The
+new turn log was on for every run.
+
+| | Run 15 (a2, t1) | Run 16 (a2, t2) | Run 17 (a3, t2) |
+|---|---|---|---|
+| **Fully correct** | 26/27 | 26/27 | 26/27 |
+| **Answer** | 27/27 | 27/27 | 27/27 |
+| Declined with exactly the required sentence | 3 of 6 | 4 of 6 | **6 of 6** |
+| Metric keys in answers (`gross_margin`...) | 3 | 2 | **0** |
+| Tokens (whole run) | 103.6k in, 3.8k out | 103.6k in, 3.8k out | 105.9k in, 3.8k out |
+
+- **The names rule worked.** ag020 and ag021 now say "gross margin" and "enterprise customers",
+  so every not-reported answer is the exact sentence and no answer contains a metric key. Tools t2
+  fixed one of three; telling the agent not to use argument names fixed the other two. One run.
+- **The leftover rule fixed nothing.** ag017 skipped the calculator again, and so did cp01 in all
+  3 probe runs: 0 of 4 under a3, after 0 of 8 under a1 and a2.
+
+**The empty answers, explained.** The turn log shows the same three turns every time, for cp07
+and cp08, under a2 and a3, in all 4 runs:
+
+| Turn | Text | Tool call |
+|---|---|---|
+| 1 | (none) | `search_documents` |
+| 2 | "With a $150 million revolving credit facility and $40 million drawn as of June 30, 2026, the remaining availability was $110 million." | `calculator("150 - 40")` |
+| 3 | (none) | (none): stops |
+
+- **It wrote the answer first and calculated afterwards.** The $110 million in the answer was
+  done in its head, *then* checked with the calculator, and once the check agreed it had nothing
+  left to say. The agent's answer is the last turn's text, so it came back empty.
+- **This is the same skip as ag017, hidden.** All 7 other calculations in the full run and the
+  probes say "Now I'll calculate..." on the turn that calls the calculator and give the figure
+  only after it returns. Only the credit-facility leftover questions (cp07, cp08) state the figure
+  first.
+- **The path grader can't see it.** The calculator was called, after its inputs, with the right
+  result, so tool choice, arguments and trajectory all pass. cp07 and cp08 fail only because the
+  answer is empty. Had the agent kept its turn-2 text as the answer, both would have scored
+  **fully correct** with the arithmetic done in its head.
+- **Run 16's "the word 'undrawn'" was too narrow.** cp07 ("how much more could it still
+  borrow") and cp08 ("remaining availability") avoid the word and still do the sum in the
+  model's head. Only cp02, which asks for the subtraction outright ("size minus amount drawn"),
+  calculates first. The trigger is a what's-left question about the credit facility, whatever the
+  wording. a3's rule names exactly that kind of question and changed none of the three.
+- **cp06 changed under a3:** it calculated straight away without searching, and answered (3 of 3).
+  Its Run 16 empty answers ran under a2 without the turn log. Their pattern (search, calculator,
+  empty) matches cp07/cp08, which suggests the same cause, but that can't be confirmed now.
+
+Caveats: the full set ran once. The probes are deterministic so far (identical calls, answers and
+token counts across repeats), so 3 repeats show stability, not a rate. Every what's-left case uses
+the same credit-facility paragraph. Whether other what's-left questions behave the same is
+untested, since the corpus has no second fact of that kind.
+
+### Changes after Run 17
+
+| Change | Why |
+|---|---|
+| Planned: a path check, "answered before calculating". A calculator result (to the case's tolerance) that already appears in text from the turn that calls the calculator, or earlier, fails the trajectory | cp07 and cp08 under a2 and a3: a calculation that checks a figure the agent already gave isn't the calculator doing the arithmetic, and the current path checks pass it |
+| Decision needed: what the agent returns when its last turn is empty (keep "last turn's text", or fall back to the last turn that had text) | Changes what every answer is, and with the check above, which failure cp07/cp08 count as |
+| Decision needed: make a3 the default | Best of a1–a3 on every agent_v1 number, from one run |
+| Decision needed: stop rewording the prompt for ag017 | Two prompt rules (a2, a3) moved ag014 but not the credit-facility questions in 12 runs |
+
 ### Known gaps
 
+- **"Answered before calculating" passes the path checks.** A calculator call that verifies a
+  figure the agent already wrote counts as using the calculator (cp07, cp08, Run 17). Planned fix
+  above.
+- Every what's-left case uses one credit-facility paragraph, so "what's-left questions are done in
+  the head" rests on one fact.
 - **The "numbers no tool returned" flag misses small whole numbers.** Any nearby figure within
   0.5 counts as support, and so does a stray digit: 39 is "supported" by net income's 38.9, and
   10 by the "1" in "Q1" (as 0.01 thousand). On the calculator probes cp04 and cp05 a skipped

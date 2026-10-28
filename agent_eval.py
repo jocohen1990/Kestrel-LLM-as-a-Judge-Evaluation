@@ -82,10 +82,11 @@ def print_report(run: dict) -> None:
                        ("over_budget_ids", "Over step budget"),
                        ("repeated_call_ids", "Repeated a call"),
                        ("step_limit_ids", "Hit the turn limit"),
+                       ("empty_answer_ids", "Ended with an empty reply"),
                        ("inexact_refusal_ids", "Declined, but not exactly"),
                        ("unsupported_number_ids", "Numbers no tool returned"),
                        ("mentions_internals_ids", "Mentions tools/searches")):
-        if s[key]:
+        if s.get(key):
             print(f"  {label + ':':<32} {', '.join(s[key])}")
     print("  By category (fully correct / answer right):")
     for category, c in s["by_category"].items():
@@ -117,6 +118,10 @@ def main() -> int:
             for step in row["steps"]:
                 print(f"      {describe(step)}")
             print(f"      A: {row['answer'][:160]!r}")
+            if row["stopped"] == "empty_answer":
+                for t in row["turn_log"]:
+                    print(f"      turn {t['turn']} ({t['stop_reason']}, {t['tool_calls']} tool calls): "
+                          f"{t['text'][:120]!r}")
 
     model = args.model or os.getenv("LLM_MODEL", DEFAULT_MODEL)
     run = {

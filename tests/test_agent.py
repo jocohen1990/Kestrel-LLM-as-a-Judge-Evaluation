@@ -244,6 +244,84 @@ def test_not_reported_answer(metric, period, sentence):
     assert not_reported_answer(metric, period) == sentence
 
 
+# ---- Prompt a3 (after Run 16) ------------------------------------------------------
+
+def test_a3_changes_exactly_two_lines_of_a2():
+    changed = _changed_lines(AGENT_PROMPTS["a2"], AGENT_PROMPTS["a3"])
+    removed = [l[2:] for l in changed if l[0] == "-"]
+    added = [l[2:] for l in changed if l[0] == "+"]
+    assert len(removed) == len(added) == 2
+    assert removed[0].startswith("- calculator:") and added[0].startswith("- calculator:")
+    assert removed[1].startswith("- The user can't see") and added[1].startswith("- The user can't see")
+    # Each new line is the old one with words added, nothing taken out.
+    words = lambda line: set(re.findall(r"[\w'-]+", line))
+    for old, new in zip(removed, added):
+        assert words(old) <= words(new)
+
+
+def test_a3_names_leftover_amounts_and_argument_names():
+    lines = AGENT_PROMPTS["a3"].splitlines()
+    calc = next(l for l in lines if l.startswith("- calculator:"))
+    user = next(l for l in lines if l.startswith("- The user can't see"))
+    assert "what's left of a total" in calc
+    assert "argument names" in user and '"diluted_eps"' in user
+
+
+def test_a3s_name_example_is_no_not_reported_cases_metric():
+    asked = {s["args"]["metric"] for c in _agent_cases() if c["category"] == "not_reported"
+             for s in c["required_steps"] if s.get("tool") == "get_financial_metric"}
+    assert asked and "diluted_eps" not in asked
+
+
+# ---- The turn log and empty answers (after Run 16) --------------------------------
+
+def test_turn_log_records_every_turn(monkeypatch):
+    use_model(monkeypatch, [text("Let me check."), call("calculator", {"expression": "2*3"}, "c")],
+              [text("It's 6.")])
+    result = step_through(KestrelAgent(), "2*3?")
+    assert result.turn_log == [
+        {"turn": 1, "text": "Let me check.", "stop_reason": None, "tool_calls": 1},
+        {"turn": 2, "text": "It's 6.", "stop_reason": None, "tool_calls": 0},
+    ]
+    assert result.stopped == "answered"
+
+
+def test_empty_final_reply_is_its_own_outcome(monkeypatch):
+    # cp06 in Run 16: a search, a calculation, then a final turn with no text.
+    use_model(monkeypatch, [call("calculator", {"expression": "150 - 40"}, "c")], [])
+    result = step_through(KestrelAgent(), "How much is undrawn?")
+    assert result.answer == "" and result.stopped == "empty_answer"
+    assert result.turn_log[-1] == {"turn": 2, "text": "", "stop_reason": None, "tool_calls": 0}
+
+
+def test_whitespace_only_reply_counts_as_empty(monkeypatch):
+    use_model(monkeypatch, [text("  \n ")])
+    assert step_through(KestrelAgent(), "?").stopped == "empty_answer"
+
+
+def test_answer_written_next_to_a_tool_call_stays_in_the_log(monkeypatch):
+    # One of the two explanations for cp06: the answer came with the last tool
+    # call, and the final turn had nothing to add. The answer is still the
+    # final turn's text (so this run fails), but the log shows what happened.
+    use_model(monkeypatch, [text("$110 million is undrawn."), call("calculator", {"expression": "150 - 40"}, "c")],
+              [])
+    result = step_through(KestrelAgent(), "?")
+    assert result.stopped == "empty_answer"
+    assert result.turn_log[0]["text"] == "$110 million is undrawn."
+
+
+def test_stop_reason_is_recorded(monkeypatch):
+    fake = use_model(monkeypatch, [text("ok")])
+    original = fake.__call__
+
+    def with_reason(*a, **k):
+        turn = original(*a, **k)
+        turn.stop_reason = "end_turn"
+        return turn
+    monkeypatch.setattr(agent_module, "generate_with_tools", with_reason)
+    assert step_through(KestrelAgent(), "?").turn_log[0]["stop_reason"] == "end_turn"
+
+
 def test_unknown_version_and_bad_max_turns_are_rejected():
     with pytest.raises(ValueError):
         KestrelAgent(agent_version="a99")
@@ -269,6 +347,13 @@ def test_graph_gives_the_same_result_as_stepping_through(monkeypatch):
     assert graphed.turns == stepped.turns == 3
     assert graphed.messages == stepped.messages
     assert graphed.stopped == "answered" and graphed.model == "fake-model"
+
+
+def test_graph_records_empty_answers_and_the_turn_log(monkeypatch):
+    pytest.importorskip("langgraph")
+    use_model(monkeypatch, [call("calculator", {"expression": "150 - 40"}, "c")], [])
+    result = KestrelAgent().run("?")
+    assert result.stopped == "empty_answer" and len(result.turn_log) == 2
 
 
 def test_graph_respects_max_turns(monkeypatch):
