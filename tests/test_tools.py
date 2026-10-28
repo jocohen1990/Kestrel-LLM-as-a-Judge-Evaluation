@@ -45,6 +45,29 @@ def test_gap_in_the_documents_is_not_reported_not_an_error():
     assert r.output.startswith("Not reported")
 
 
+def test_not_reported_names_the_metric_the_way_a_reader_would():
+    # Tools t2 (after Run 15): the agent copied "net_income" from this message
+    # into its answer. Written out by hand, not built from METRIC_NAMES.
+    assert (get_financial_metric("net_income", "FY2024").output
+            == "Not reported: the documents don't give net income for FY2024.")
+    assert (get_financial_metric("enterprise_customers", "Q1 2026").output
+            == "Not reported: the documents don't give enterprise customers for Q1 2026.")
+
+
+def test_no_not_reported_message_contains_a_metric_key():
+    from app.tools import PERIODS
+    for metric in METRICS:
+        for period in PERIODS:
+            if (metric, period) not in METRIC_TABLE:
+                out = get_financial_metric(metric, period).output
+                assert "_" not in out, out
+
+
+def test_tools_version_is_recorded():
+    from app.tools import TOOLS_VERSION
+    assert TOOLS_VERSION == "t2"
+
+
 @pytest.mark.parametrize("metric, period", [("revenues", "Q2 2026"), ("revenue", "Q2-2026"),
                                             ("revenue", "2026"), ("Revenue", "Q2 2026")])
 def test_bad_arguments_are_errors_and_are_not_silently_fixed(metric, period):

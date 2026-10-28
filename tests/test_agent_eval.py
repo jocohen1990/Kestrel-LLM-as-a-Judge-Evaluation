@@ -350,6 +350,27 @@ def test_declined_agent(answer):
     assert declined_agent(answer)
 
 
+@pytest.mark.parametrize("answer", [
+    # Run 15's actual a2 answers (tools t1): the metric key reached the user.
+    "Kestrel did not report net_income for FY2024.",
+    "Kestrel did not report gross_margin for Q2 2025.",
+    "Kestrel did not report enterprise_customers for Q1 2026.",
+    "I checked get_financial_metric and found nothing.",
+])
+def test_code_identifiers_count_as_mentioning_internals(answer):
+    assert agent_mentions_internals(answer)
+
+
+@pytest.mark.parametrize("answer", [
+    "Kestrel did not report net income for FY2024.",
+    "Revenue was $116.0 million in Q2 2026, up 19% year over year.",
+    "Borrowings carry an interest rate of SOFR plus 1.75%.",
+    "Kestrel's CEO is Dana Whitfield.",
+])
+def test_ordinary_answers_have_no_code_identifiers(answer):
+    assert not agent_mentions_internals(answer)
+
+
 def test_declined_agent_doesnt_catch_answers():
     assert not declined_agent("Net income was $38.9 million in fiscal 2025.")
 

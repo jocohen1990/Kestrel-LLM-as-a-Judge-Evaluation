@@ -46,6 +46,28 @@ METRICS = {
     "enterprise_customers": "Enterprise customers at the end of the period",
 }
 
+# How a reader would say each metric. The keys above are for the model's tool
+# calls; these are for anything that might end up in an answer. Prompt a2's
+# not-reported sentence uses them (app/agent.py), and since t2 so does the
+# tool's own "Not reported" message: in Run 15 the agent copied the key from
+# that message into its answer ("Kestrel did not report net_income for FY2024").
+METRIC_NAMES = {
+    "revenue": "revenue",
+    "net_income": "net income",
+    "diluted_eps": "diluted EPS",
+    "gross_margin": "gross margin",
+    "enterprise_customers": "enterprise customers",
+}
+assert set(METRIC_NAMES) == set(METRICS), "every metric needs a reader-facing name"
+
+# Tools change the agent's behavior as much as prompts do, so each results file
+# records which version ran (agent_eval.py).
+#   t1  Runs 14-15. "Not reported: the documents don't give net_income for FY2024."
+#   t2  The "Not reported" message names the metric the way a reader would
+#       ("net income"). Nothing else changed: lookups, search and the
+#       calculator give the same output as t1.
+TOOLS_VERSION = "t2"
+
 DOC_TITLES = {
     "annual_report_2025.md": "Annual Report 2025",
     "q1_2026_earnings.md": "Q1 2026 Earnings Release",
@@ -98,7 +120,7 @@ def get_financial_metric(metric: str, period: str) -> ToolResult:
         return ToolResult(f"Unknown period {period!r}. Use one of: {', '.join(PERIODS)}.", True)
     found = METRIC_TABLE.get((metric, period))
     if found is None:
-        return ToolResult(f"Not reported: the documents don't give {metric} for {period}.")
+        return ToolResult(f"Not reported: the documents don't give {METRIC_NAMES[metric]} for {period}.")
     return ToolResult(f"{metric}, {period}: {found.display} (source: {DOC_TITLES[found.doc]})")
 
 

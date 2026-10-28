@@ -53,6 +53,40 @@ money is spent: every metric figure exists (or is really "Not reported"), every 
 is in a filing, every calculator target matches hand-written arithmetic, and a perfect trajectory
 built with the real tools gets full marks on every case.
 
+## Calculator probes (`calc_probes_v1.jsonl`)
+
+A 6-case diagnostic, not a benchmark, built after Run 15. ag017 ("how much of the credit
+facility was undrawn?") skipped the calculator in 4 of 4 runs under both a1 and a2, while ag014
+started using it under a2. Instead of guessing at more prompt wording, each probe changes one
+thing about ag017, so which probes use the calculator points at the cause.
+
+| Probe | What changes from ag017 | Numbers | Where they come from |
+|---|---|---|---|
+| cp01 | Nothing: ag017 word for word (control) | 150 − 40 | One paragraph |
+| cp02 | Wording: asks for "size minus amount drawn" instead of "undrawn" | 150 − 40 | One paragraph |
+| cp03 | Harder numbers | 2,850 − 1,240 | One paragraph (or the metric tool for 2,850) |
+| cp04 | Two sources | 64 − 25 | Two paragraphs, two documents |
+| cp05 | Not a "what's left over" question: the width of a range | 480 − 470 | One paragraph |
+| cp06 | The numbers are in the question, not in a tool result | 150 − 40 | The user |
+
+How to read the results, against the control (cp01 skipping):
+
+- **cp02 uses the calculator**: the word "undrawn" makes the answer feel like a fact to read,
+  not a sum to do.
+- **cp03 uses it, cp05 doesn't**: the model skips easy round numbers, whatever the wording.
+- **cp04 uses it, cp05 doesn't**: numbers that arrive together in one paragraph are read as one fact.
+- **cp06 uses it**: numbers inside a tool result are treated differently from the user's numbers.
+- **Everything skips**: a2's calculator rule doesn't reach search results at all.
+
+The probes overlap (cp03 changes the numbers *and* keeps one paragraph), so a pattern is a lead
+for the next prompt, not proof. Run each probe more than once:
+`python agent_eval.py --agent a2 --cases data/agent/calc_probes_v1.jsonl`.
+
+Each probe has a `probe` field saying what it changes. `tests/test_calc_probes.py` checks them
+like the main set (real evidence, hand-written arithmetic, perfect runs get full marks), plus two
+checks of its own: cp01 must stay identical to ag017, and no filing may state any probe's answer,
+since reading a stated figure would be correct.
+
 ## Known limits
 
 - 27 cases: one case is about 4 percentage points.

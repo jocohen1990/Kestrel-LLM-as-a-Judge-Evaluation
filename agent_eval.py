@@ -29,6 +29,7 @@ except ImportError:
 from app.agent import AGENT_PROMPTS, DEFAULT_AGENT_VERSION, DEFAULT_MAX_TURNS, KestrelAgent
 from app.llm import DEFAULT_MODEL, warmup
 from app.paths import AGENT_DIR, RESULTS_DIR
+from app.tools import TOOLS_VERSION
 from evals.agent_eval import CATEGORIES, load_agent_cases, run_case, summarize_agent
 
 
@@ -59,7 +60,8 @@ def describe(step: dict) -> str:
 def print_report(run: dict) -> None:
     s = run["summary"]
     print(f"\n=== Agent eval: {s['cases']} cases ===")
-    print(f"Agent: {run['model']} (prompt {run['agent_version']}, max {run['max_turns']} turns)")
+    print(f"Agent: {run['model']} (prompt {run['agent_version']}, tools {run.get('tools_version', 't1')}, "
+          f"max {run['max_turns']} turns)")
     print(f"  Fully correct:     {fmt(s['fully_correct_rate'])}  (right tools, arguments, path AND answer)")
     print(f"  Tool choice:       {fmt(s['tool_choice_accuracy'])}")
     print(f"  Arguments:         {fmt(s['argument_accuracy'])}")
@@ -121,6 +123,7 @@ def main() -> int:
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "model": model,
         "agent_version": args.agent,
+        "tools_version": TOOLS_VERSION,
         "max_turns": args.max_turns,
         "cases_file": Path(args.cases).name,
         "summary": summarize_agent(rows),

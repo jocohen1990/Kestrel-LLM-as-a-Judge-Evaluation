@@ -43,7 +43,10 @@ heuristic that can misfire (read the flagged answers before reporting them):
                        written out, and ratio <-> percent. A cheap, rule-based
                        hallucination check.
   mentions_internals   The answer mentions tools, searches or lookups, which
-                       prompt a1 forbids (the user can't see them).
+                       prompt a1 forbids (the user can't see them), or contains
+                       a code identifier such as a tool's metric key
+                       ("net_income"), which a user should never see either
+                       (added after Run 15, where three answers did).
 
 And one strict format check, like the RAG evals' exact-refusal rate:
 
@@ -261,8 +264,18 @@ def declined_agent(answer: str) -> bool:
     return declined(answer) or any(p in text for p in NOT_REPORTED_PHRASES)
 
 
+# Two or more lowercase words joined by underscores: net_income,
+# get_financial_metric. Ordinary English never looks like this.
+CODE_IDENTIFIER_PATTERN = re.compile(r"\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b")
+
+
+def code_identifiers(answer: str) -> list[str]:
+    return CODE_IDENTIFIER_PATTERN.findall(answer or "")
+
+
 def agent_mentions_internals(answer: str) -> bool:
-    return mentions_internals(answer or "") or bool(AGENT_INTERNALS_PATTERN.search(answer or ""))
+    return (mentions_internals(answer or "") or bool(AGENT_INTERNALS_PATTERN.search(answer or ""))
+            or bool(code_identifiers(answer)))
 
 
 def _decimals(text: str) -> int:

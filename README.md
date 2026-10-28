@@ -37,7 +37,7 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-pytest -v                          # 554 offline tests: free, no API key needed
+pytest -v                          # 597 offline tests: free, no API key needed
 
 cp .env.example .env               # then add your ANTHROPIC_API_KEY
 python run_evals.py                # golden v3, prompt v6, retriever r3, LLM judge (judge-v2)
@@ -97,6 +97,7 @@ only shows the trajectory; `agent_eval.py` grades it:
 python agent_eval.py                          # 27 cases: tool choice, arguments, trajectory, answer
 python agent_eval.py --category calculation   # one category
 python agent_eval.py --agent a2               # prompt a2 (a1 is the default)
+python agent_eval.py --agent a2 --cases data/agent/calc_probes_v1.jsonl   # the ag017 probes
 python agent_eval.py --min-fully-correct 0.85 --min-answer-accuracy 0.95   # the CI gate
 ```
 
@@ -220,7 +221,7 @@ app/                  The system under test
   retriever.py        BM25 keyword search, written from scratch, with optional typo tolerance
   llm.py              Single wrapper for every model call
   rag.py              Retrieve -> prompt -> answer (prompts v1-v6, retrievers r1-r3, all kept)
-  tools.py            The agent's tools: metric lookup, document search, safe calculator
+  tools.py            The agent's tools: metric lookup, document search, safe calculator (tools t1, t2)
   agent.py            LangGraph agent: model and tool nodes, records each run's trajectory (prompts a1, a2)
 evals/                The evaluation framework
   dataset.py          Loads and validates the golden dataset
@@ -244,8 +245,8 @@ data/
   attacks/            Prompt-injection (injection_v1) and jailbreak (jailbreak_v1) attacks, dataset card
   robustness/         Hand-written reworded and casual questions (paraphrases_v1, held-out v2), dataset card
   bias/               Counterfactual bias groups (bias_v1), dataset card
-  agent/              Agent cases with required tool steps (agent_v1), dataset card
-tests/                554 offline tests
+  agent/              Agent cases with required tool steps (agent_v1), calculator probes (calc_probes_v1), dataset card
+tests/                597 offline tests
 run_evals.py          Eval runner and quality gates
 calibrate.py          Judge validation commands
 consistency.py        Repeat-run consistency check
@@ -266,7 +267,7 @@ agent_eval.py         Agent eval: tool choice, arguments, trajectory and answer
 | 1 | RAG app, golden dataset v1, rule-based correctness, CI pipeline | ✅ Done |
 | 2 | Golden v2, LLM-as-judge (faithfulness, correctness), format checks, mutation testing, human calibration | ✅ Done |
 | 3 | Safety and robustness: repeat-run consistency (Run 4), prompt injection including injections hidden in documents (Runs 5–8), paraphrase and typo robustness (Run 9), jailbreaks (Run 10), bias probes (Run 11) | ✅ Done |
-| 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | 🔄 Agent, tools, graded eval and CI gate built; Runs 14–15 done; not-reported tool message and ag017 next |
+| 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | 🔄 Agent, tools, graded eval and CI gate built; Runs 14–15 done; tools t2 and ag017 probes built, Run 16 next |
 | 5 | Model comparison scorecard and a results dashboard | ⬜ |
 | 6 | Production-style tracing and monitoring | ⬜ |
 
@@ -1127,12 +1128,19 @@ going from 0 of 4 to 4 of 4 is.
 
 | Change | Why |
 |---|---|
-| Planned: fix the name at the source. The metric tool's "Not reported" message uses the plain name ("net income") instead of the key (`net_income`) | ag019–ag021 copied the key in 4 of 4 runs. The alternative, a prompt a3 that says "translate the key", asks the model to override text it's looking at, which is what just failed |
-| Planned: `mentions_internals` flags code identifiers (snake_case metric keys) in answers | "net_income" reached the user unflagged in Run 15 |
-| Planned: find out why ag017 skips the calculator (e.g. a variant where the two figures come from two searches) before writing a3 | One wording change fixed ag014 and not ag017; another guess at wording could fix nothing |
+| Tools **t2**: the metric tool's "Not reported" message uses the plain name ("the documents don't give net income for FY2024") instead of the key (`net_income`). Results files now record `tools_version`; Runs 14–15 used t1 | ag019–ag021 copied the key in 4 of 4 runs. The alternative, a prompt a3 that says "translate the key", asks the model to override text it's looking at, which is what just failed. Only that message changed: lookups, search and the calculator give t1's output |
+| `mentions_internals` flags code identifiers (two or more lowercase words joined by underscores) | "net_income" reached the user unflagged in Run 15. Re-grading Run 15 changes only this flag (ag019–ag021) |
+| Calculator probes (`calc_probes_v1`, [card](data/agent/README.md#calculator-probes-calc_probes_v1jsonl)): 6 variants of ag017, each changing one thing (wording, harder numbers, two sources, a non-"leftover" question, numbers given by the user) | One wording change fixed ag014 and not ag017; another guess at wording could fix nothing |
 | Not yet: make a2 the default | One case better, nothing worse, but its not-reported answers leak internal names |
 
 ### Known gaps
+
+- **The "numbers no tool returned" flag misses small whole numbers.** Any nearby figure within
+  0.5 counts as support, and so does a stray digit: 39 is "supported" by net income's 38.9, and
+  10 by the "1" in "Q1" (as 0.01 thousand). On the calculator probes cp04 and cp05 a skipped
+  calculation is caught only by the step grader. Pinned in `tests/test_calc_probes.py`.
+- Successful lookups still show the metric key ("net_income, FY2025: $38.9 million"). No answer
+  has copied it yet (Runs 14–15), and t2 left it alone to keep the change to one message.
 
 - **Exact refusals are reported, not gated.** a2's not-reported sentence counts toward
   "Declined with exactly the required sentence" but not toward fully correct, the same as the

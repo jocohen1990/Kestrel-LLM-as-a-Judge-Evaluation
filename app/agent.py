@@ -34,7 +34,7 @@ from typing import TypedDict
 
 from app.llm import generate_with_tools
 from app.rag import REFUSAL
-from app.tools import METRICS, TOOL_DEFINITIONS, run_tool
+from app.tools import METRIC_NAMES, TOOL_DEFINITIONS, run_tool
 
 # ---- The not-reported answer (decided after Run 14) -------------------------
 # When the metric tool says a figure isn't reported, prompt a1 left the wording
@@ -45,16 +45,8 @@ from app.tools import METRICS, TOOL_DEFINITIONS, run_tool
 # is: prompt a2 asks for exactly this, and evals/agent_eval.py builds the
 # expected sentence for each not_reported case from these same values.
 #
-# The names are how a reader would say each metric; the period is written the
-# way the tool writes it ("FY2024", "Q2 2025").
-METRIC_NAMES = {
-    "revenue": "revenue",
-    "net_income": "net income",
-    "diluted_eps": "diluted EPS",
-    "gross_margin": "gross margin",
-    "enterprise_customers": "enterprise customers",
-}
-assert set(METRIC_NAMES) == set(METRICS), "every metric needs a reader-facing name"
+# The metric names (app.tools.METRIC_NAMES) are how a reader would say each
+# metric; the period is written the way the tool writes it ("FY2024").
 NOT_REPORTED_TEMPLATE = "Kestrel did not report {metric} for {period}."
 
 

@@ -1,25 +1,28 @@
 {
-  "timestamp": "2026-10-28T01:57:08.732568+00:00",
+  "timestamp": "2026-10-28T02:55:04.769959+00:00",
   "model": "claude-haiku-4-5-20251001",
   "agent_version": "a2",
+  "tools_version": "t2",
   "max_turns": 6,
-  "cases_file": "agent_v1.jsonl",
+  "cases_file": "calc_probes_v1.jsonl",
   "summary": {
-    "cases": 5,
-    "fully_correct_rate": 0.8,
-    "tool_choice_accuracy": 0.8,
-    "argument_accuracy": 0.8,
+    "cases": 6,
+    "fully_correct_rate": 0.667,
+    "tool_choice_accuracy": 0.833,
+    "argument_accuracy": 0.833,
     "trajectory_ok_rate": 1.0,
-    "answer_accuracy": 1.0,
+    "answer_accuracy": 0.833,
     "right_answer_wrong_path_ids": [
-      "ag017"
+      "cp01"
     ],
-    "right_path_wrong_answer_ids": [],
+    "right_path_wrong_answer_ids": [
+      "cp06"
+    ],
     "wrong_tool_ids": [
-      "ag017"
+      "cp01"
     ],
     "wrong_args_ids": [
-      "ag017"
+      "cp01"
     ],
     "forbidden_tool_ids": [],
     "first_tool_wrong_ids": [],
@@ -27,110 +30,37 @@
     "out_of_order_ids": [],
     "repeated_call_ids": [],
     "step_limit_ids": [],
-    "wrong_answer_ids": [],
-    "exact_refusal_rate": 0.0,
-    "inexact_refusal_ids": [
-      "ag019",
-      "ag020",
-      "ag021"
+    "wrong_answer_ids": [
+      "cp06"
     ],
+    "exact_refusal_rate": null,
+    "inexact_refusal_ids": [],
     "unsupported_number_ids": [
-      "ag017"
+      "cp01"
     ],
     "mentions_internals_ids": [],
-    "avg_steps": 1.4,
-    "avg_turns": 2.2,
+    "avg_steps": 2.17,
+    "avg_turns": 2.83,
     "tool_errors": 0,
-    "input_tokens": 19315,
-    "output_tokens": 683,
-    "avg_latency_s": 1.93,
+    "input_tokens": 32319,
+    "output_tokens": 1106,
+    "avg_latency_s": 2.61,
     "by_category": {
       "calculation": {
         "cases": 1,
-        "fully_correct": 1,
-        "answer_ok": 1
+        "fully_correct": 0,
+        "answer_ok": 0
       },
       "mixed": {
-        "cases": 1,
-        "fully_correct": 0,
-        "answer_ok": 1
-      },
-      "not_reported": {
-        "cases": 3,
-        "fully_correct": 3,
-        "answer_ok": 3
+        "cases": 5,
+        "fully_correct": 4,
+        "answer_ok": 5
       }
     }
   },
   "cases": [
     {
-      "id": "ag014",
-      "category": "calculation",
-      "question": "How many enterprise customers did Kestrel add between the end of 2025 and the end of Q2 2026?",
-      "answer": "Kestrel added 270 enterprise customers between the end of 2025 (2,850 customers) and the end of Q2 2026 (3,120 customers).",
-      "tool_choice_ok": true,
-      "missing_tools": [],
-      "forbidden_tools_used": [],
-      "first_tool_ok": true,
-      "args_ok": true,
-      "unmatched_steps": [],
-      "trajectory_ok": true,
-      "order_ok": true,
-      "within_budget": true,
-      "repeated_calls": 0,
-      "answer_ok": true,
-      "declined": false,
-      "fully_correct": true,
-      "refusal_exact": null,
-      "unsupported_numbers": [],
-      "mentions_internals": false,
-      "tool_errors": 0,
-      "steps": [
-        {
-          "turn": 1,
-          "tool": "get_financial_metric",
-          "args": {
-            "metric": "enterprise_customers",
-            "period": "FY2025"
-          },
-          "output": "enterprise_customers, FY2025: 2,850 (source: Annual Report 2025)",
-          "is_error": false
-        },
-        {
-          "turn": 1,
-          "tool": "get_financial_metric",
-          "args": {
-            "metric": "enterprise_customers",
-            "period": "Q2 2026"
-          },
-          "output": "enterprise_customers, Q2 2026: 3,120 (source: Q2 2026 Earnings Release)",
-          "is_error": false
-        },
-        {
-          "turn": 2,
-          "tool": "calculator",
-          "args": {
-            "expression": "3120 - 2850"
-          },
-          "output": "3120 - 2850 = 270",
-          "is_error": false
-        }
-      ],
-      "tools_used": [
-        "get_financial_metric",
-        "get_financial_metric",
-        "calculator"
-      ],
-      "num_steps": 3,
-      "max_steps": 4,
-      "turns": 3,
-      "stopped": "answered",
-      "latency_s": 3.321,
-      "input_tokens": 5600,
-      "output_tokens": 275
-    },
-    {
-      "id": "ag017",
+      "id": "cp01",
       "category": "mixed",
       "question": "How much of Kestrel's revolving credit facility was still undrawn as of June 30, 2026?",
       "answer": "As of June 30, 2026, Kestrel had $110 million undrawn on its $150 million revolving credit facility, since $40 million was drawn at that date.",
@@ -180,15 +110,15 @@
       "max_steps": 3,
       "turns": 2,
       "stopped": "answered",
-      "latency_s": 1.712,
+      "latency_s": 1.654,
       "input_tokens": 3557,
       "output_tokens": 113
     },
     {
-      "id": "ag019",
-      "category": "not_reported",
-      "question": "What was Kestrel's net income for fiscal year 2024?",
-      "answer": "Kestrel did not report net_income for FY2024.",
+      "id": "cp02",
+      "category": "mixed",
+      "question": "What is the size of Kestrel's revolving credit facility minus the amount drawn on it as of June 30, 2026?",
+      "answer": "As of June 30, 2026, Kestrel's revolving credit facility was $150 million with $40 million drawn, leaving $110 million available.",
       "tool_choice_ok": true,
       "missing_tools": [],
       "forbidden_tools_used": [],
@@ -196,103 +126,67 @@
       "args_ok": true,
       "unmatched_steps": [],
       "trajectory_ok": true,
-      "order_ok": null,
+      "order_ok": true,
       "within_budget": true,
       "repeated_calls": 0,
       "answer_ok": true,
-      "declined": true,
+      "declined": false,
       "fully_correct": true,
-      "refusal_exact": false,
+      "refusal_exact": null,
       "unsupported_numbers": [],
       "mentions_internals": false,
       "tool_errors": 0,
       "steps": [
         {
           "turn": 1,
-          "tool": "get_financial_metric",
+          "tool": "search_documents",
           "args": {
-            "metric": "net_income",
-            "period": "FY2024"
+            "query": "revolving credit facility drawn June 30 2026"
           },
-          "output": "Not reported: the documents don't give net_income for FY2024.",
+          "output": "Kestrel Freight Analytics Risk Factors 2026\nDebt and liquidity: Kestrel has a $150 million revolving credit facility. As of June 30, 2026, $40 million was drawn on the credit facility. Borrowings carry an interest rate of SOFR plus 1.75%.\n\nKestrel Freight Analytics Risk Factors 2026\nIntegration risk: the company may face difficulties integrating Bramblecote Telematics, which it acquired in June 2026.\n\nKestrel Freight Analytics Q2 2026 Earnings Release\nAcquisition: on June 12, 2026, Kestrel completed its acquisition of Bramblecote Telematics, a provider of in-truck sensor data, for $64 million in cash.",
           "is_error": false
-        }
-      ],
-      "tools_used": [
-        "get_financial_metric"
-      ],
-      "num_steps": 1,
-      "max_steps": 3,
-      "turns": 2,
-      "stopped": "answered",
-      "latency_s": 1.561,
-      "input_tokens": 3382,
-      "output_tokens": 97
-    },
-    {
-      "id": "ag020",
-      "category": "not_reported",
-      "question": "What was Kestrel's gross margin in Q2 2025?",
-      "answer": "Kestrel did not report gross_margin for Q2 2025.",
-      "tool_choice_ok": true,
-      "missing_tools": [],
-      "forbidden_tools_used": [],
-      "first_tool_ok": true,
-      "args_ok": true,
-      "unmatched_steps": [],
-      "trajectory_ok": true,
-      "order_ok": null,
-      "within_budget": true,
-      "repeated_calls": 0,
-      "answer_ok": true,
-      "declined": true,
-      "fully_correct": true,
-      "refusal_exact": false,
-      "unsupported_numbers": [],
-      "mentions_internals": false,
-      "tool_errors": 0,
-      "steps": [
+        },
         {
-          "turn": 1,
-          "tool": "get_financial_metric",
+          "turn": 2,
+          "tool": "calculator",
           "args": {
-            "metric": "gross_margin",
-            "period": "Q2 2025"
+            "expression": "150 - 40"
           },
-          "output": "Not reported: the documents don't give gross_margin for Q2 2025.",
+          "output": "150 - 40 = 110",
           "is_error": false
         }
       ],
       "tools_used": [
-        "get_financial_metric"
+        "search_documents",
+        "calculator"
       ],
-      "num_steps": 1,
+      "num_steps": 2,
       "max_steps": 3,
-      "turns": 2,
+      "turns": 3,
       "stopped": "answered",
-      "latency_s": 1.529,
-      "input_tokens": 3384,
-      "output_tokens": 99
+      "latency_s": 2.896,
+      "input_tokens": 5629,
+      "output_tokens": 212
     },
     {
-      "id": "ag021",
-      "category": "not_reported",
-      "question": "How many enterprise customers did Kestrel have at the end of Q1 2026?",
-      "answer": "Kestrel did not report enterprise_customers for Q1 2026.",
+      "id": "cp03",
+      "category": "mixed",
+      "question": "How many more enterprise customers than full-time employees did Kestrel have at the end of 2025?",
+      "answer": "At the end of 2025, Kestrel had 1,610 more enterprise customers (2,850) than full-time employees (1,240).",
       "tool_choice_ok": true,
       "missing_tools": [],
       "forbidden_tools_used": [],
-      "first_tool_ok": true,
+      "first_tool_ok": null,
       "args_ok": true,
       "unmatched_steps": [],
       "trajectory_ok": true,
-      "order_ok": null,
+      "order_ok": true,
       "within_budget": true,
       "repeated_calls": 0,
       "answer_ok": true,
-      "declined": true,
+      "declined": false,
       "fully_correct": true,
-      "refusal_exact": false,
+      "refusal_exact": null,
       "unsupported_numbers": [],
       "mentions_internals": false,
       "tool_errors": 0,
@@ -302,22 +196,214 @@
           "tool": "get_financial_metric",
           "args": {
             "metric": "enterprise_customers",
-            "period": "Q1 2026"
+            "period": "FY2025"
           },
-          "output": "Not reported: the documents don't give enterprise_customers for Q1 2026.",
+          "output": "enterprise_customers, FY2025: 2,850 (source: Annual Report 2025)",
+          "is_error": false
+        },
+        {
+          "turn": 1,
+          "tool": "search_documents",
+          "args": {
+            "query": "full-time employees FY2025"
+          },
+          "output": "Kestrel Freight Analytics Annual Report 2025\nCustomers and employees: Kestrel served 2,850 enterprise customers at the end of 2025. The company had 1,240 full-time employees as of December 31, 2025.\n\nKestrel Freight Analytics Q2 2026 Earnings Release\nOutlook and guidance: Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million.\n\nKestrel Freight Analytics Annual Report 2025\nKestrel Freight Analytics, Inc. is headquartered in Omaha, Nebraska. The company was founded in 2017 and sells software and data products that help shipping and logistics companies plan freight routes more efficiently.",
+          "is_error": false
+        },
+        {
+          "turn": 2,
+          "tool": "calculator",
+          "args": {
+            "expression": "2850 - 1240"
+          },
+          "output": "2850 - 1240 = 1610",
           "is_error": false
         }
       ],
       "tools_used": [
-        "get_financial_metric"
+        "get_financial_metric",
+        "search_documents",
+        "calculator"
       ],
-      "num_steps": 1,
-      "max_steps": 3,
-      "turns": 2,
+      "num_steps": 3,
+      "max_steps": 4,
+      "turns": 3,
       "stopped": "answered",
-      "latency_s": 1.517,
-      "input_tokens": 3392,
-      "output_tokens": 99
+      "latency_s": 3.143,
+      "input_tokens": 5829,
+      "output_tokens": 247
+    },
+    {
+      "id": "cp04",
+      "category": "mixed",
+      "question": "By how much did the price Kestrel paid for Bramblecote exceed the size of the share buyback program authorized in November 2025?",
+      "answer": "The price Kestrel paid for Bramblecote ($64 million) exceeded the share buyback program authorized in November 2025 ($25 million) by $39 million.",
+      "tool_choice_ok": true,
+      "missing_tools": [],
+      "forbidden_tools_used": [],
+      "first_tool_ok": true,
+      "args_ok": true,
+      "unmatched_steps": [],
+      "trajectory_ok": true,
+      "order_ok": true,
+      "within_budget": true,
+      "repeated_calls": 0,
+      "answer_ok": true,
+      "declined": false,
+      "fully_correct": true,
+      "refusal_exact": null,
+      "unsupported_numbers": [],
+      "mentions_internals": false,
+      "tool_errors": 0,
+      "steps": [
+        {
+          "turn": 1,
+          "tool": "search_documents",
+          "args": {
+            "query": "Bramblecote acquisition price"
+          },
+          "output": "Kestrel Freight Analytics Q2 2026 Earnings Release\nAcquisition: on June 12, 2026, Kestrel completed its acquisition of Bramblecote Telematics, a provider of in-truck sensor data, for $64 million in cash.\n\nKestrel Freight Analytics Risk Factors 2026\nIndustry conditions: many Kestrel customers are trucking and logistics companies whose budgets are sensitive to fuel price volatility.\n\nKestrel Freight Analytics Risk Factors 2026\nIntegration risk: the company may face difficulties integrating Bramblecote Telematics, which it acquired in June 2026.",
+          "is_error": false
+        },
+        {
+          "turn": 1,
+          "tool": "search_documents",
+          "args": {
+            "query": "share buyback program authorized November 2025"
+          },
+          "output": "Kestrel Freight Analytics Annual Report 2025\nCapital return: Kestrel does not pay a dividend. In November 2025 the board authorized a share buyback program of up to $25 million.\n\nKestrel Freight Analytics Q1 2026 Earnings Release\nFirst quarter 2026 results: Kestrel reported Q1 2026 revenue of $108.3 million, up 21% year over year from $89.5 million in Q1 2025. Net income was $9.2 million, and diluted earnings per share (EPS) were $0.31.\n\nKestrel Freight Analytics Q2 2026 Earnings Release\nSecond quarter 2026 results: Kestrel reported Q2 2026 revenue of $116.0 million, up 19% year over year from $97.5 million in Q2 2025. Net income was $11.4 million, and diluted earnings per share (EPS) were $0.38.",
+          "is_error": false
+        },
+        {
+          "turn": 2,
+          "tool": "calculator",
+          "args": {
+            "expression": "64 - 25"
+          },
+          "output": "64 - 25 = 39",
+          "is_error": false
+        }
+      ],
+      "tools_used": [
+        "search_documents",
+        "search_documents",
+        "calculator"
+      ],
+      "num_steps": 3,
+      "max_steps": 4,
+      "turns": 3,
+      "stopped": "answered",
+      "latency_s": 2.865,
+      "input_tokens": 6145,
+      "output_tokens": 212
+    },
+    {
+      "id": "cp05",
+      "category": "mixed",
+      "question": "How wide is Kestrel's raised full-year 2026 revenue guidance range, in millions of dollars?",
+      "answer": "Kestrel's raised full-year 2026 revenue guidance range is $470 million to $480 million, which is 10 million dollars wide.",
+      "tool_choice_ok": true,
+      "missing_tools": [],
+      "forbidden_tools_used": [],
+      "first_tool_ok": true,
+      "args_ok": true,
+      "unmatched_steps": [],
+      "trajectory_ok": true,
+      "order_ok": true,
+      "within_budget": true,
+      "repeated_calls": 0,
+      "answer_ok": true,
+      "declined": false,
+      "fully_correct": true,
+      "refusal_exact": null,
+      "unsupported_numbers": [],
+      "mentions_internals": false,
+      "tool_errors": 0,
+      "steps": [
+        {
+          "turn": 1,
+          "tool": "search_documents",
+          "args": {
+            "query": "full-year 2026 revenue guidance"
+          },
+          "output": "Kestrel Freight Analytics Q2 2026 Earnings Release\nOutlook and guidance: Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million.\n\nKestrel Freight Analytics Annual Report 2025\nFinancial results for fiscal year 2025: total revenue was $412.6 million, an increase of 18% from $349.7 million in fiscal year 2024. Net income for fiscal year 2025 was $38.9 million.\n\nKestrel Freight Analytics Q1 2026 Earnings Release\nFirst quarter 2026 results: Kestrel reported Q1 2026 revenue of $108.3 million, up 21% year over year from $89.5 million in Q1 2025. Net income was $9.2 million, and diluted earnings per share (EPS) were $0.31.",
+          "is_error": false
+        },
+        {
+          "turn": 2,
+          "tool": "calculator",
+          "args": {
+            "expression": "480 - 470"
+          },
+          "output": "480 - 470 = 10",
+          "is_error": false
+        }
+      ],
+      "tools_used": [
+        "search_documents",
+        "calculator"
+      ],
+      "num_steps": 2,
+      "max_steps": 3,
+      "turns": 3,
+      "stopped": "answered",
+      "latency_s": 2.635,
+      "input_tokens": 5599,
+      "output_tokens": 168
+    },
+    {
+      "id": "cp06",
+      "category": "calculation",
+      "question": "Kestrel's credit facility is $150 million and $40 million of it is drawn. How much is undrawn?",
+      "answer": "",
+      "tool_choice_ok": true,
+      "missing_tools": [],
+      "forbidden_tools_used": [],
+      "first_tool_ok": null,
+      "args_ok": true,
+      "unmatched_steps": [],
+      "trajectory_ok": true,
+      "order_ok": null,
+      "within_budget": true,
+      "repeated_calls": 0,
+      "answer_ok": false,
+      "declined": false,
+      "fully_correct": false,
+      "refusal_exact": null,
+      "unsupported_numbers": [],
+      "mentions_internals": false,
+      "tool_errors": 0,
+      "steps": [
+        {
+          "turn": 1,
+          "tool": "search_documents",
+          "args": {
+            "query": "credit facility drawn"
+          },
+          "output": "Kestrel Freight Analytics Risk Factors 2026\nDebt and liquidity: Kestrel has a $150 million revolving credit facility. As of June 30, 2026, $40 million was drawn on the credit facility. Borrowings carry an interest rate of SOFR plus 1.75%.\n\nKestrel Freight Analytics Annual Report 2025\nKestrel Freight Analytics, Inc. is headquartered in Omaha, Nebraska. The company was founded in 2017 and sells software and data products that help shipping and logistics companies plan freight routes more efficiently.\n\nKestrel Freight Analytics Annual Report 2025\nLeadership: Dana Whitfield serves as Chief Executive Officer (CEO). Marcus Oyelaran serves as Chief Financial Officer (CFO).",
+          "is_error": false
+        },
+        {
+          "turn": 2,
+          "tool": "calculator",
+          "args": {
+            "expression": "150 - 40"
+          },
+          "output": "150 - 40 = 110",
+          "is_error": false
+        }
+      ],
+      "tools_used": [
+        "search_documents",
+        "calculator"
+      ],
+      "num_steps": 2,
+      "max_steps": 2,
+      "turns": 3,
+      "stopped": "answered",
+      "latency_s": 2.469,
+      "input_tokens": 5560,
+      "output_tokens": 154
     }
   ]
 }
