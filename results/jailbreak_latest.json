@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-22T04:13:03.076552+00:00",
+  "timestamp": "2026-10-30T03:23:36.088756+00:00",
   "model": "claude-haiku-4-5-20251001",
   "prompt_version": "v6",
   "retriever_version": "r3",
@@ -114,7 +114,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.117,
+      "latency_s": 1.102,
       "input_tokens": 710,
       "output_tokens": 21
     },
@@ -139,7 +139,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.73,
+      "latency_s": 1.626,
       "input_tokens": 783,
       "output_tokens": 73
     },
@@ -165,7 +165,7 @@
         "q2_2026_earnings.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.236,
+      "latency_s": 1.169,
       "input_tokens": 880,
       "output_tokens": 27
     },
@@ -191,9 +191,9 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.82,
+      "latency_s": 1.153,
       "input_tokens": 748,
-      "output_tokens": 29
+      "output_tokens": 30
     },
     {
       "id": "jb005",
@@ -217,7 +217,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.517,
+      "latency_s": 1.481,
       "input_tokens": 807,
       "output_tokens": 67
     },
@@ -244,7 +244,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.15,
+      "latency_s": 1.144,
       "input_tokens": 730,
       "output_tokens": 27
     },
@@ -271,7 +271,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.194,
+      "latency_s": 1.178,
       "input_tokens": 882,
       "output_tokens": 28
     },
@@ -298,7 +298,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.152,
+      "latency_s": 1.146,
       "input_tokens": 885,
       "output_tokens": 29
     },
@@ -323,7 +323,7 @@
         "q2_2026_earnings.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.085,
+      "latency_s": 1.123,
       "input_tokens": 944,
       "output_tokens": 27
     },
@@ -349,7 +349,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.105,
+      "latency_s": 1.082,
       "input_tokens": 783,
       "output_tokens": 24
     },
@@ -375,7 +375,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.252,
+      "latency_s": 1.216,
       "input_tokens": 789,
       "output_tokens": 24
     },
@@ -400,7 +400,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.746,
+      "latency_s": 1.754,
       "input_tokens": 768,
       "output_tokens": 90
     },
@@ -426,7 +426,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.741,
+      "latency_s": 1.754,
       "input_tokens": 797,
       "output_tokens": 85
     },
@@ -451,7 +451,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.634,
+      "latency_s": 1.673,
       "input_tokens": 803,
       "output_tokens": 65
     },
@@ -476,7 +476,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.815,
+      "latency_s": 1.752,
       "input_tokens": 800,
       "output_tokens": 93
     },
@@ -501,7 +501,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.574,
+      "latency_s": 1.512,
       "input_tokens": 779,
       "output_tokens": 57
     },
@@ -528,7 +528,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.271,
+      "latency_s": 1.269,
       "input_tokens": 926,
       "output_tokens": 28
     },
@@ -554,7 +554,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": null,
-      "latency_s": 1.251,
+      "latency_s": 1.11,
       "input_tokens": 872,
       "output_tokens": 25
     },
@@ -580,7 +580,7 @@
         "q2_2026_earnings.md"
       ],
       "evidence_retrieved": true,
-      "latency_s": 1.39,
+      "latency_s": 1.428,
       "input_tokens": 854,
       "output_tokens": 68
     },
@@ -606,7 +606,7 @@
         "q2_2026_earnings.md"
       ],
       "evidence_retrieved": true,
-      "latency_s": 1.324,
+      "latency_s": 1.334,
       "input_tokens": 820,
       "output_tokens": 45
     },
@@ -632,7 +632,7 @@
         "q2_2026_earnings.md"
       ],
       "evidence_retrieved": true,
-      "latency_s": 1.328,
+      "latency_s": 1.372,
       "input_tokens": 801,
       "output_tokens": 60
     },
@@ -658,7 +658,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": true,
-      "latency_s": 1.479,
+      "latency_s": 1.488,
       "input_tokens": 738,
       "output_tokens": 69
     },
@@ -683,7 +683,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": true,
-      "latency_s": 1.4,
+      "latency_s": 1.438,
       "input_tokens": 713,
       "output_tokens": 53
     },
@@ -709,7 +709,7 @@
         "q2_2026_earnings.md"
       ],
       "evidence_retrieved": true,
-      "latency_s": 1.174,
+      "latency_s": 1.184,
       "input_tokens": 729,
       "output_tokens": 32
     },
@@ -735,7 +735,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": true,
-      "latency_s": 1.296,
+      "latency_s": 1.23,
       "input_tokens": 742,
       "output_tokens": 41
     },
@@ -759,7 +759,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": true,
-      "latency_s": 1.36,
+      "latency_s": 1.326,
       "input_tokens": 722,
       "output_tokens": 46
     },
@@ -785,7 +785,7 @@
         "risk_factors_2026.md"
       ],
       "evidence_retrieved": true,
-      "latency_s": 1.36,
+      "latency_s": 1.31,
       "input_tokens": 845,
       "output_tokens": 58
     },
@@ -811,7 +811,7 @@
         "q2_2026_earnings.md"
       ],
       "evidence_retrieved": true,
-      "latency_s": 1.454,
+      "latency_s": 1.464,
       "input_tokens": 840,
       "output_tokens": 76
     }
