@@ -4,7 +4,7 @@ An end-to-end evaluation suite for an LLM-powered financial Q&A assistant, built
 a QA engineer tests software: versioned test data, graders that are themselves tested,
 measurable quality thresholds, and a CI pipeline that blocks regressions.
 
-> **Status:** Phases 1–4 of 6 complete. Phase 5 (model comparison scorecard and dashboard) is in progress: step 1, the model comparison scorecard, is done. [Run 19](#run-19-three-assistant-models-on-the-same-evals-phase-5) compared Haiku 4.5, Haiku 5.5 and Sonnet 5.5: all three pass every CI gate, Haiku 5.5 costs about a seventh as much per question, and Haiku 4.5 is the fastest. The default model is unchanged for now. The results dashboard is next. Phase 4 (agent evaluation, Runs 14–18) grades a LangGraph agent's tool choice, arguments, path and answer: the default prompt a3 is fully correct on 26 of 27 cases and answers all 27, and every run showed answer accuracy alone would have hidden the cases right for the wrong reason, such as arithmetic done in the model's head. One kind of question (what's left on the credit facility) is still done in the model's head and is recorded as a known limit; the eval catches it even when the agent calls the calculator afterwards to check. See the [Phase 4 summary](#phase-4-summary). Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
+> **Status:** Phases 1–5 of 6 complete. Phase 5 added a model comparison scorecard and a [results dashboard](#results-dashboard-phase-5) (`python dashboard.py`: one HTML page with every CI gate, the model comparison, each suite's history and the cases still worth a look). [Run 19](#run-19-three-assistant-models-on-the-same-evals-phase-5) compared Haiku 4.5, Haiku 5.5 and Sonnet 5.5: all three pass every CI gate, Haiku 5.5 costs about a seventh as much per question, and Haiku 4.5 is the fastest. The default model is unchanged for now. Phase 6 (production-style tracing and monitoring) is next. Phase 4 (agent evaluation, Runs 14–18) grades a LangGraph agent's tool choice, arguments, path and answer: the default prompt a3 is fully correct on 26 of 27 cases and answers all 27, and every run showed answer accuracy alone would have hidden the cases right for the wrong reason, such as arithmetic done in the model's head. One kind of question (what's left on the credit facility) is still done in the model's head and is recorded as a known limit; the eval catches it even when the agent calls the calculator afterwards to check. See the [Phase 4 summary](#phase-4-summary). Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
 
 ## What's being tested
 
@@ -37,7 +37,7 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-pytest -v                          # 661 offline tests: free, no API key needed
+pytest -v                          # 678 offline tests: free, no API key needed
 
 cp .env.example .env               # then add your ANTHROPIC_API_KEY
 python run_evals.py                # golden v3, prompt v6, retriever r3, LLM judge (judge-v2)
@@ -254,6 +254,38 @@ false premises, distractor numbers, near-miss out-of-scope questions, and an amb
 v3 adds `evidence` strings for passage-level retrieval checks. Earlier versions stay frozen.
 See the [dataset card](data/golden/README.md).
 
+### Results dashboard (Phase 5)
+
+```bash
+python dashboard.py            # free: writes results/dashboard.html from the saved results
+python dashboard.py --open     # ... and opens it in your browser
+python dashboard.py --out somewhere/else.html
+```
+
+One self-contained HTML page (no internet, no libraries, light and dark mode) built from the
+results files the evals already saved. No API calls, so rebuild it after any run. It answers four
+questions, in this order:
+
+1. **Would the build pass?** Every CI gate (the same thresholds as `ci.yml`, taken from
+   `evals/scorecard.py`) checked against each suite's `*_latest.json`, with the model and time of
+   each run. A latest file made with something other than the default setup is labelled as such.
+2. **Which model?** The Run 19 comparison from `model_comparison_latest.json`: the scorecard's
+   pick, cost per 1,000 questions, answer time, every metric side by side, and the caveats
+   (temperature=0 not accepted, a model graded by itself, one run each).
+3. **How did we get here?** Each suite's gated number on every saved full run of the default
+   model, against its CI line, labelled by the prompt, retriever or agent version used: golden
+   pass rate from 90.6% (prompt v1) to 100% (v6 with retriever r3), injection attack success
+   from 14.3% (v2) to 4.8%, bias verdict differences from 3 (v5) to 0 (v6), agent fully correct
+   from 92.6% (a1) to 96.3%. Partial re-runs, other models and other datasets are left out, and
+   every point has its file name in the tooltip and the table view.
+4. **What still needs a look?** The cases that failed or were flagged in the latest runs, split
+   into those that count toward a gate (inj007, ag017, the robustness flips) and those no gate
+   counts (internal names, bias word flags).
+
+In CI the page is built after the evals and uploaded with the other results (the
+`eval-results` artifact). The history there is short: the timestamped results files are in
+`.gitignore`, so the full history only exists on the machine that ran the evals.
+
 ## Project structure
 
 ```
@@ -279,6 +311,7 @@ evals/                The evaluation framework
   agent_eval.py       Agent grading: tool choice, arguments, trajectory, answer, unsupported numbers
   report.py           Scorecard aggregation
   scorecard.py        Model comparison: per-suite metrics, CI gates, cost, latency, recommendation
+  dashboard.py        Results dashboard: gates, model comparison, history and open issues as one HTML page
   pricing.py          API prices per model, with the date checked
 data/
   corpus/             The four Kestrel documents
@@ -288,7 +321,7 @@ data/
   robustness/         Hand-written reworded and casual questions (paraphrases_v1, held-out v2), dataset card
   bias/               Counterfactual bias groups (bias_v1), dataset card
   agent/              Agent cases with required tool steps (agent_v1), calculator probes (calc_probes_v1, v2), dataset card
-tests/                661 offline tests
+tests/                678 offline tests
 run_evals.py          Eval runner and quality gates
 calibrate.py          Judge validation commands
 consistency.py        Repeat-run consistency check
@@ -300,6 +333,7 @@ bias.py               Bias probes
 agent.py              Ask the agent questions and print its trajectory (Phase 4 smoke test)
 agent_eval.py         Agent eval: tool choice, arguments, trajectory and answer
 compare_models.py     Model comparison scorecard (Phase 5)
+dashboard.py          Results dashboard (Phase 5): writes results/dashboard.html
 .github/workflows/    CI pipeline
 ```
 
@@ -311,7 +345,7 @@ compare_models.py     Model comparison scorecard (Phase 5)
 | 2 | Golden v2, LLM-as-judge (faithfulness, correctness), format checks, mutation testing, human calibration | ✅ Done |
 | 3 | Safety and robustness: repeat-run consistency (Run 4), prompt injection including injections hidden in documents (Runs 5–8), paraphrase and typo robustness (Run 9), jailbreaks (Run 10), bias probes (Run 11) | ✅ Done |
 | 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | ✅ Done (Runs 14–18, [summary](#phase-4-summary)) |
-| 5 | Model comparison scorecard and a results dashboard | 🟨 In progress (step 1, scorecard: done, [Run 19](#run-19-three-assistant-models-on-the-same-evals-phase-5); step 2, dashboard: next) |
+| 5 | Model comparison scorecard and a results dashboard | ✅ Done (scorecard: [Run 19](#run-19-three-assistant-models-on-the-same-evals-phase-5); [dashboard](#results-dashboard-phase-5)) |
 | 6 | Production-style tracing and monitoring | ⬜ |
 
 ## Findings
@@ -1419,6 +1453,10 @@ robustness eval, which leans on the same query rewrite.
 
 ### Known gaps
 
+- **The dashboard's history is local.** The timestamped results files are in `.gitignore`, so
+  the history charts show what's saved on the machine that builds the page. A fresh clone or a
+  CI run has one point per suite. The robustness gate on the dashboard is from Run 13
+  (2026-10-22): robustness wasn't part of Run 19.
 - **Retriever r3's query rewrite uses the assistant model**, so a model comparison also compares
   query rewriting (Run 19: Haiku 5.5's rewrite lost g022's Q2 paragraph). Fixing the rewrite model
   would isolate the answering model, but it would also change what's being shipped.
