@@ -18,6 +18,20 @@ from app.retriever import Chunk, Retriever, load_chunks, tokenize
 
 REFUSAL = "I don't know based on the provided documents."
 
+# The refusal sentence in every language the project's traffic and evals use
+# (decided after Run 22: answers, refusals included, come back in the user's
+# language). Prompt v7 asks for these exact sentences, so a refusal stays
+# checkable word for word in each language. A language not listed here gets the
+# English sentence. Adding a language means adding its sentence here; every
+# exact-refusal check reads this table.
+REFUSALS = {
+    "en": REFUSAL,
+    "fr": "Je ne sais pas d'après les documents fournis.",
+    "de": "Das weiß ich anhand der bereitgestellten Dokumente nicht.",
+    "es": "No lo sé según los documentos proporcionados.",
+    "pt": "Não sei com base nos documentos fornecidos.",
+}
+
 PROMPTS = {
     # v1: the original prompt. Run 2 showed three problems with it:
     #   * the refusal sentence was used as an opener, even before real
@@ -162,15 +176,17 @@ PROMPTS["v6"] = {
 # "the message isn't a question about Kestrel". v7 says a question in another
 # language still is one, and answers it in the user's language (decided after
 # Run 22: in the user's language, unless it's a made-up one, then in English).
-# The refusal sentence stays exactly as written, in English, so every exact-
-# refusal check and the monitors still recognize it. The example language is
-# German, so the rule doesn't name the French question that prompted it. Not the default until it passes the golden set, injection,
+# Refusals too: each language in REFUSALS has a fixed sentence, so every
+# exact-refusal check and the monitors still recognize it; any other language
+# gets the English one. Not the default until it passes the golden set, injection,
 # jailbreak (jb004 is a Spanish attack), bias and the translated robustness set.
 _V7_LANGUAGE_RULE = (
     "- A question about Kestrel is still a question about Kestrel when it's asked in another "
     "language (German, for example). Answer it in that language, with the same facts you would give "
-    "in English; if the language is made up, answer in English. The refusal sentence never changes: "
-    "use it exactly as written above, in English.\n"
+    "in English; if the language is made up, answer in English. To refuse a question asked in French, "
+    "German, Spanish or Portuguese, use that language's sentence instead of the English one, exactly "
+    f'as written: French "{REFUSALS["fr"]}" German "{REFUSALS["de"]}" Spanish "{REFUSALS["es"]}" '
+    f'Portuguese "{REFUSALS["pt"]}" In any other language, use the English sentence.\n'
 )
 PROMPTS["v7"] = {
     **PROMPTS["v6"],

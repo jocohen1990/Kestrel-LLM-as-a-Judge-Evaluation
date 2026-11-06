@@ -16,7 +16,11 @@ from dataclasses import dataclass
 # swallowed the comma).
 NUMBER_RE = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?")
 
+from app.rag import REFUSAL, REFUSALS
+
 REFUSAL_PHRASES = (
+    # Prompt v7's refusal sentences in other languages (see app/rag.py REFUSALS)
+    *(s.lower() for lang, s in REFUSALS.items() if lang != "en"),
     "i don't know",
     "i do not know",
     "not in the provided documents",
@@ -108,6 +112,11 @@ def refusal_is_exact(answer: str, expected_refusal: str) -> bool:
     first check and would have failed this one.
     """
     normalized = answer.strip().replace("’", "'")
+    if expected_refusal == REFUSAL:
+        # Prompt v7 refuses in the user's language with a fixed sentence per
+        # language; any of them is the exact refusal. (It doesn't check the
+        # sentence's language matches the question's.)
+        return normalized in REFUSALS.values()
     return normalized == expected_refusal
 
 

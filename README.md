@@ -37,7 +37,7 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-pytest -v                          # 799 offline tests: free, no API key needed
+pytest -v                          # 802 offline tests: free, no API key needed
 
 cp .env.example .env               # then add your ANTHROPIC_API_KEY
 python run_evals.py                # golden v3, prompt v6, retriever r3, LLM judge (judge-v2)
@@ -490,7 +490,7 @@ data/
   agent/              Agent cases with required tool steps (agent_v1), calculator probes (calc_probes_v1, v2), dataset card
   traffic/            Pretend production traffic, no expected answers (traffic_v1, held-out traffic_v2),
                       a person's review of Runs 20-21 (reviews_v1), dataset card
-tests/                799 offline tests
+tests/                802 offline tests
 run_evals.py          Eval runner and quality gates
 calibrate.py          Judge validation commands
 consistency.py        Repeat-run consistency check
@@ -1892,9 +1892,12 @@ wording is a separate change, to be made after r4 is measured.
 
 **Prompt v7: questions in other languages.** v6 plus one sentence: a question about Kestrel asked in
 another language is still a question about Kestrel. Answer it in that language, with the same facts
-as in English, or in English if the language is made up. The refusal sentence stays exactly as
-written, in English, so every exact-refusal check and the monitors still recognize it. The sentence
-names German, not French, so it doesn't name the question that prompted it. It's the same kind of
+as in English, or in English if the language is made up. Refusals too: `REFUSALS` in `app/rag.py`
+holds the refusal sentence in English, French, German, Spanish and Portuguese (every language the
+traffic and evals use), v7 asks for the matching one word for word, and any other language gets the
+English sentence. Every exact-refusal check (the eval graders and the monitors) accepts any of the
+five, so a refusal stays checkable in each language. The rule's example language is German, not
+French, so it doesn't lead with the question that prompted it. It's the same kind of
 fix as v6, which said a personal introduction doesn't make a question off-topic.
 
 Answering in the user's language means numbers come back as "412,6 millions" or "1.240
@@ -1953,6 +1956,9 @@ the synced folder for good.
   use the filing's word ("headquarters").
 - **The RAG assistant refused a French question it had the passage for** (Run 22 u025). v6 has never
   been evaluated on French. v7 and `translations_v1` are the proposed fix and its test, not yet run.
+- **The exact-refusal check accepts any of the five refusal sentences**, whatever language the
+  question was in, so an English question refused in French would still count as exact. The
+  French, German, Spanish and Portuguese sentences haven't been checked by a fluent speaker.
 - **To do: the OneDrive test.** Replay with `--copy-to` a folder outside OneDrive and compare the two
   copies, to confirm or rule out OneDrive as the cause of Run 22's lost trace.
 - **Nothing checks whether a question is in scope**, so an agent that answers "15% of 200" (u024)

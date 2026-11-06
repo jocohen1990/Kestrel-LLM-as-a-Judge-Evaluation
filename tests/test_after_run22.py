@@ -74,10 +74,9 @@ def test_v7_is_v6_plus_one_line():
     assert rag.REFUSAL in v7 and rag.DEFAULT_PROMPT_VERSION == "v6"
 
 
-def test_v7_example_language_is_not_one_the_traffic_or_evals_failed_on():
-    """The rule names German; the failure that prompted it was French (u025)."""
-    assert "German" in rag._V7_LANGUAGE_RULE
-    assert "French" not in rag._V7_LANGUAGE_RULE and "Spanish" not in rag._V7_LANGUAGE_RULE
+def test_v7_example_language_is_german():
+    """The example names German, not French (the language of the question that prompted v7)."""
+    assert "(German, for example)" in rag._V7_LANGUAGE_RULE
 
 
 # ---- The translated style --------------------------------------------------------------
@@ -121,11 +120,42 @@ def test_summary_includes_the_translated_style():
     assert s["by_style"]["translated"]["flips_model"] == ["g001-translated"]
 
 
-def test_v7_answers_in_the_users_language_but_keeps_the_refusal_sentence():
+def test_v7_answers_and_refuses_in_the_users_language():
     rule = rag._V7_LANGUAGE_RULE
-    assert "Answer it in that language" in rule
-    assert "made up, answer in English" in rule
-    assert "refusal sentence never changes" in rule
+    assert "Answer it in that language" in rule and "made up, answer in English" in rule
+    v6, v7 = rag.PROMPTS["v6"]["system"], rag.PROMPTS["v7"]["system"]
+    for lang, sentence in rag.REFUSALS.items():
+        assert v7.count(sentence) == 1, lang          # each sentence, exactly once
+        if lang != "en":
+            assert sentence not in v6, lang            # older prompts are unchanged
+    assert "In any other language, use the English sentence." in rule
+
+
+def test_refusal_sentences():
+    assert set(rag.REFUSALS) == {"en", "fr", "de", "es", "pt"}
+    assert rag.REFUSALS["en"] == rag.REFUSAL
+    assert len(set(rag.REFUSALS.values())) == 5
+    assert all(s.endswith(".") and "\n" not in s for s in rag.REFUSALS.values())
+
+
+def test_every_check_knows_every_refusal_sentence():
+    from evals.metrics import is_refusal, refusal_is_exact
+    from evals.monitors import contains_refusal, is_exact_refusal, without_refusal
+    for sentence in rag.REFUSALS.values():
+        assert is_refusal(sentence) and refusal_is_exact(sentence, rag.REFUSAL)
+        assert is_exact_refusal(sentence) and without_refusal(sentence) == ""
+        assert contains_refusal(sentence + " Plus more.")
+    # a refusal with commentary is still not exact, in any language
+    assert not refusal_is_exact(rag.REFUSALS["fr"] + " C'est un conseil.", rag.REFUSAL)
+    # curly apostrophes (common in model output) still match
+    assert refusal_is_exact(rag.REFUSALS["fr"].replace("'", "’"), rag.REFUSAL)
+
+
+def test_a_foreign_refusal_followed_by_more_is_flagged(monkeypatch):
+    from tests.test_monitors import checks_on, rag_trace
+    t = rag_trace(monkeypatch, rag.REFUSALS["es"] + " No doy consejos de inversión.")
+    assert {"refusal", "refusal_with_more"} <= checks_on(t)
+    assert checks_on(rag_trace(monkeypatch, rag.REFUSALS["de"])) - {"low_top_score"} == {"refusal"}
 
 
 # ---- Reading numbers written the way other languages write them -----------------

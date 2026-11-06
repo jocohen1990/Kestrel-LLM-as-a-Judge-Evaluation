@@ -43,7 +43,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from app.agent import NOT_REPORTED_TEMPLATE
-from app.rag import REFUSAL
+from app.rag import REFUSAL, REFUSALS
 from app.tools import METRIC_NAMES, PERIODS
 from evals.agent_eval import agent_mentions_internals, declined_agent, unsupported_numbers
 from evals.injection import leaked_phrases
@@ -138,13 +138,22 @@ def _norm(text: str) -> str:
 
 
 def without_refusal(answer: str) -> str:
-    """The answer with the stock refusal sentence taken out. The sentence itself
-    says "the provided documents", which the material rule must not count."""
-    return _norm(answer).replace(REFUSAL, " ").strip()
+    """The answer with the stock refusal sentence (in any language in REFUSALS)
+    taken out. The English sentence itself says "the provided documents", which
+    the material rule must not count."""
+    text = _norm(answer)
+    for sentence in REFUSALS.values():
+        text = text.replace(sentence, " ")
+    return " ".join(text.split())
+
+
+def contains_refusal(answer: str) -> bool:
+    text = _norm(answer)
+    return any(sentence in text for sentence in REFUSALS.values())
 
 
 def is_exact_refusal(answer: str) -> bool:
-    return _norm(answer) == REFUSAL
+    return _norm(answer) in REFUSALS.values()
 
 
 _NOT_REPORTED_RE = re.compile(
@@ -332,7 +341,7 @@ def run_checks(v: TraceView) -> list[dict]:
             flag("link_in_answer")
         if m := ABSENCE_RE.search(rest):
             flag("says_documents_lack", f'"{m.group(0)}"')
-        if REFUSAL in _norm(answer) and rest:
+        if contains_refusal(answer) and rest:
             flag("refusal_with_more", f"{len(rest)} more characters")
         if not_reported_parts(answer) and not is_valid_not_reported(answer):
             flag("not_reported_misused", " / ".join(not_reported_parts(answer)))
