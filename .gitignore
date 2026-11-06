@@ -4,3 +4,5 @@ __pycache__/
 .venv/
 # Timestamped history files; the *_latest.json copies are kept.
 results/*_2*.json
+# Production-style traces (Phase 6). Can hold user text; never committed.
+traces/

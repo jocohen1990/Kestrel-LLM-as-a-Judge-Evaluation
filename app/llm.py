@@ -6,10 +6,15 @@ Keeping every API call in one function means:
      most of the suite runs offline and for free.
   3. Latency and token counts are captured on every call, ready for the
      performance and cost metrics in later phases.
+  4. Every call is one place to trace (Phase 6): inside a trace, each call
+     records an "llm.chat" span with the model, tokens, latency and stop
+     reason (see app/tracing.py). Outside a trace, nothing changes.
 """
 import os
 import time
 from dataclasses import dataclass
+
+from app import tracing
 
 # A small, inexpensive model is plenty for Phase 1. Override it with the
 # LLM_MODEL environment variable or the --model flag on run_evals.py.
@@ -41,6 +46,39 @@ def _input_usage(usage) -> dict:
     return {"input_tokens": usage.input_tokens + read + write,
             "cache_read_input_tokens": read,
             "cache_creation_input_tokens": write}
+
+
+def _llm_span(model: str, max_tokens: int, operation: str = "chat"):
+    """The span every model call is recorded in (a no-op outside a trace).
+    Attribute names are OpenTelemetry's GenAI conventions."""
+    return tracing.span(f"llm.{operation}", kind="llm", attrs={
+        "gen_ai.system": "anthropic",
+        "gen_ai.operation.name": operation,
+        "gen_ai.request.model": model,
+        "gen_ai.request.max_tokens": max_tokens,
+    })
+
+
+def _record_response(span, response, model: str, latency: float, temperature: float,
+                     text: str | None = None) -> None:
+    """What came back: tokens, latency, why it stopped, which settings were sent.
+    Skipped entirely outside a trace, so tracing can't change an eval run."""
+    if not tracing.active():
+        return
+    usage = _input_usage(response.usage)
+    span.set({
+        "gen_ai.response.model": getattr(response, "model", None) or model,
+        "gen_ai.response.finish_reasons": [getattr(response, "stop_reason", None)],
+        "gen_ai.usage.input_tokens": usage["input_tokens"],
+        "gen_ai.usage.output_tokens": response.usage.output_tokens,
+        "gen_ai.usage.cache_read_input_tokens": usage["cache_read_input_tokens"],
+        "gen_ai.usage.cache_creation_input_tokens": usage["cache_creation_input_tokens"],
+        # Only the successful attempt; the span's own duration also includes any
+        # retry after a rejected setting, which is why both are kept.
+        "llm.api_latency_ms": round(latency * 1000, 3),
+        "gen_ai.request.temperature": temperature if sends_temperature(model) else None,
+    })
+    span.set_content("gen_ai.output", text)
 
 
 _client = None
@@ -189,9 +227,11 @@ def generate(system: str, user: str, model: str | None = None,
     deterministic, which is exactly what the Phase 3 consistency tests probe.)
     """
     model = model or os.getenv("LLM_MODEL", DEFAULT_MODEL)
-    response, latency = _create(_base_request(system, user, model, max_tokens, cache_system),
-                                model, temperature)
-    text = "".join(block.text for block in response.content if block.type == "text")
+    with _llm_span(model, max_tokens) as span:
+        response, latency = _create(_base_request(system, user, model, max_tokens, cache_system),
+                                    model, temperature)
+        text = "".join(block.text for block in response.content if block.type == "text")
+        _record_response(span, response, model, latency, temperature, text)
     return LLMResponse(
         text=text,
         model=model,
@@ -243,8 +283,11 @@ def generate_structured(system: str, user: str, schema: dict, tool_name: str,
         }],
         "tool_choice": {"type": "tool", "name": tool_name},
     }
-    response, latency = _create(_base_request(system, user, model, max_tokens, cache_system),
-                                model, temperature, extra=tools)
+    with _llm_span(model, max_tokens) as span:
+        response, latency = _create(_base_request(system, user, model, max_tokens, cache_system),
+                                    model, temperature, extra=tools)
+        _record_response(span, response, model, latency, temperature)
+        span.set({"llm.forced_tool_choice": forces_tool_choice(model)})
     for block in response.content:
         if block.type == "tool_use" and block.name == tool_name:
             return StructuredResponse(
@@ -311,8 +354,12 @@ def generate_with_tools(system: str, messages: list[dict], tools: list[dict],
     """
     model = model or os.getenv("LLM_MODEL", DEFAULT_MODEL)
     request = {"model": model, "max_tokens": max_tokens, "system": system, "messages": messages}
-    response, latency = _create(request, model, temperature, extra={"tools": tools})
-    content = [d for d in (_block_to_dict(b) for b in response.content) if d is not None]
+    with _llm_span(model, max_tokens) as span:
+        response, latency = _create(request, model, temperature, extra={"tools": tools})
+        content = [d for d in (_block_to_dict(b) for b in response.content) if d is not None]
+        text = "".join(b["text"] for b in content if b["type"] == "text")
+        _record_response(span, response, model, latency, temperature, text)
+        span.set({"llm.tool_calls": sum(1 for b in content if b["type"] == "tool_use")})
     return ToolTurn(
         content=content,
         model=model,

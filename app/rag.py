@@ -11,6 +11,7 @@ two can be compared on the same dataset:
 """
 from dataclasses import dataclass
 
+from app import tracing
 from app.llm import LLMResponse, generate
 from app.paths import CORPUS_DIR
 from app.retriever import Chunk, Retriever, load_chunks
@@ -252,28 +253,51 @@ class RagAssistant:
         documents, so a planted paragraph can't reach it, and a direct attack in
         the question can at worst change which passages come back.
         """
-        rewrite = None
-        search_query = question
-        if self.retriever_config["rewrite"]:
-            rewrite = generate(REWRITE_SYSTEM, question, model=self.model, max_tokens=80)
-            # Search the original words AND the rewrite, so the rewrite can add
-            # matches but never remove one the original question already had.
-            search_query = f"{question}\n{rewrite.text.strip()}"
-        return self.retriever.search(search_query, k=self.k), search_query, rewrite
+        with tracing.span("retrieve", kind="retrieval", attrs={
+                "kestrel.retriever_version": self.retriever_version, "retrieval.k": self.k}):
+            rewrite = None
+            search_query = question
+            if self.retriever_config["rewrite"]:
+                with tracing.span("query_rewrite", kind="chain") as span:
+                    rewrite = generate(REWRITE_SYSTEM, question, model=self.model, max_tokens=80)
+                    span.set_content("rewrite.output", rewrite.text.strip())
+                # Search the original words AND the rewrite, so the rewrite can add
+                # matches but never remove one the original question already had.
+                search_query = f"{question}\n{rewrite.text.strip()}"
+            with tracing.span("bm25.search", kind="retrieval") as span:
+                scored = self.retriever.search_scored(search_query, k=self.k)
+                if tracing.active():
+                    span.set({
+                        "retrieval.docs": [c.doc for c, _ in scored],
+                        "retrieval.scores": [round(score, 3) for _, score in scored],
+                        "retrieval.top_score": round(scored[0][1], 3) if scored else 0.0,
+                        "retrieval.corrections": self.retriever.corrections(search_query),
+                    })
+                    span.set_content("retrieval.query", search_query)
+                    span.set_content("retrieval.passages", [c.text for c, _ in scored])
+        return [c for c, _ in scored], search_query, rewrite
 
     def answer(self, question: str) -> RagAnswer:
-        chunks, search_query, rewrite = self.retrieve(question)
-        response = generate(self.prompt["system"], self.build_prompt(question, chunks),
-                            model=self.model)
-        return RagAnswer(
-            question=question,
-            answer=response.text.strip(),
-            sources=sorted({c.doc for c in chunks}),
-            contexts=[c.text for c in chunks],
-            llm=combine(response, rewrite),
-            search_query=search_query,
-            rewrite=rewrite,
-        )
+        with tracing.span("rag.answer", kind="chain", attrs={
+                "kestrel.prompt_version": self.prompt_version,
+                "kestrel.retriever_version": self.retriever_version}) as span:
+            span.set_content("input.question", question)
+            chunks, search_query, rewrite = self.retrieve(question)
+            with tracing.span("generate", kind="chain"):
+                response = generate(self.prompt["system"], self.build_prompt(question, chunks),
+                                    model=self.model)
+            result = RagAnswer(
+                question=question,
+                answer=response.text.strip(),
+                sources=sorted({c.doc for c in chunks}),
+                contexts=[c.text for c in chunks],
+                llm=combine(response, rewrite),
+                search_query=search_query,
+                rewrite=rewrite,
+            )
+            span.set({"rag.sources": result.sources})
+            span.set_content("output.answer", result.answer)
+        return result
 
 
 def combine(answer: LLMResponse, rewrite: LLMResponse | None) -> LLMResponse:

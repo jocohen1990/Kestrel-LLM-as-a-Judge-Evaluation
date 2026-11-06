@@ -179,7 +179,17 @@ class Retriever:
 
     def search(self, query: str, k: int = 4) -> list[Chunk]:
         """Return the k chunks with the highest BM25 score for the query."""
+        return [chunk for chunk, _ in self.search_scored(query, k)]
+
+    def search_scored(self, query: str, k: int = 4) -> list[tuple[Chunk, float]]:
+        """The same k chunks, in the same order, each with its BM25 score.
+
+        Added for tracing (Phase 6). In production nobody tells you a question
+        was out of scope, but a low top score is a hint: a question whose best
+        passage barely matches is likely one the documents don't answer, and a
+        drop in typical scores after a release points at the search step.
+        """
         query_tokens = self.query_tokens(query)
         scores = [self.score(query_tokens, i) for i in range(len(self.chunks))]
         ranked = sorted(range(len(self.chunks)), key=lambda i: scores[i], reverse=True)
-        return [self.chunks[i] for i in ranked[:k]]
+        return [(self.chunks[i], scores[i]) for i in ranked[:k]]

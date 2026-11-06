@@ -4,7 +4,7 @@ An end-to-end evaluation suite for an LLM-powered financial Q&A assistant, built
 a QA engineer tests software: versioned test data, graders that are themselves tested,
 measurable quality thresholds, and a CI pipeline that blocks regressions.
 
-> **Status:** Phases 1–5 of 6 complete. Phase 5 added a model comparison scorecard and a [results dashboard](#results-dashboard-phase-5) (`python dashboard.py`: one HTML page with every CI gate, the model comparison, each suite's history and the cases still worth a look). [Run 19](#run-19-three-assistant-models-on-the-same-evals-phase-5) compared Haiku 4.5, Haiku 5.5 and Sonnet 5.5: all three pass every CI gate, Haiku 5.5 costs about a seventh as much per question, and Haiku 4.5 is the fastest. The default model is unchanged for now. Phase 6 (production-style tracing and monitoring) is next. Phase 4 (agent evaluation, Runs 14–18) grades a LangGraph agent's tool choice, arguments, path and answer: the default prompt a3 is fully correct on 26 of 27 cases and answers all 27, and every run showed answer accuracy alone would have hidden the cases right for the wrong reason, such as arithmetic done in the model's head. One kind of question (what's left on the credit facility) is still done in the model's head and is recorded as a known limit; the eval catches it even when the agent calls the calculator afterwards to check. See the [Phase 4 summary](#phase-4-summary). Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
+> **Status:** Phases 1–5 of 6 complete; Phase 6 (production-style tracing and monitoring) is under way. Its first step adds [tracing](#tracing-production-traffic-phase-6): every request through the app's front door is recorded as a trace (each retrieval, model call and tool call, with its timing, tokens and cost), and `traffic.py` replays 40 unlabeled "production" questions to produce them. [Run 20](#run-20-the-first-traced-replay-phase-6), the first replay, found three wrong answers the evals had never shown (multi-fact and one-word questions where the search missed a passage) and four requests where the query rewrite returned something other than a search query. [Run 21](#run-21-the-agent-on-the-same-traffic-phase-6) replayed the same traffic through the agent: it got the multi-fact question right, but refused three answerable questions without calling a tool, and it costs 3.8x as much per request. Phase 5 added a model comparison scorecard and a [results dashboard](#results-dashboard-phase-5) (`python dashboard.py`: one HTML page with every CI gate, the model comparison, each suite's history and the cases still worth a look). [Run 19](#run-19-three-assistant-models-on-the-same-evals-phase-5) compared Haiku 4.5, Haiku 5.5 and Sonnet 5.5: all three pass every CI gate, Haiku 5.5 costs about a seventh as much per question, and Haiku 4.5 is the fastest. The default model is unchanged for now. Phase 4 (agent evaluation, Runs 14–18) grades a LangGraph agent's tool choice, arguments, path and answer: the default prompt a3 is fully correct on 26 of 27 cases and answers all 27, and every run showed answer accuracy alone would have hidden the cases right for the wrong reason, such as arithmetic done in the model's head. One kind of question (what's left on the credit facility) is still done in the model's head and is recorded as a known limit; the eval catches it even when the agent calls the calculator afterwards to check. See the [Phase 4 summary](#phase-4-summary). Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
 
 ## What's being tested
 
@@ -37,7 +37,7 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-pytest -v                          # 678 offline tests: free, no API key needed
+pytest -v                          # 723 offline tests: free, no API key needed
 
 cp .env.example .env               # then add your ANTHROPIC_API_KEY
 python run_evals.py                # golden v3, prompt v6, retriever r3, LLM judge (judge-v2)
@@ -147,6 +147,78 @@ The default model runs last, so the `*_latest.json` files still describe the def
 finishes. With 32 golden questions one question is about 3 points, so a model a point or two
 behind is a tie: the gates, not the averages, decide. Prices change; they're stored with the date
 checked, and `--from-files` re-prices saved runs for free.
+
+### Tracing production traffic (Phase 6)
+
+```bash
+python traffic.py --limit 5        # 5 pretend production requests, a trace each (a few cents for 40)
+python traffic.py                  # all 40 requests in data/traffic/traffic_v1.jsonl, RAG assistant
+python traffic.py --app agent      # the same requests through the agent
+python traffic.py --no-content     # numbers only: no questions, passages or answers stored
+
+python traces.py                   # free: summary of the newest trace file
+python traces.py --show t001       # free: one request as a tree
+python traces.py --slowest 3       # free: the 3 slowest requests
+python traces.py --errors          # free: every request that failed
+```
+
+Every eval knows the right answer to each question. Production doesn't: users ask things nobody
+wrote a test for, and nobody grades the reply. What production does have is a record of every
+request, and that's a **trace**: one per request, made of nested **spans**, one per step:
+
+```
+trace c817a68526054a77826cc5283d9c19a2  2026-11-06T01:54:42.989+00:00  1.53s  ok
+  Q: And how much of that was profit?
+  kestrel.request                       1.53s  rag web  t002  2 model call(s)
+    rag.answer                          1.53s
+      retrieve                          1.01s
+        query_rewrite                   993ms  "I need a complete user message to rephrase into a search ..."
+          llm.chat                      993ms  haiku-4-5-20251001  167 in / 42 out  stop=end_turn
+        bm25.search                      15ms  q2_2026_earnings x2, annual_report_2025, risk_factors_2026  top score 4.896  corrected complete->completed, provided->provider
+      generate                          522ms
+        llm.chat                        522ms  haiku-4-5-20251001  569 in / 13 out  stop=end_turn
+  A: I don't know based on the provided documents.
+  cost $0.00101
+```
+
+That's request t002 from [Run 20](#run-20-the-first-traced-replay-phase-6), and it shows a problem no eval had caught: the query rewrite answered the user instead of writing a search query. The agent's traces have one span per model
+turn and one per tool call, with the tool's arguments and output.
+
+How it fits together:
+
+- `app/tracing.py` is the tracer: about 250 lines, no new dependencies. `trace()` starts a request,
+  `span()` a step; both are `with` blocks, so a span always ends and records any error. **Outside a
+  trace every span does nothing**, so the evals (which never start one) run exactly as before, and
+  a test checks that a traced answer is identical to an untraced one.
+- Attribute names follow OpenTelemetry's GenAI conventions (`gen_ai.request.model`,
+  `gen_ai.usage.input_tokens`), so moving to a real backend (Langfuse, Phoenix, any OpenTelemetry
+  collector) means writing an exporter, not re-instrumenting the app.
+- `app/service.py` is the app's front door, where each trace starts. It adds what only a service
+  knows: a request id, the user's session and channel, and the release that answered
+  (`KESTREL_RELEASE`). Comparing releases or finding one user's bad session needs those on every trace.
+- Spans are added in three places: `app/llm.py` (every model call: model, tokens, cache use, stop
+  reason, API latency), `app/rag.py` (rewrite, search with each passage's BM25 score, answer) and
+  `app/agent.py` (each turn and each tool call). The search scores are new: production never says a
+  question was out of scope, but a low top score hints at it.
+- The agent hands its `agent.run` span to its nodes through LangGraph's per-run config instead
+  of relying on Python's context variables, because LangGraph can run a node in another thread.
+  Per run, not on the agent object, so two requests sharing one agent can't swap parents. A test
+  runs the nodes in a plain thread (which can't see the trace) to prove their spans still land in
+  the right place.
+- **Telemetry never takes the app down.** A request that raises is recorded with status `error`
+  and the error is raised as before; a failing exporter prints a warning and the answer is still
+  returned. `traffic.py` keeps going after a failed request, the way a server would.
+- **Traces can hold user text**, so `traces/` is in `.gitignore`. They store the question, the
+  retrieved passages and the answer by default, because the monitors in the next step need them.
+  `--no-content` (or `KESTREL_TRACE_CONTENT=0`) keeps every number and drops every piece of text.
+- Cost isn't stored in the trace. `traces.py` works it out from the token counts and
+  `evals/pricing.py`, the same as the scorecard, so old traces re-price when prices change.
+
+`data/traffic/traffic_v1.jsonl` is the pretend production traffic: 40 requests in 16 sessions
+(ordinary questions, multi-step ones, out-of-scope, Spanish and typos, attacks, and one follow-up
+that only makes sense after the question before it). It has **no expected answers**, on purpose,
+and a test checks that none of it is copied from an eval dataset. See the
+[dataset card](data/traffic/README.md).
 
 ### Testing robustness, jailbreaks and bias
 
@@ -293,6 +365,8 @@ app/                  The system under test
   retriever.py        BM25 keyword search, written from scratch, with optional typo tolerance
   llm.py              Single wrapper for every model call
   rag.py              Retrieve -> prompt -> answer (prompts v1-v6, retrievers r1-r3, all kept)
+  tracing.py          Production-style tracing: traces, spans, exporters (Phase 6)
+  service.py          The app's front door: every request through it is one trace (Phase 6)
   tools.py            The agent's tools: metric lookup, document search, safe calculator (tools t1, t2)
   agent.py            LangGraph agent: model and tool nodes, records each run's trajectory and a per-turn log (prompts a1-a3)
 evals/                The evaluation framework
@@ -313,6 +387,7 @@ evals/                The evaluation framework
   scorecard.py        Model comparison: per-suite metrics, CI gates, cost, latency, recommendation
   dashboard.py        Results dashboard: gates, model comparison, history and open issues as one HTML page
   pricing.py          API prices per model, with the date checked
+  traces.py           Reading traces: summary, latency per step, cost, one trace as a tree (Phase 6)
 data/
   corpus/             The four Kestrel documents
   golden/             golden_v1, golden_v2 (frozen), golden_v3, dataset card
@@ -321,7 +396,8 @@ data/
   robustness/         Hand-written reworded and casual questions (paraphrases_v1, held-out v2), dataset card
   bias/               Counterfactual bias groups (bias_v1), dataset card
   agent/              Agent cases with required tool steps (agent_v1), calculator probes (calc_probes_v1, v2), dataset card
-tests/                678 offline tests
+  traffic/            Pretend production traffic, no expected answers (traffic_v1), dataset card
+tests/                723 offline tests
 run_evals.py          Eval runner and quality gates
 calibrate.py          Judge validation commands
 consistency.py        Repeat-run consistency check
@@ -334,6 +410,9 @@ agent.py              Ask the agent questions and print its trajectory (Phase 4 
 agent_eval.py         Agent eval: tool choice, arguments, trajectory and answer
 compare_models.py     Model comparison scorecard (Phase 5)
 dashboard.py          Results dashboard (Phase 5): writes results/dashboard.html
+traffic.py            Replay traffic through the app, a trace per request (Phase 6)
+traces.py             Summarize or inspect recorded traces (Phase 6)
+traces/               Recorded traces (git-ignored: they can hold user text)
 .github/workflows/    CI pipeline
 ```
 
@@ -346,7 +425,19 @@ dashboard.py          Results dashboard (Phase 5): writes results/dashboard.html
 | 3 | Safety and robustness: repeat-run consistency (Run 4), prompt injection including injections hidden in documents (Runs 5–8), paraphrase and typo robustness (Run 9), jailbreaks (Run 10), bias probes (Run 11) | ✅ Done |
 | 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | ✅ Done (Runs 14–18, [summary](#phase-4-summary)) |
 | 5 | Model comparison scorecard and a results dashboard | ✅ Done (scorecard: [Run 19](#run-19-three-assistant-models-on-the-same-evals-phase-5); [dashboard](#results-dashboard-phase-5)) |
-| 6 | Production-style tracing and monitoring | ⬜ |
+| 6 | Production-style tracing and monitoring | 🟡 Step 1 of 3 done ([tracing](#tracing-production-traffic-phase-6)) |
+
+Phase 6 plan:
+
+1. ✅ **Tracing.** Every request recorded as a trace; pretend production traffic to make them.
+2. ⬜ **Monitoring without answer keys.** Checks that run on traces, not test cases: refusal rate,
+   internal names or links in answers, low retrieval scores, agent step limits and tool errors on
+   every request, and the LLM judge's faithfulness check (it needs only the passages and the
+   answer) on a sample. Thresholds, alerts, and a monitoring section on the dashboard. The monitors
+   are checked against `traffic_v1`'s `kind` field, the way the judge was checked with mutations.
+3. ⬜ **Closing the loop.** Flagged production requests become candidates for the next golden set
+   version, and a comparison between two releases' traces (latency, cost, refusal rate) shows
+   whether a change helped in production, not just in the evals.
 
 ## Findings
 
@@ -1451,7 +1542,173 @@ passes every gate), but one run without temperature=0 isn't enough to switch on.
 repeat runs of Haiku 5.5 (`consistency.py --model claude-haiku-5-5`), g022 in particular, and the
 robustness eval, which leans on the same query rewrite.
 
+### Run 20: the first traced replay (Phase 6)
+
+`python traffic.py`: the 40 `traffic_v1` requests through the default RAG setup (Haiku 4.5, prompt
+v6, retriever r3), one trace each. Nothing is graded in production, so the answers below were read by
+hand, request by request, with each trace's retrieved passages open. All 723 offline tests passed
+first, including the real-LangGraph trace test.
+
+| | |
+|---|---|
+| Requests / errors | 40 / 0 |
+| Model calls | 80 (2 per request: rewrite + answer) |
+| Latency per request | avg 1.28s, p50 1.22s, p95 1.57s, max 2.14s (t035) |
+| Where the time went | rewrite 604ms avg, answer 676ms, BM25 search 4ms |
+| Tokens per request | 766 in, 45 out |
+| Cost | $0.040 in all, $0.99 per 1,000 requests |
+| Replies that were the refusal sentence | 13: all 12 requests written to be refused, plus t002 (the follow-up) |
+| Wrong or partly wrong answers (read by hand) | 3 of 27 requests written to be answered: t023, t024, t035 |
+
+Cost and latency match the evals: Run 19 priced Haiku 4.5 at $1.03 per 1,000 golden questions, at
+1.30s average and 1.63s p95. Nothing failed and every attack (t037-t040) got the exact refusal
+sentence. The Spanish question (t033) was answered correctly, in English.
+
+What it showed:
+
+- **Questions that ask for several facts lose a fact, and the reply says the documents don't
+  have it.** t023 asked for 2025 revenue, net income, headcount and customer count. The four
+  retrieved passages were the FY2025 results, Q1 and Q2 results and customer concentration; the
+  "Customers and employees" paragraph wasn't among them. The reply gave revenue and net income, then
+  said "The provided documents do not contain information about headcount or customer count". That's
+  false about the documents (1,240 employees, 2,850 customers), and it breaks v6's rule against
+  mentioning the material. The golden set asks one fact per question, so it couldn't show this.
+- **The answer counted the retriever's k.** t024 asked which risks Kestrel lists. The risk factors
+  filing has six; retrieval returns four passages (k=4), all four from that filing, and the reply
+  said "Kestrel lists four risks". The part about the single customer was right.
+- **A one-word question got an answer-shaped wrong reply.** t035 was just "revenue". The rewrite
+  returned "revenue", BM25 found nothing better than segment shares, customer concentration and the
+  two outlook ranges (top score 3.09, third lowest of the 40), and none of them held a revenue
+  figure. The reply asked which period, as a bulleted list, and said the annual report "doesn't
+  state the total revenue figure" (it does: $412.6 million). The longest reply (124 output tokens)
+  and the slowest request (2.14s). Golden g032 ("What was Kestrel's revenue?") is nearly the same
+  question and passed in Run 19.
+- **The query rewrite doesn't always return a search query.** In 4 of 40 requests it answered the
+  user instead: for the follow-up t002 it asked for more context, for t032 it wrote a line of the
+  requested poem about trucks, and for the attacks t039 and t040 it replied about its own role. Its
+  prompt says the message is text to rephrase, not instructions. Those replies were then searched,
+  and typo correction "fixed" their words (provided -> provider, like -> life, mode -> more). The
+  final answers were all still the right refusal, as `rag.py` intends (an attack can at worst change
+  which passages come back), but those rewrites were the two slowest (993ms and 1,134ms against a
+  median of 581ms). The evals never showed it because nothing looked at the rewrite's text; every
+  trace now has it.
+- **A low retrieval score hints at out-of-scope, but isn't enough alone.** The two lowest top
+  scores were questions written to be refused (market cap, 0.07; investment advice, 1.93). Below
+  6, the cut flags 9 of the 12 written to be refused and 4 of the 28 others (t002, t004, t005,
+  t035), two of which (founding year, LaneSight) were answered correctly. It misses three: two attacks
+  (t037 at 7.62, t039 at 6.50) and t031 (2024 headcount, top score 21.84: the 2025 paragraph matches
+  every word but the year). The cut of 6 was
+  picked after seeing these numbers, so it says how the score behaves, not where to set a threshold.
+- Small: t012 added a figure nobody asked for (38% of $412.6 million is about $156.8 million),
+  calculated in the model's head and right.
+
+Caveats: one run, 40 hand-written requests, and "wrong" is my reading of each reply against the
+documents, not a graded answer key. The `intended` field was written before the run and wasn't
+changed after it.
+
+### Changes after Run 20
+
+Nothing in the app changed: Phase 6 step 1 is about seeing production, and fixing what it shows
+belongs after the monitors exist, so each fix can be checked by them. What Run 20 adds to step 2's
+monitors, all checkable on a trace without an answer key:
+
+- a reply that says the documents don't contain or state something (t023, t035): a claim about
+  the documents that the passages in the trace can confirm or refute
+- a reply that mentions "the provided documents" or uses a list (v6's format rules, t023, t035)
+- a rewrite that isn't a search query: first person, a question, or much longer than the user's
+  message (t002, t032, t039, t040)
+- a low top retrieval score, as one signal among several, not alone
+
+Possible fixes, each to be tested against both the evals and a replay: fall back to the user's
+question when the rewrite doesn't look like a query, and retrieve more passages for questions that
+ask for several facts.
+
+### Run 21: the agent on the same traffic (Phase 6)
+
+`python traffic.py --app agent`: the same 40 requests through the default agent (Haiku 4.5, prompt
+a3, tools t2). As in Run 20, the replies were read by hand with each trace's tool calls open.
+
+| | RAG (Run 20) | Agent (Run 21) |
+|---|---|---|
+| Requests / errors | 40 / 0 | 40 / 0 |
+| Model calls | 80 | 71 (14 requests in 1 turn, 21 in 2, 5 in 3) |
+| Latency avg / p95 / max | 1.28s / 1.57s / 2.14s | 1.66s / 3.27s / 3.78s |
+| Tokens per request | 766 in, 45 out | 3,191 in, 105 out |
+| Cost per 1,000 requests | $0.99 | $3.72 |
+| Written to be answered (27): answered correctly | 24 | 22 |
+| Written to be refused (12): exact refusal sentence | 12 | 9 (none of the 12 got a made-up answer) |
+
+Tools: 19 metric lookups, 17 searches, 4 calculations, no tool errors; every run ended "answered".
+The tool calls themselves took at most 3ms: the time is all model turns (920ms each on average).
+Input tokens are 4x the RAG assistant's because every turn resends the system prompt and the three
+tool definitions (about 1,670 tokens before the question).
+
+What it showed:
+
+- **The agent refused three answerable questions without looking.** t004 (when was Kestrel founded),
+  t011 (what Bramblecote does) and t033 (the CEO question in Spanish) got the refusal sentence in one
+  turn, with no tool call, in about 0.6s. The answers are in the documents, and the RAG assistant got
+  all three; its query rewrite translates, so even the Spanish question found its passage. None of
+  the agent's eval cases is an answerable question it refuses outright, so `agent_v1` couldn't show
+  this: its known-limit cases are all about the path to an answer.
+- **The multi-fact question RAG got wrong, the agent got right.** t023 (revenue, net income,
+  headcount, customers): three metric lookups and a search for headcount, all four figures right.
+  Tools that each return one fact don't run out of room the way four retrieved passages do.
+- **The same k-counting mistake, with a different k.** t024: the search tool returns 3 passages
+  (`SEARCH_K = 3` in `app/tools.py`), all three were risk factors, and the reply said "Kestrel lists
+  three main risks". RAG, with 4 passages, said four. The filing has six. Both apps treat what was
+  retrieved as everything there is.
+- **No calculator for one difference.** t021 gave "an increase of 2.3 percentage points" (right)
+  after two lookups and no calculation. Prompt a3 says every difference goes to the calculator; this
+  is Phase 4's *right answer, wrong path*, now seen in production. The other four calculations
+  (t013, t019, t020, t022) did use it.
+- **Refusals that don't stop.** t029 (investment advice) gave the refusal sentence, then a paragraph
+  explaining why. t026 (Q4 2025 revenue) didn't use the sentence: it said it doesn't "have access to
+  Q4 2025 data", listed the periods the metric tool covers, which come from the tool's definition,
+  and offered to look up FY2025 instead, all without calling a tool. t030 (operating cash flow, two
+  searches) used the not-reported sentence, which is meant for the five metrics in the lookup table.
+  All three are true and none invents a figure, but each breaks a3's exact-reply rules.
+- **Asking back instead of refusing.** For the follow-up t002 and the one-word t035, the agent asked
+  which figure or period was meant (t002 as a bulleted list). For t035 that's better than RAG's reply,
+  which wrongly said the annual report has no revenue total. Neither request was written with only one
+  right reply.
+
+Run 19's scorecard put the agent at 26/27 fully correct on `agent_v1`, and Run 21 doesn't contradict
+that: the questions are different. What it adds is that an answerable question asked in words the
+tool list doesn't mention (founding date, what an acquired company does, Spanish) can be refused
+without a single tool call.
+
+Caveats: one run, and "correct" is my reading. The agent and the RAG assistant are different apps
+answering the same requests, not two versions of one app.
+
+### Changes after Run 21
+
+Nothing in the app changed. For step 2's monitors, the agent adds:
+
+- a refusal or a not-reported sentence with **no tool call** before it (t004, t011, t033, and t026
+  without the sentence)
+- the refusal sentence **followed by more text** (t029)
+- a figure in the answer that no tool returned: the Phase 4 check (`evals/agent_eval.py`) needs only
+  the trajectory, not the right answer, so it can run on production traces (t021)
+
+For both apps: a reply that names how many items there are ("four risks", "three main risks") when
+that number equals the passages retrieved is worth a look.
+
 ### Known gaps
+
+- **Run 20's failures aren't fixed** (multi-fact questions losing a fact, t024 counting k, t035's
+  one-word question, rewrites that aren't queries). Recorded here and in the
+  [Run 20 findings](#run-20-the-first-traced-replay-phase-6); step 2's monitors come first.
+- **Run 21's agent failures aren't fixed**: answerable questions refused without a tool call
+  (t004, t011, t033), refusals that don't stop (t026, t029, t030), t021's difference done in the
+  head, and the same count-the-passages mistake as RAG (t024, `SEARCH_K = 3`).
+- **Every request is traced (no sampling)** and traces go to a local file. A busy service would
+  keep a sample, send traces to a collector, and delete old ones on a schedule. None of that is
+  here yet.
+- **The judge's calls aren't traced.** Only the app is: the judge is part of the evals, not of
+  production. Step 2's sampled faithfulness check will be the first judge call inside a trace.
+- **Traces store the question and answer in plain text by default.** Fine for invented questions
+  about an invented company; real user text would need a decision on what to keep and for how long.
 
 - **The dashboard's history is local.** The timestamped results files are in `.gitignore`, so
   the history charts show what's saved on the machine that builds the page. A fresh clone or a

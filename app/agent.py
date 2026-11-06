@@ -29,12 +29,14 @@ when a graph is actually built.
 
 Agent versions work like prompt versions: each is kept, never edited in place.
 """
+import json
 from dataclasses import dataclass, field
 from typing import TypedDict
 
+from app import tracing
 from app.llm import generate_with_tools
 from app.rag import REFUSAL
-from app.tools import METRIC_NAMES, TOOL_DEFINITIONS, run_tool
+from app.tools import METRIC_NAMES, TOOL_DEFINITIONS, TOOLS_VERSION, run_tool
 
 # ---- The not-reported answer (decided after Run 14) -------------------------
 # When the metric tool says a figure isn't reported, prompt a1 left the wording
@@ -209,11 +211,23 @@ class KestrelAgent:
 
     # ---- Nodes ----------------------------------------------------------------
 
-    def call_model(self, state: AgentState) -> dict:
-        """Node: send the conversation so far, record the reply."""
-        reply = generate_with_tools(self.system, state["messages"], self.tools, model=self.model)
-        self._last_model = reply.model
+    def call_model(self, state: AgentState, config=None) -> dict:
+        """Node: send the conversation so far, record the reply.
+
+        config: LangGraph passes each run's config to a node that asks for it.
+        run() puts its "agent.run" span there, so this node's span lands in the
+        right trace even if LangGraph runs the node in another thread, and two
+        requests sharing one agent never swap parents (see trace_parent).
+        Leave `config` without a type hint: LangGraph only passes it to a
+        parameter that is unannotated or annotated as its own RunnableConfig."""
         turns = state["turns"] + 1
+        with tracing.span("agent.turn", kind="chain", attrs={"agent.turn": turns},
+                          parent=trace_parent(config)) as span:
+            reply = generate_with_tools(self.system, state["messages"], self.tools,
+                                        model=self.model)
+            span.set({"agent.tool_calls": [c["name"] for c in reply.tool_calls],
+                      "agent.stop_reason": reply.stop_reason})
+        self._last_model = reply.model
         usage = {
             "input_tokens": state["usage"]["input_tokens"] + reply.input_tokens,
             "output_tokens": state["usage"]["output_tokens"] + reply.output_tokens,
@@ -251,13 +265,19 @@ class KestrelAgent:
             update["stopped"] = "step_limit"
         return update
 
-    def run_tools(self, state: AgentState) -> dict:
+    def run_tools(self, state: AgentState, config=None) -> dict:
         """Node: run every tool the model asked for in its last reply, in order,
         and send each result back in one user turn (the API's required shape)."""
         last = state["messages"][-1]["content"]
         results, steps = [], []
         for call in (b for b in last if b["type"] == "tool_use"):
-            result = run_tool(call["name"], call["input"])
+            with tracing.span(f"tool.{call['name']}", kind="tool", parent=trace_parent(config),
+                              attrs={"gen_ai.tool.name": call["name"],
+                                     "agent.turn": state["turns"]}) as span:
+                result = run_tool(call["name"], call["input"])
+                span.set({"tool.is_error": result.is_error})
+                span.set_content("tool.arguments", json.dumps(call["input"], ensure_ascii=False))
+                span.set_content("tool.output", result.output)
             results.append({"type": "tool_result", "tool_use_id": call["id"],
                             "content": result.output, "is_error": result.is_error})
             steps.append({"turn": state["turns"], "tool": call["name"], "args": call["input"],
@@ -292,9 +312,36 @@ class KestrelAgent:
         # LangGraph counts every node visit against recursion_limit (default
         # 25). Each turn is at most 2 visits, so this never cuts in before
         # max_turns does; max_turns is the limit that's measured.
-        final = self.graph().invoke(initial_state(question),
-                                    {"recursion_limit": 2 * self.max_turns + 5})
-        return to_result(final, self._last_model or self.model or "", self.agent_version)
+        with tracing.span("agent.run", kind="agent", attrs={
+                "kestrel.agent_version": self.agent_version,
+                "kestrel.tools_version": TOOLS_VERSION,
+                "agent.max_turns": self.max_turns}) as span:
+            span.set_content("input.question", question)
+            config = {"recursion_limit": 2 * self.max_turns + 5,
+                      "configurable": {TRACE_PARENT_KEY: tracing.current_span()}}
+            final = self.graph().invoke(initial_state(question), config)
+            result = to_result(final, self._last_model or self.model or "", self.agent_version)
+            record_result(span, result)
+        return result
+
+
+# Where run() puts its span in the LangGraph run config. Passed per run, not
+# kept on the agent object: one agent can serve two requests at once, and an
+# attribute on `self` would hand one request's parent span to the other.
+TRACE_PARENT_KEY = "kestrel_trace_parent"
+
+
+def trace_parent(config: dict | None):
+    """The span run() passed down, or None (then the current span is used)."""
+    return ((config or {}).get("configurable") or {}).get(TRACE_PARENT_KEY)
+
+
+def record_result(span, result: AgentResult) -> None:
+    """Put how an agent run ended on its span: what the Phase 6 monitors read."""
+    span.set({"agent.turns": result.turns, "agent.stopped": result.stopped,
+              "agent.tools_used": result.tools_used, "agent.answer_turn": result.answer_turn,
+              "agent.tool_errors": sum(1 for s in result.steps if s["is_error"])})
+    span.set_content("output.answer", result.answer)
 
 
 def to_result(state: AgentState, model: str, agent_version: str) -> AgentResult:
