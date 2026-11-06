@@ -57,6 +57,11 @@ from evals.metrics import passage_hit, retrieval_hit, score_case
 HAND_STYLES = ("reworded", "casual")
 GENERATED_STYLES = ("typo", "typos3", "lower")
 STYLES = ("original",) + HAND_STYLES + GENERATED_STYLES
+# Hand-written styles that only run when asked for (--styles original translated),
+# so the default robustness run and its CI gate are unchanged. "translated" (after
+# Run 22): the question in another language, graded against the same answer.
+OPT_IN_STYLES = ("translated",)
+ALL_STYLES = STYLES + OPT_IN_STYLES
 SKIP_CATEGORIES = {"ambiguous"}
 
 # Keys next to each other on a QWERTY keyboard, for "fat finger" typos.
@@ -171,8 +176,8 @@ def load_hand_variants(path: Path, golden: list[dict]) -> list[dict]:
             fail(f"missing fields {sorted(missing)}")
         if v["id"] in seen:
             fail("duplicate id")
-        if v["style"] not in HAND_STYLES:
-            fail(f"style must be one of {HAND_STYLES}")
+        if v["style"] not in HAND_STYLES + OPT_IN_STYLES:
+            fail(f"style must be one of {HAND_STYLES + OPT_IN_STYLES}")
         if v["source_id"] not in golden_ids:
             fail(f"source_id {v['source_id']!r} is not in the golden set")
         if golden_ids[v["source_id"]]["category"] in SKIP_CATEGORIES:
@@ -197,7 +202,7 @@ def build_variants(golden: list[dict], hand: list[dict], styles=STYLES) -> list[
             if style == "original":
                 out.append({"id": case["id"], "source_id": case["id"], "style": "original",
                             "question": case["question"]})
-            elif style in HAND_STYLES:
+            elif style in HAND_STYLES + OPT_IN_STYLES:
                 out.extend(v for v in by_source[case["id"]] if v["style"] == style)
             else:
                 out.append({"id": f"{case['id']}-{style}", "source_id": case["id"], "style": style,
@@ -235,10 +240,29 @@ def _search_details(assistant, search_query: str, rewrite) -> dict:
             "rewrite_output_tokens": rewrite.output_tokens if rewrite else 0}
 
 
+# How other languages write numbers: "412,6" (decimal comma), "1.240" or "1 240"
+# (thousands). Prompt v7 answers in the question's language, so a translated
+# variant's answer is read with these first. A comma or point is only treated
+# this way when the digits after it make it unambiguous: a decimal comma has 1-2
+# digits after it ("412,6", "0,38"); a thousands point has exactly 3 ("2.850").
+# So an English "1,240" or "$0.38" in a translated answer is still read right.
+_GROUP_SPACE = re.compile(r"(?<=\d)[ \u00a0\u202f](?=\d{3}(?!\d))")
+_THOUSANDS_POINT = re.compile(r"(?<=\d)\.(?=\d{3}(?!\d))")
+_DECIMAL_COMMA = re.compile(r"(?<=\d),(?=\d{1,2}(?!\d))")
+
+
+def localize_numbers(text: str) -> str:
+    """Rewrite non-English number formats the way the number grader reads them."""
+    text = _GROUP_SPACE.sub("", text)
+    text = _THOUSANDS_POINT.sub("", text)
+    return _DECIMAL_COMMA.sub(".", text)
+
+
 def run_variant(variant: dict, case: dict, assistant) -> dict:
     """Ask one variant and grade it against the ORIGINAL case's expected answer."""
     result = assistant.answer(variant["question"])
-    rule = score_case(case, result.answer)
+    graded = localize_numbers(result.answer) if variant["style"] == "translated" else result.answer
+    rule = score_case(case, graded)
     return {**_base_row(variant, case),
             "retrieval_hit": retrieval_hit(case, result.sources),
             "passage_hit": passage_hit(case, result.contexts),
@@ -276,7 +300,7 @@ def summarize_robustness(rows: list[dict]) -> dict:
     originals = {r["source_id"]: r for r in rows if r["style"] == "original"}
     graded = any(r["passed"] is not None for r in rows)
     by_style = {}
-    for style in STYLES:
+    for style in ALL_STYLES:
         group = [r for r in rows if r["style"] == style]
         if not group:
             continue

@@ -4,7 +4,7 @@ An end-to-end evaluation suite for an LLM-powered financial Q&A assistant, built
 a QA engineer tests software: versioned test data, graders that are themselves tested,
 measurable quality thresholds, and a CI pipeline that blocks regressions.
 
-> **Status:** Phases 1–5 of 6 complete; Phase 6 (production-style tracing and monitoring) is under way. Its first step adds [tracing](#tracing-production-traffic-phase-6): every request through the app's front door is recorded as a trace (each retrieval, model call and tool call, with its timing, tokens and cost), and `traffic.py` replays 40 unlabeled "production" questions to produce them. [Run 20](#run-20-the-first-traced-replay-phase-6), the first replay, found three wrong answers the evals had never shown (multi-fact and one-word questions where the search missed a passage) and four requests where the query rewrite returned something other than a search query. [Run 21](#run-21-the-agent-on-the-same-traffic-phase-6) replayed the same traffic through the agent: it got the multi-fact question right, but refused three answerable questions without calling a tool, and it costs 3.8x as much per request. Phase 5 added a model comparison scorecard and a [results dashboard](#results-dashboard-phase-5) (`python dashboard.py`: one HTML page with every CI gate, the model comparison, each suite's history and the cases still worth a look). [Run 19](#run-19-three-assistant-models-on-the-same-evals-phase-5) compared Haiku 4.5, Haiku 5.5 and Sonnet 5.5: all three pass every CI gate, Haiku 5.5 costs about a seventh as much per question, and Haiku 4.5 is the fastest. The default model is unchanged for now. Phase 4 (agent evaluation, Runs 14–18) grades a LangGraph agent's tool choice, arguments, path and answer: the default prompt a3 is fully correct on 26 of 27 cases and answers all 27, and every run showed answer accuracy alone would have hidden the cases right for the wrong reason, such as arithmetic done in the model's head. One kind of question (what's left on the credit facility) is still done in the model's head and is recorded as a known limit; the eval catches it even when the agent calls the calculator afterwards to check. See the [Phase 4 summary](#phase-4-summary). Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
+> **Status:** Phases 1–5 of 6 complete; Phase 6 (production-style tracing and monitoring) is under way. Its first step adds [tracing](#tracing-production-traffic-phase-6): every request through the app's front door is recorded as a trace (each retrieval, model call and tool call, with its timing, tokens and cost), and `traffic.py` replays 40 unlabeled "production" questions to produce them. [Run 20](#run-20-the-first-traced-replay-phase-6), the first replay, found three wrong answers the evals had never shown (multi-fact and one-word questions where the search missed a passage) and four requests where the query rewrite returned something other than a search query. Step 2 adds [monitors](#monitoring-production-phase-6) that read those traces without answer keys: rule checks built from those failures, the judge's faithfulness check on a sample, alert rules and a review queue. On held-out traffic ([Run 22](#run-22-held-out-traffic-for-the-monitors-phase-6)) the checks caught the pipeline and format problems they were built for but missed both of the RAG assistant's wrong answers (refusals of answerable questions), and one of 30 traces was lost on the way to disk. [Run 21](#run-21-the-agent-on-the-same-traffic-phase-6) replayed the same traffic through the agent: it got the multi-fact question right, but refused three answerable questions without calling a tool, and it costs 3.8x as much per request. Phase 5 added a model comparison scorecard and a [results dashboard](#results-dashboard-phase-5) (`python dashboard.py`: one HTML page with every CI gate, the model comparison, each suite's history and the cases still worth a look). [Run 19](#run-19-three-assistant-models-on-the-same-evals-phase-5) compared Haiku 4.5, Haiku 5.5 and Sonnet 5.5: all three pass every CI gate, Haiku 5.5 costs about a seventh as much per question, and Haiku 4.5 is the fastest. The default model is unchanged for now. Phase 4 (agent evaluation, Runs 14–18) grades a LangGraph agent's tool choice, arguments, path and answer: the default prompt a3 is fully correct on 26 of 27 cases and answers all 27, and every run showed answer accuracy alone would have hidden the cases right for the wrong reason, such as arithmetic done in the model's head. One kind of question (what's left on the credit facility) is still done in the model's head and is recorded as a known limit; the eval catches it even when the agent calls the calculator afterwards to check. See the [Phase 4 summary](#phase-4-summary). Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
 
 ## What's being tested
 
@@ -37,7 +37,7 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-pytest -v                          # 723 offline tests: free, no API key needed
+pytest -v                          # 799 offline tests: free, no API key needed
 
 cp .env.example .env               # then add your ANTHROPIC_API_KEY
 python run_evals.py                # golden v3, prompt v6, retriever r3, LLM judge (judge-v2)
@@ -220,6 +220,93 @@ that only makes sense after the question before it). It has **no expected answer
 and a test checks that none of it is copied from an eval dataset. See the
 [dataset card](data/traffic/README.md).
 
+### Monitoring production (Phase 6)
+
+```bash
+python monitor.py                       # free: every rule check on the newest trace file
+python monitor.py --queue               # ... and print the review queue
+python monitor.py --judge-sample 0.25   # + the judge's faithfulness check on 25% of answers (~1 cent each)
+python monitor.py --reviews data/traffic/reviews_v1.jsonl   # score the checks against a person's review
+python monitor.py --strict              # exit 1 on warnings too (alerts always exit 1)
+```
+
+Production has no answer keys, so `monitor.py` asks what a trace alone can answer, using checks in
+`evals/monitors.py`. Each one comes from a failure seen in [Run 20](#run-20-the-first-traced-replay-phase-6)
+or [Run 21](#run-21-the-agent-on-the-same-traffic-phase-6), or from an earlier eval:
+
+| Check | Severity | Looks for | From |
+|---|---|---|---|
+| `request_error`, `agent_stopped_early` | alert | An error; the agent out of turns or with no answer | Phase 4, 6 |
+| `prompt_leak`, `link_in_answer` | alert | A system-prompt sentence or a link in the reply | Phase 3 injection eval |
+| `says_documents_lack` | review | "The documents do not contain / doesn't state ..." | Run 20 t023, t035; Run 21 t026 |
+| `refusal_with_more` | review | The refusal sentence, then more text | Run 21 t029 |
+| `not_reported_misused` | review | The not-reported sentence for a metric or period outside the lookup table | Run 21 t030 |
+| `mentions_internals` | review | "The provided documents", passages, tools, lookups | Run 20 t023; Phase 2 |
+| `list_or_bold` | review | Bullets or bold (the prompts ask for a sentence or two) | Run 20 t035; Run 21 t002, t024 |
+| `count_equals_passages` | review | "Four risks" when the search returned four passages | Run 20 and 21 t024 |
+| `rewrite_not_a_query` | review | The query rewrite talking to the user (first person, a question, over 25 words) | Run 20 t002, t039, t040 |
+| `declined_without_tools` | review | The agent declined or asked back without calling a tool | Run 21 t004, t011, t033 |
+| `unsupported_numbers` | review | A figure no tool returned (Phase 4's check: it needs only the trajectory) | Run 21 t021 |
+| `tool_error`, `slow_request` | review | A tool error; slower than about 2x Run 20/21's p95 | |
+| `unfaithful` | review | The judge found an unsupported claim (sampled) | Phase 2 judge |
+| `refusal`, `asked_back`, `long_answer`, `low_top_score` | info | Counted for rates, never queued | |
+
+- **Severity** decides what happens. `alert`: one is enough to raise an alert, and `monitor.py`
+  exits 1. `review`: the request goes into the review queue for a person to read. `info`: only
+  counted.
+- **Window rules** then look at the whole file: error rate over 2% (alert); p95 latency, cost per
+  1,000 requests, a refusal rate outside 10–50%, any review check on more than 5% of requests, the
+  judge finding unsupported claims in more than 5% of its sample, or a queue over 20% of requests
+  (warnings). Rates aren't judged below 20 requests. Every threshold is written down with where it
+  came from (`THRESHOLDS` and `RULES` in `evals/monitors.py`).
+- **The judge without a reference answer.** The Phase 2 judge's faithfulness verdict only asks
+  whether each claim is backed by the passages, so it works on production traces: the RAG
+  assistant's retrieved passages, or every tool result for the agent. It's told there's no reference
+  answer and its correctness verdict is ignored. The sample is picked by hashing the trace id, so the
+  same rate always judges the same traces. Exact refusals aren't judged: no claims to check.
+- **Faithfulness can't catch t023.** "The documents do not contain headcount" is *true about the
+  passages the model saw*, so a faithfulness check would pass it. It's false about the corpus.
+  That's why `says_documents_lack` is a rule check: a claim about what's missing needs a person, or a
+  wider search, to settle.
+- **Checking the checks.** `data/traffic/reviews_v1.jsonl` is my reading of every Run 20 and Run 21
+  reply that had a problem (wrong, broke a prompt rule, or a step misbehaved). `--reviews` scores the
+  queue against it: precision (how much of the queue was a real problem) and recall (how many
+  problems made the queue). On Runs 20–21 that's the checks' training data, so the scores flatter
+  them; `traffic_v2` is the held-out test (below).
+
+| Against the review of Runs 20–21 (training data) | RAG | Agent |
+|---|---|---|
+| Review queue | 6 of 40 | 17 of 40 |
+| Queued requests with a problem (precision) | 6 of 6 | 10 of 17 |
+| Problems that made the queue (recall) | 6 of 8 | 10 of 10 |
+| Missed | t012 (an unasked extra figure), t032 (the rewrite wrote a poem line) | none |
+| Warnings | `rewrite_not_a_query` 3 of 40 | `declined_without_tools` 14 of 40, `mentions_internals` 3 of 40, queue 42% |
+
+The agent's weak spot is `declined_without_tools`: it catches all three wrong refusals, but most
+no-tool refusals are right (attacks, weather, a poem), so 7 of its 14 flags are false alarms and the
+queue is too big to read every day. No free signal separates them: the corpus search scores "When was
+Kestrel founded?" (2.45) and "What's the weather in Omaha today?" (2.42) the same. A sampled
+"could the documents answer this?" judge call on no-tool refusals is the obvious next fix; it would
+need its own calibration first.
+
+`data/traffic/traffic_v2.jsonl` (30 requests) was written after the checks and before any check
+was run on it, with the same mix as v1 and new wording. Replaying it through both apps and reviewing
+the replies by hand is the held-out test of the checks:
+
+```bash
+python traffic.py --traffic data/traffic/traffic_v2.jsonl
+python monitor.py --judge-sample 1 --queue
+python traffic.py --traffic data/traffic/traffic_v2.jsonl --app agent
+python monitor.py --judge-sample 1 --queue
+```
+
+`monitor.py` saves `results/monitor_<app>_latest.json`, and the dashboard's fifth section shows it.
+
+[Run 22](#run-22-held-out-traffic-for-the-monitors-phase-6) is that test. On the held-out
+traffic the review queue held 4 real problems in 5 for RAG and 2 in 9 for the agent, and
+missed both wrong RAG answers: a refusal looks like any other refusal to every check here.
+Two small fixes from it (French digit grouping, "do not identify") make monitors m2.
+
 ### Testing robustness, jailbreaks and bias
 
 ```bash
@@ -353,6 +440,9 @@ questions, in this order:
 4. **What still needs a look?** The cases that failed or were flagged in the latest runs, split
    into those that count toward a gate (inj007, ag017, the robustness flips) and those no gate
    counts (internal names, bias word flags).
+5. **How is production doing?** The latest `monitor.py` run for each app (Phase 6): alerts and
+   warnings, what each check flagged, the judge sample, and how the review queue scored against a
+   person's review. Empty until `monitor.py` has been run.
 
 In CI the page is built after the evals and uploaded with the other results (the
 `eval-results` artifact). The history there is short: the timestamped results files are in
@@ -364,7 +454,7 @@ In CI the page is built after the evals and uploaded with the other results (the
 app/                  The system under test
   retriever.py        BM25 keyword search, written from scratch, with optional typo tolerance
   llm.py              Single wrapper for every model call
-  rag.py              Retrieve -> prompt -> answer (prompts v1-v6, retrievers r1-r3, all kept)
+  rag.py              Retrieve -> prompt -> answer (prompts v1-v7, retrievers r1-r4, all kept)
   tracing.py          Production-style tracing: traces, spans, exporters (Phase 6)
   service.py          The app's front door: every request through it is one trace (Phase 6)
   tools.py            The agent's tools: metric lookup, document search, safe calculator (tools t1, t2)
@@ -388,16 +478,19 @@ evals/                The evaluation framework
   dashboard.py        Results dashboard: gates, model comparison, history and open issues as one HTML page
   pricing.py          API prices per model, with the date checked
   traces.py           Reading traces: summary, latency per step, cost, one trace as a tree (Phase 6)
+  monitors.py         Production monitors: checks on each trace, sampled judge, alert rules, review scoring (Phase 6)
 data/
   corpus/             The four Kestrel documents
   golden/             golden_v1, golden_v2 (frozen), golden_v3, dataset card
   labels/             Labeling guide and human labeling sheets
   attacks/            Prompt-injection (injection_v1) and jailbreak (jailbreak_v1) attacks, dataset card
-  robustness/         Hand-written reworded and casual questions (paraphrases_v1, held-out v2), dataset card
+  robustness/         Hand-written reworded and casual questions (paraphrases_v1, held-out v2),
+                      golden questions in other languages (translations_v1), dataset card
   bias/               Counterfactual bias groups (bias_v1), dataset card
   agent/              Agent cases with required tool steps (agent_v1), calculator probes (calc_probes_v1, v2), dataset card
-  traffic/            Pretend production traffic, no expected answers (traffic_v1), dataset card
-tests/                723 offline tests
+  traffic/            Pretend production traffic, no expected answers (traffic_v1, held-out traffic_v2),
+                      a person's review of Runs 20-21 (reviews_v1), dataset card
+tests/                799 offline tests
 run_evals.py          Eval runner and quality gates
 calibrate.py          Judge validation commands
 consistency.py        Repeat-run consistency check
@@ -412,6 +505,7 @@ compare_models.py     Model comparison scorecard (Phase 5)
 dashboard.py          Results dashboard (Phase 5): writes results/dashboard.html
 traffic.py            Replay traffic through the app, a trace per request (Phase 6)
 traces.py             Summarize or inspect recorded traces (Phase 6)
+monitor.py            Run the production monitors on recorded traces (Phase 6)
 traces/               Recorded traces (git-ignored: they can hold user text)
 .github/workflows/    CI pipeline
 ```
@@ -425,19 +519,21 @@ traces/               Recorded traces (git-ignored: they can hold user text)
 | 3 | Safety and robustness: repeat-run consistency (Run 4), prompt injection including injections hidden in documents (Runs 5–8), paraphrase and typo robustness (Run 9), jailbreaks (Run 10), bias probes (Run 11) | ✅ Done |
 | 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | ✅ Done (Runs 14–18, [summary](#phase-4-summary)) |
 | 5 | Model comparison scorecard and a results dashboard | ✅ Done (scorecard: [Run 19](#run-19-three-assistant-models-on-the-same-evals-phase-5); [dashboard](#results-dashboard-phase-5)) |
-| 6 | Production-style tracing and monitoring | 🟡 Step 1 of 3 done ([tracing](#tracing-production-traffic-phase-6)) |
+| 6 | Production-style tracing and monitoring | 🟡 Steps 1–2 of 3 done ([tracing](#tracing-production-traffic-phase-6), [monitoring](#monitoring-production-phase-6)) |
 
 Phase 6 plan:
 
 1. ✅ **Tracing.** Every request recorded as a trace; pretend production traffic to make them.
-2. ⬜ **Monitoring without answer keys.** Checks that run on traces, not test cases: refusal rate,
-   internal names or links in answers, low retrieval scores, agent step limits and tool errors on
-   every request, and the LLM judge's faithfulness check (it needs only the passages and the
-   answer) on a sample. Thresholds, alerts, and a monitoring section on the dashboard. The monitors
-   are checked against `traffic_v1`'s `kind` field, the way the judge was checked with mutations.
+2. ✅ **Monitoring without answer keys.** Rule checks on every trace, built from Runs 20–21's
+   failures; the judge's faithfulness check on a sample; window rules for errors, latency, cost and
+   rates; a review queue; a monitoring section on the dashboard. The checks are scored against a
+   person's review of the same replies, the way the judge was checked against human labels, and
+   were tested on held-out traffic in [Run 22](#run-22-held-out-traffic-for-the-monitors-phase-6).
 3. ⬜ **Closing the loop.** Flagged production requests become candidates for the next golden set
-   version, and a comparison between two releases' traces (latency, cost, refusal rate) shows
-   whether a change helped in production, not just in the evals.
+   version, and a comparison between two traces of the same traffic (two releases, or the RAG
+   assistant and the agent) shows whether a change helped in production, not just in the evals.
+   Run 22 suggests where to start: requests that one app answered and the other declined were real
+   problems 7 times out of 7 across Runs 20–22, including every wrong refusal.
 
 ## Findings
 
@@ -1694,7 +1790,185 @@ Nothing in the app changed. For step 2's monitors, the agent adds:
 For both apps: a reply that names how many items there are ("four risks", "three main risks") when
 that number equals the passages retrieved is worth a look.
 
+### Run 22: held-out traffic for the monitors (Phase 6)
+
+`traffic_v2` (30 new requests, written after the monitors and before any monitor ran on it) through
+both apps, then `monitor.py --judge-sample 1` on each: monitors m1, unchanged since Runs 20–21. I
+read every reply with its trace open and recorded the problems in `data/traffic/reviews_v2.jsonl`,
+then scored the review queue against that.
+
+| | RAG | Agent |
+|---|---|---|
+| Requests traced / sent | **29 / 30** (u019's trace was lost, below) | 30 / 30 |
+| Latency avg / p95 | 1.27s / 1.63s | 1.81s / 3.44s |
+| Cost per 1,000 requests | $0.99 | $4.07 |
+| Problems found by reading | 2 wrong, 1 rule break, 3 rewrite | 0 wrong, 4 rule breaks |
+| Review queue | 5 | 9 |
+| Queued requests with a problem (precision) | **4 of 5** | **2 of 9** |
+| Problems that made the queue (recall) | **4 of 6**; wrong answers **0 of 2** | **2 of 4** |
+| Judge (every judgeable answer) | 20 judged, 1 unsupported claim (u002) | 24 judged, 1 (u002) |
+
+Latency and cost match Runs 20–21. The judge cost about $0.16 for all 44 verdicts (under half a cent
+each, with its prompt cached), and returned no errors.
+
+What it showed:
+
+- **Both wrong answers were refusals, and no check can see a wrong refusal.** u001 (which city is
+  the head office in) and u025 (the French customer-count question) got the RAG assistant's exact
+  refusal sentence, which is exactly what a right refusal looks like. The agent answered both
+  correctly. The causes are different, and neither is the model being cautious:
+  - u001: retriever r2's typo correction "fixed" two real English words that aren't in the documents:
+    *head* became *had* and *office* became *officer* (the trace's `bm25.search` span records it).
+    The search returned the leadership paragraph and two that score 0.07; the headquarters paragraph
+    never came back. Typo correction only touches words the corpus doesn't contain, and that rule
+    doesn't distinguish a misspelling from an ordinary word the filings happen not to use.
+  - u025: the rewrite translated the question and the **right passage came back first** (2,850
+    enterprise customers at the end of 2025). The answer step still refused. v6 was never tested on
+    French; its only non-English eval cases are two Spanish questions in the jailbreak set (jb004,
+    jb109).
+- **The checks did generalize for what they were built for.** All three rewrites that answered the
+  user instead of writing a query (u023, u029, u030), the refusal followed by more text (RAG u022),
+  the not-reported sentence used for hiring plans (agent u020) and "I don't have access to Q3 2025
+  data" (agent u021) were queued, worded differently from Runs 20–21.
+- **They missed new wording and new behavior.** Agent u022 ("The documents do not identify the
+  founder") used a verb `says_documents_lack` didn't list. Agent u024 answered "15% of 200 is 30",
+  correctly and with the calculator, though the question isn't about Kestrel; no check looks at
+  whether a question is in scope.
+- **The agent's queue was mostly false alarms.** `declined_without_tools` flagged 6 requests and only
+  u021 had a problem (it was already queued by another check); the other five were right refusals
+  of a stock price, a competitor recommendation, two attacks and a follow-up. `unsupported_numbers`
+  flagged u025's correct French answer because "2 850" (French thousands) was read as 2 and 850.
+- **The judge's only flag both times was u002**, "Who runs Kestrel day to day?": both apps said the
+  CEO runs it day to day, and the judge called "day to day" unsupported, since the passages only give
+  her title. Strictly right; by my reading not a problem, so it counts as a false alarm. That's the
+  judge's Phase 2 strictness, not a production failure.
+- **A trace was lost, and almost nobody would have noticed.** The replay printed 30 answers, but
+  the trace file has 29 lines: u019 (stock price, a correct refusal) is missing. The line isn't
+  corrupt; it was never written. `trace()` turns an exporter error into a warning on stderr and
+  lets the request finish, which is what it should do, but the only other sign was the summary
+  saying "Requests: 29". The project folder is synced by OneDrive, which can hold a file for a
+  moment while it uploads, and the exporter opens the file once per trace, so a locked file is the
+  likely cause (not confirmed: the warning wasn't in the saved output).
+- **One signal caught every wrong refusal: the two apps disagreeing.** On the same traffic, the
+  requests one app answered and the other declined were t004, t011, t033 (Run 20 vs 21) and u001,
+  u022, u024, u025 (Run 22). All 7 were real problems, including all 5 wrong refusals across the
+  three runs. I noticed it while reading Run 22, so it hasn't been tested on traffic it wasn't found
+  on.
+
+Caveats: 30 requests per app, one run each, and the problems are my reading. The m1 numbers above are
+the held-out result; the fixes below were made after seeing this data.
+
+### Changes after Run 22
+
+- **Monitors m2** (two fixes, both from Run 22's misses): digit groups separated by a space are read
+  as one number ("2 850" is 2850), and "do not identify / name" counts as saying the documents lack
+  something. On Run 22 that takes the agent's queue to 3 real problems in 9, with recall 3 of 4.
+  Those are no longer held-out numbers. Runs 20–21's scores are unchanged.
+- **The trace exporter retries.** A failed write is tried 4 times, 0.1–0.3s apart, and the exporter
+  counts traces written and lost. `traffic.py` now compares the requests it sent with the traces in
+  the file and names any that are missing, so a lost trace can't hide in a summary count.
+- Not changed, recorded in the known gaps: the typo correction that rewrites real words (u001), the
+  French refusal (u025), no in-scope check (u024), and the noisy `declined_without_tools`. The
+  cross-app disagreement check belongs to step 3, which compares two trace files of the same
+  traffic.
+
+### Fixes proposed after Run 22 (not yet measured)
+
+Two fixes for Run 22's wrong answers, each a new version so the current default stays exactly as
+measured. Neither is the default until the runs below say so.
+
+**Retriever r4: typo correction trusts the query rewrite.** r3 with one change: a word the
+rewrite wrote is never "corrected". Typo correction changes any word the documents don't contain,
+and it can't tell a misspelling from an ordinary word the filings don't use ("head office" became
+"had officer"). The rewrite model spells better than an edit-distance guess, so a word it kept is
+taken as spelled right; a typo it fixed isn't in the rewrite, so it's still corrected as before.
+
+r4 alone **won't fix u001**. With no correction, nothing in the documents matches "head office",
+because the filing says "headquartered", and the search falls back to passages scoring 0.07. What
+actually lost the headquarters paragraph is the rewrite: in Run 13 it turned "head office" into
+"headquarters", and this time it kept "head office". r4 removes the wrong turn (the leadership
+paragraph, chosen because of "officer"). It doesn't add the right one. Fixing the rewrite's
+wording is a separate change, to be made after r4 is measured.
+
+**Prompt v7: questions in other languages.** v6 plus one sentence: a question about Kestrel asked in
+another language is still a question about Kestrel. Answer it in that language, with the same facts
+as in English, or in English if the language is made up. The refusal sentence stays exactly as
+written, in English, so every exact-refusal check and the monitors still recognize it. The sentence
+names German, not French, so it doesn't name the question that prompted it. It's the same kind of
+fix as v6, which said a personal introduction doesn't make a question off-topic.
+
+Answering in the user's language means numbers come back as "412,6 millions" or "1.240
+Mitarbeiter". The robustness grader now reads those formats for `translated` questions (a comma
+with 1–2 digits after it is a decimal point, a point or space before exactly 3 digits is a thousands
+separator), and monitors **m3** read a decimal comma the same way.
+
+**A test set for it: `data/robustness/translations_v1.jsonl`.** 13 golden questions in French (5),
+German (4), Spanish (3) and Portuguese (1), graded against the golden answers by the robustness eval
+as a new opt-in style, `translated`. The default robustness run and its CI gate don't include it. A
+test checks that none copies an eval or traffic question; g006 is in German because jb109 is
+already its Spanish version.
+
+The runs that decide (roughly $1–2 in all, most of it the two full robustness runs). Each overwrites
+that suite's `*_latest.json` with a non-default setup; the next CI run puts the default back:
+
+```bash
+# v7: does v6 fail other languages in general, or only u025? Then does v7 fix it without breaking anything?
+python robustness.py --variants data/robustness/translations_v1.jsonl --styles original translated --ids g001 g002 g003 g004 g006 g007 g008 g010 g011 g012 g014 g016 g017
+python robustness.py --variants data/robustness/translations_v1.jsonl --styles original translated --ids g001 g002 g003 g004 g006 g007 g008 g010 g011 g012 g014 g016 g017 --prompt v7
+python run_evals.py --prompt v7
+python injection.py --prompt v7 --max-asr 0.05
+python jailbreak.py --prompt v7 --max-asr 0 --max-over-refusal 0.10    # jb004 is a Spanish attack
+python bias.py --prompt v7 --max-verdict-differences 0
+
+# r4: same results as r3 everywhere, without the wrong corrections?
+python run_evals.py --retriever r4
+python robustness.py --retriever r4 --min-robustness 0.85
+python robustness.py --retriever r4 --variants data/robustness/paraphrases_v2.jsonl
+python injection.py --retriever r4 --max-asr 0.05
+
+# then production again, on the traffic that found the problems
+python traffic.py --traffic data/traffic/traffic_v2.jsonl --prompt v7 --retriever r4
+python monitor.py --judge-sample 1 --reviews data/traffic/reviews_v2.jsonl
+```
+
+The `--reviews` score on that last replay will be against Run 22's review, so a request that changed
+needs reading again before the numbers mean anything.
+
+**The OneDrive test (to do).** Run 22's lost trace is most likely OneDrive, but nothing confirmed it:
+no warning was printed. `traffic.py --copy-to DIR` (or `KESTREL_TRACES_COPY_DIR=` in `.env`) now
+writes every trace to a second file outside the synced folder as well, and at the end reports how
+many traces each copy holds. On the next replays, keep a copy outside OneDrive, e.g.
+`C:\Users\<you>\kestrel-traces`: a request missing from only the OneDrive copy points at the sync,
+and a request missing from both points at the app. If OneDrive is the cause, move `traces/` out of
+the synced folder for good.
+
 ### Known gaps
+
+- **No check can tell a wrong refusal from a right one** (Run 22: 0 of 2 wrong RAG answers queued).
+  Comparing two apps or releases on the same traffic is the best lead (7 of 7 in Runs 20–22), but
+  it was found on Run 22 and is untested.
+- **Typo correction rewrites real words the filings don't use** ("head office" became "had officer",
+  Run 22 u001). Retriever r2 and r3 both have it; the evals never showed it. r4 is the proposed fix,
+  [not yet measured](#fixes-proposed-after-run-22-not-yet-measured), and u001 also needs the rewrite to
+  use the filing's word ("headquarters").
+- **The RAG assistant refused a French question it had the passage for** (Run 22 u025). v6 has never
+  been evaluated on French. v7 and `translations_v1` are the proposed fix and its test, not yet run.
+- **To do: the OneDrive test.** Replay with `--copy-to` a folder outside OneDrive and compare the two
+  copies, to confirm or rule out OneDrive as the cause of Run 22's lost trace.
+- **Nothing checks whether a question is in scope**, so an agent that answers "15% of 200" (u024)
+  isn't flagged.
+- **`declined_without_tools` is noisy** (7 of its 14 Run 21 flags and 5 of its 6 Run 22 flags were
+  right refusals) and keeps the agent's review queue over its 20% limit. See [Monitoring production](#monitoring-production-phase-6).
+- **The judge without a reference answer has one run behind it** (Run 22: 44 verdicts, no errors,
+  one flag, which I read as too strict). A claim that the documents *lack* something can pass it
+  (t023).
+- **A lost trace is reported, not prevented.** The exporter now retries and `traffic.py` names
+  missing traces, but a real service would buffer traces and write them in batches, or send them
+  to a collector, instead of opening a file per request.
+- **The thresholds come from two 40-request runs** and the review that sets precision and recall is
+  one person's reading.
+- **Monitors run on a whole file at a time.** A real service would run them on a rolling window
+  (the last hour, the last 1,000 requests) and compare windows; that's step 3.
 
 - **Run 20's failures aren't fixed** (multi-fact questions losing a fact, t024 counting k, t035's
   one-word question, rewrites that aren't queries). Recorded here and in the

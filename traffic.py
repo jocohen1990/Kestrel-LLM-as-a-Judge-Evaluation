@@ -1,4 +1,4 @@
-"""Replay pretend production traffic through the app, recording a trace per request (Phase 6).
+r"""Replay pretend production traffic through the app, recording a trace per request (Phase 6).
 
 Usage:
     python traffic.py                    # the 40 traffic_v1 requests through the RAG assistant
@@ -6,6 +6,7 @@ Usage:
     python traffic.py --limit 10         # the first 10 only (cheaper)
     python traffic.py --no-content       # store numbers only: no questions, passages or answers
     python traffic.py --model claude-haiku-5-5
+    python traffic.py --copy-to C:\Users\you\kestrel-traces   # also write every trace there
 
 Cost: the RAG assistant makes 2 model calls per request (rewrite + answer), so
 the full replay is about 80 small calls, a few cents with Haiku 4.5. The agent
@@ -18,12 +19,20 @@ traces/traces_<timestamp>.jsonl, one line per request. Read them with
 
 A request that raises is recorded (its trace has status "error") and the replay
 carries on, the way a server keeps serving after one bad request.
+
+--copy-to (or KESTREL_TRACES_COPY_DIR in .env) writes every trace to a second
+file in another folder as well, then checks both files for missing requests.
+Added after Run 22 lost one trace in a OneDrive-synced folder with no error:
+with one copy inside OneDrive and one outside, a line missing from only the
+OneDrive copy points at the sync.
 """
 import argparse
 import json
+import os
 import sys
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 
 try:
     from dotenv import load_dotenv
@@ -71,7 +80,28 @@ def parse_args(argv=None):
     p.add_argument("--no-content", action="store_true",
                    help="Don't store any text in the traces (numbers only)")
     p.add_argument("--out", default=None, help="Trace file (default traces/traces_<time>.jsonl)")
+    p.add_argument("--copy-to", default=os.getenv("KESTREL_TRACES_COPY_DIR") or None, metavar="DIR",
+                   help="Also write every trace to a file of the same name in DIR "
+                        "(default: KESTREL_TRACES_COPY_DIR, if set)")
     return p.parse_args(argv)
+
+
+class CopyingExporter:
+    """Writes every trace to several files. One failing doesn't stop the others;
+    the failures are raised together afterwards, so trace() still warns."""
+
+    def __init__(self, paths):
+        self.exporters = [tracing.JsonlExporter(p) for p in paths]
+
+    def export(self, trace: dict) -> None:
+        errors = []
+        for e in self.exporters:
+            try:
+                e.export(trace)
+            except OSError as exc:
+                errors.append(f"{e.path}: {exc}")
+        if errors:
+            raise OSError("; ".join(errors))
 
 
 def build_app(args):
@@ -103,20 +133,40 @@ def replay(rows: list[dict], app, exporter, capture_content: bool = True, echo=p
     return {"answered": answered, "failed": failed}
 
 
+def missing_traces(rows: list[dict], traces: list[dict]) -> list[str]:
+    """Requests that were sent but have no trace in the file."""
+    traced = {t["attributes"].get("traffic.case_id") for t in traces}
+    return [r["id"] for r in rows if r["id"] not in traced]
+
+
 def main(argv=None) -> int:
     args = parse_args(argv)
     rows = load_traffic(args.traffic)[: args.limit]
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    out = args.out or TRACES_DIR / f"traces_{stamp}.jsonl"
-    exporter = tracing.JsonlExporter(out)
+    out = Path(args.out or TRACES_DIR / f"traces_{stamp}.jsonl")
+    files = [out] + ([Path(args.copy_to) / out.name] if args.copy_to else [])
+    exporter = CopyingExporter(files) if len(files) > 1 else tracing.JsonlExporter(out)
 
     app = build_app(args)
     warmup(args.model)   # outside any trace, so connection setup isn't in the numbers
     print(f"Replaying {len(rows)} requests through the {args.app} app...\n")
     counts = replay(rows, app, exporter, capture_content=not args.no_content)
 
-    print(f"\n{counts['answered']} answered, {counts['failed']} failed. Traces: {out}\n")
-    print(format_summary(summarize(load_traces(out))))
+    print(f"\n{counts['answered']} answered, {counts['failed']} failed. Traces: {out}")
+    traces = None
+    for path in files:
+        loaded = load_traces(path) if path.exists() else []
+        traces = loaded if traces is None else traces
+        missing = missing_traces(rows, loaded)
+        if len(files) > 1:
+            print(f"  {path}: {len(rows) - len(missing)} of {len(rows)} traces")
+        if missing:
+            # Added after Run 22: one request's trace was lost, and the only sign was
+            # the summary saying 29 requests where 30 were sent.
+            print(f"WARNING: {len(missing)} of {len(rows)} requests have no trace in {path} "
+                  f"({', '.join(missing)}). Any monitor result on this file leaves them out.")
+    print()
+    print(format_summary(summarize(traces)))
     print("\nOne request in detail: python traces.py --show t001")
     return 0
 

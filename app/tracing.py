@@ -188,15 +188,37 @@ class MemoryExporter:
 
 
 class JsonlExporter:
-    """Appends each finished trace to a file as one line of JSON."""
+    """Appends each finished trace to a file as one line of JSON.
+
+    Added after Run 22, which lost one of 30 traces with nothing but a warning on
+    stderr: on Windows another program (a sync client such as OneDrive, or an
+    antivirus scan) can hold the file for a moment, and the append fails. So a
+    failed write is tried again a few times, a little later each time, and the
+    exporter counts what it wrote and what it lost, so a caller can say so.
+    """
+
+    RETRIES = 4
+    RETRY_WAIT_S = 0.1   # then 0.2s, 0.3s
 
     def __init__(self, path):
         self.path = Path(path)
+        self.exported = 0
+        self.failed = 0
 
     def export(self, trace: dict) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        with open(self.path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(trace, ensure_ascii=False) + "\n")
+        line = json.dumps(trace, ensure_ascii=False) + "\n"
+        for attempt in range(1, self.RETRIES + 1):
+            try:
+                self.path.parent.mkdir(parents=True, exist_ok=True)
+                with open(self.path, "a", encoding="utf-8") as f:
+                    f.write(line)
+                self.exported += 1
+                return
+            except OSError:
+                if attempt == self.RETRIES:
+                    self.failed += 1
+                    raise   # trace() turns this into a warning; the request is unaffected
+                time.sleep(self.RETRY_WAIT_S * attempt)
 
 
 _exporter = NullExporter()

@@ -266,3 +266,102 @@ def test_traces_cli_with_no_files(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(traces_cli, "TRACES_DIR", tmp_path)
     assert traces_cli.main([]) == 1
     assert "No trace files yet" in capsys.readouterr().out
+
+
+# ---- Lost traces (after Run 22) ----------------------------------------------------
+
+def test_exporter_retries_a_locked_file(monkeypatch, tmp_path):
+    """Run 22 lost one trace: on Windows another program can hold the file for a moment."""
+    import builtins
+    real_open, calls = builtins.open, {"n": 0}
+
+    def flaky_open(path, *args, **kwargs):
+        if str(path).endswith("locked.jsonl"):
+            calls["n"] += 1
+            if calls["n"] <= 2:
+                raise PermissionError("[WinError 32] The process cannot access the file")
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "open", flaky_open)
+    monkeypatch.setattr(tracing.JsonlExporter, "RETRY_WAIT_S", 0)
+    exporter = tracing.JsonlExporter(tmp_path / "locked.jsonl")
+    exporter.export(make_trace())
+    assert calls["n"] == 3 and exporter.exported == 1 and exporter.failed == 0
+
+
+def test_exporter_counts_a_trace_it_could_not_write(monkeypatch, tmp_path, capsys):
+    import builtins
+    real_open = builtins.open
+
+    def always_locked(path, *args, **kwargs):
+        if str(path).endswith("locked.jsonl"):
+            raise PermissionError("locked")
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "open", always_locked)
+    monkeypatch.setattr(tracing.JsonlExporter, "RETRY_WAIT_S", 0)
+    exporter = tracing.JsonlExporter(tmp_path / "locked.jsonl")
+    with tracing.trace("req", exporter=exporter):
+        pass   # the request itself still succeeds
+    assert exporter.failed == 1 and exporter.exported == 0
+    assert "was not exported" in capsys.readouterr().err
+
+
+def test_replay_names_requests_without_a_trace(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(rag, "generate", fake_generate([]))
+    monkeypatch.setattr(traffic, "warmup", lambda model=None: None)
+    real_export, n = tracing.JsonlExporter.export, {"calls": 0}
+
+    def drop_second(self, trace):
+        n["calls"] += 1
+        if n["calls"] == 2:
+            self.failed += 1
+            raise PermissionError("locked")
+        return real_export(self, trace)
+
+    monkeypatch.setattr(tracing.JsonlExporter, "export", drop_second)
+    traffic.main(["--limit", "3", "--out", str(tmp_path / "traces_t.jsonl")])
+    out = capsys.readouterr().out
+    assert "3 answered, 0 failed" in out
+    assert "WARNING: 1 of 3 requests have no trace in" in out and "(t002)" in out
+    assert traffic.missing_traces([{"id": "a"}, {"id": "b"}],
+                                  [{"attributes": {"traffic.case_id": "b"}}]) == ["a"]
+
+
+def test_copy_to_a_second_folder_shows_which_copy_lost_a_trace(monkeypatch, tmp_path, capsys):
+    """The OneDrive test: one copy inside the synced folder, one outside. A line
+    missing from only one copy says where it went missing."""
+    monkeypatch.setattr(rag, "generate", fake_generate([]))
+    monkeypatch.setattr(traffic, "warmup", lambda model=None: None)
+    synced, local = tmp_path / "onedrive", tmp_path / "local"
+    real_export = tracing.JsonlExporter.export
+
+    def lose_one_in_synced(self, trace):
+        if "onedrive" in str(self.path) and trace["attributes"]["traffic.case_id"] == "t002":
+            return   # written "successfully", then gone: what Run 22 looked like
+        return real_export(self, trace)
+
+    monkeypatch.setattr(tracing.JsonlExporter, "export", lose_one_in_synced)
+    traffic.main(["--limit", "3", "--out", str(synced / "traces_c.jsonl"), "--copy-to", str(local)])
+    out = capsys.readouterr().out
+    assert f"{synced / 'traces_c.jsonl'}: 2 of 3 traces" in out
+    assert f"{local / 'traces_c.jsonl'}: 3 of 3 traces" in out
+    assert "(t002)" in out
+    assert len(tr.load_traces(local / "traces_c.jsonl")) == 3
+
+
+def test_copying_exporter_keeps_writing_when_one_copy_fails(tmp_path):
+    exporter = traffic.CopyingExporter([tmp_path / "missing_dir_is_a_file" / "a.jsonl",
+                                        tmp_path / "b.jsonl"])
+    (tmp_path / "missing_dir_is_a_file").write_text("not a folder", encoding="utf-8")
+    exporter.exporters[0].RETRY_WAIT_S = 0
+    with pytest.raises(OSError):
+        exporter.export(make_trace())
+    assert len(tr.load_traces(tmp_path / "b.jsonl")) == 1
+
+
+def test_copy_dir_comes_from_the_environment(monkeypatch):
+    monkeypatch.setenv("KESTREL_TRACES_COPY_DIR", "/somewhere/else")
+    assert traffic.parse_args([]).copy_to == "/somewhere/else"
+    monkeypatch.delenv("KESTREL_TRACES_COPY_DIR")
+    assert traffic.parse_args([]).copy_to is None

@@ -5,6 +5,7 @@
 | Current version | `paraphrases_v1.jsonl` (62 hand-written variants: 31 reworded, 31 casual) |
 | Held-out set | `paraphrases_v2.jsonl` (62 more, same styles, new wording). Written after Run 12 and **before** the retriever fix, and never used to tune it |
 | Source questions | The 31 golden v3 cases except g032 (ambiguous) |
+| Opt-in set | `translations_v1.jsonl` (13 golden questions in French, German, Spanish and Portuguese, style `translated`). Written after Run 22 (production traffic: a French question refused). Not in the default run or the CI gate: `python robustness.py --variants data/robustness/translations_v1.jsonl --styles original translated` |
 | Generated variants | `typo`, `typos3`, `lower`, made in code (`evals/robustness.py`) from a fixed seed per case |
 | Runner | `python robustness.py` (`--retrieval-only` checks retrieval for free) |
 | Author | Hand-written |
@@ -64,3 +65,17 @@ the dataset too: changing it changes the questions, so any change to it is logge
 
 - **v2**: 62 held-out variants for checking the retriever fix (Run 13). v1 unchanged.
 - **v1**: 62 hand-written variants. Typo generator v1 (company name excluded from typos).
+
+## translations_v1
+
+Each row is a golden question in another language (`language`: `fr`, `de`, `es`, `pt`), graded
+against the original case's `expected_numbers` and `must_include` like every other variant. Prompt
+v7 answers in the question's language, so a `translated` answer is read with that language's number
+formats first ("412,6" is 412.6, "1.240" and "1 240" are 1240; see `localize_numbers` in
+`evals/robustness.py`). Read any `translated` flip before trusting it all the same.
+
+The translations haven't been checked by a fluent speaker of any of the four languages. They're
+short and use the golden questions' own names and periods, but a flip on one of them could be the
+translation's fault, not the app's. Names
+(Dana Whitfield, Omaha, LaneSight, Bramblecote) and periods are kept. g006 is in German because
+jailbreak case jb109 is already g006 in Spanish.

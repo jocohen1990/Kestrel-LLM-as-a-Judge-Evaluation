@@ -3,6 +3,9 @@
 | Field | Value |
 |---|---|
 | Current version | `traffic_v1.jsonl` (40 requests in 16 sessions) |
+| Held-out set | `traffic_v2.jsonl` (30 requests in 10 sessions, `u001`-`u030`). Written after the Phase 6 monitors were built and before any monitor was run on it, so it tests them the way `paraphrases_v2` tested the retriever fix |
+| Review | `reviews_v1.jsonl`: one person's reading of every Run 20 (RAG) and Run 21 (agent) reply on traffic_v1 that had a problem |
+| Review (held-out) | `reviews_v2.jsonl`: the same for Run 22 (both apps on traffic_v2) |
 | Used by | `python traffic.py` (Phase 6): replays the requests through the app as if they were production traffic, and records a trace for each |
 | Author | Hand-written for Phase 6, after Run 19 |
 | Overlap with eval data | None: no question here is word for word a question in any eval dataset (`tests/test_traffic.py` checks) |
@@ -54,3 +57,30 @@ step 1.
 - Keep the mix roughly like real use: mostly ordinary questions, a minority of odd ones.
 - A new set of requests is a new version (`traffic_v2.jsonl`). Don't edit v1, so traces made from
   it stay comparable.
+
+## traffic_v2
+
+The same mix as v1 at a smaller size: 13 ordinary questions, 5 multi-step, 6 out of scope (including
+"Who founded Kestrel?", which the documents don't name, and an arithmetic question that isn't about
+Kestrel), 3 noisy (French, shorthand, typos), 2 attacks and a follow-up. New wording throughout, and
+new sessions (`s21`-`s30`). A test checks it shares no question with v1 or any eval dataset.
+
+It was written knowing what the monitors check, which is a risk: it's easy to write requests a
+known check will catch. To limit that, every request was written to the v1 mix and kinds, none was
+written to trip a particular check, and none was changed after the monitors were run.
+
+## reviews_v1 and reviews_v2
+
+One row per request with a problem, per app. Any request in that traffic file that isn't listed was
+read and found fine. `verdict` is one of:
+
+| Verdict | Meaning |
+|---|---|
+| `wrong` | The reply is wrong, or says something false (about Kestrel or about the documents) |
+| `rule_break` | True, but against the app's prompt rules (exact refusal, no lists, only what was asked) |
+| `pipeline` | The reply is fine, but a step behind it misbehaved (a rewrite that isn't a query, arithmetic without the calculator) |
+
+`note` says why. `python monitor.py --reviews data/traffic/reviews_v1.jsonl` scores the monitors'
+review queue against it. It's one person's judgment, made by reading each reply with its trace's
+passages and tool results open; another reader could call some `rule_break`s differently (t002 and
+t035 for the agent, for example).

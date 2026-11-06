@@ -10,11 +10,12 @@ No API calls: it only reads the results files the eval scripts already saved,
 so it's free to run as often as you like. Run it after any eval run (or after
 compare_models.py) to refresh the page.
 
-The page has four parts:
+The page has five parts:
   1. Would the build pass?  every CI gate against each suite's *_latest.json
   2. Which model?           the model comparison (model_comparison_latest.json)
   3. How did we get here?   each suite's gated number over every saved run
   4. What needs a look?     cases that failed or were flagged in the latest runs
+  5. Production             the latest monitor.py run per app (monitor_<app>_latest.json)
 
 Exit code is always 0: this reports on the gates, it doesn't enforce them (CI does).
 """
@@ -47,6 +48,10 @@ def main(argv=None) -> int:
         print(f"Model comparison pick: {rec.get('model') or 'none'}")
     fails = sum(1 for r in data["issues"] if r["severity"] == "fail")
     print(f"Open issues: {fails} counting toward a gate, {len(data['issues']) - fails} worth a look")
+    for app, m in data["monitoring"].items():
+        levels = [a["level"] for a in m.get("alerts", [])]
+        print(f"Monitoring ({app}): {levels.count('alert')} alert(s), {levels.count('warn')} warning(s), "
+              f"{len(m.get('review_queue', []))} in the review queue")
     print(f"Wrote {out}")
     if args.open:
         webbrowser.open(out.resolve().as_uri())

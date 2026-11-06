@@ -156,15 +156,19 @@ class Retriever:
                     best, best_key = candidate, key
         return best
 
-    def query_tokens(self, query: str) -> list[str]:
+    def query_tokens(self, query: str, keep: frozenset = frozenset()) -> list[str]:
+        """keep: words never to correct, even though the corpus doesn't have them
+        (retriever r4 passes the query rewrite's own words; see app/rag.py)."""
         tokens = tokenize(query)
-        return [self.correct(t) for t in tokens] if self.typo_tolerance else tokens
+        if not self.typo_tolerance:
+            return tokens
+        return [t if t in keep else self.correct(t) for t in tokens]
 
-    def corrections(self, query: str) -> dict[str, str]:
+    def corrections(self, query: str, keep: frozenset = frozenset()) -> dict[str, str]:
         """Which query words were corrected, and to what. For reports and debugging."""
         if not self.typo_tolerance:
             return {}
-        return {t: c for t in tokenize(query) if (c := self.correct(t)) != t}
+        return {t: c for t in tokenize(query) if t not in keep and (c := self.correct(t)) != t}
 
     def score(self, query_tokens: list[str], i: int) -> float:
         counts, length = self.term_counts[i], len(self.doc_tokens[i])
@@ -181,7 +185,8 @@ class Retriever:
         """Return the k chunks with the highest BM25 score for the query."""
         return [chunk for chunk, _ in self.search_scored(query, k)]
 
-    def search_scored(self, query: str, k: int = 4) -> list[tuple[Chunk, float]]:
+    def search_scored(self, query: str, k: int = 4,
+                      keep: frozenset = frozenset()) -> list[tuple[Chunk, float]]:
         """The same k chunks, in the same order, each with its BM25 score.
 
         Added for tracing (Phase 6). In production nobody tells you a question
@@ -189,7 +194,7 @@ class Retriever:
         passage barely matches is likely one the documents don't answer, and a
         drop in typical scores after a release points at the search step.
         """
-        query_tokens = self.query_tokens(query)
+        query_tokens = self.query_tokens(query, keep)
         scores = [self.score(query_tokens, i) for i in range(len(self.chunks))]
         ranked = sorted(range(len(self.chunks)), key=lambda i: scores[i], reverse=True)
         return [(self.chunks[i], scores[i]) for i in ranked[:k]]

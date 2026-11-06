@@ -29,7 +29,7 @@ from app.paths import GOLDEN_DIR, RESULTS_DIR, ROBUSTNESS_DIR
 from app.rag import (DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
                      RETRIEVER_VERSIONS, RagAssistant)
 from evals.dataset import load_golden
-from evals.robustness import (STYLES, build_variants, load_hand_variants, retrieval_row,
+from evals.robustness import (ALL_STYLES, STYLES, build_variants, load_hand_variants, retrieval_row,
                               run_variant, summarize_robustness)
 
 
@@ -37,7 +37,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Run the robustness evals.")
     parser.add_argument("--golden", default=GOLDEN_DIR / "golden_v3.jsonl")
     parser.add_argument("--variants", default=ROBUSTNESS_DIR / "paraphrases_v1.jsonl")
-    parser.add_argument("--styles", nargs="*", default=list(STYLES), choices=STYLES)
+    parser.add_argument("--styles", nargs="*", default=list(STYLES), choices=ALL_STYLES,
+                        help="Default: every style but the opt-in 'translated' (use it with "
+                             "--variants data/robustness/translations_v1.jsonl)")
     parser.add_argument("--ids", nargs="*", default=None, help="Only these golden case ids")
     parser.add_argument("--model", default=None, help="Assistant model")
     parser.add_argument("--prompt", default=DEFAULT_PROMPT_VERSION, choices=sorted(PROMPTS))

@@ -1,11 +1,13 @@
 """Results dashboard: one HTML page built from the results files already saved.
 
-It answers four questions, in this order:
+It answers five questions, in this order:
 
   1. Would the build pass right now?   Every CI gate, from the *_latest.json files.
   2. Which model should we use?         The model comparison (model_comparison_latest.json).
   3. How did we get here?               Each suite's headline number over every saved run.
   4. What still needs a look?           The cases that failed or were flagged in the latest runs.
+  5. How is production doing?           The latest monitor run per app (monitor_<app>_latest.json,
+                                        Phase 6): alerts, what each check flagged, the review queue.
 
 Like evals/scorecard.py, nothing here calls an API: it only reads files, so it
 is free to rebuild and can be tested offline. The page is one self-contained
@@ -28,6 +30,7 @@ from evals.pricing import base_name
 from evals.scorecard import SUITES, Suite, run_matches, suite_result
 
 COMPARISON_FILE = "model_comparison_latest.json"
+MONITOR_APPS = ("rag", "agent")
 
 # The one number per suite that the history charts follow. Each is a gated metric,
 # so the chart can draw the CI line it has to stay on the right side of.
@@ -270,6 +273,8 @@ def build_dashboard(results_dir: Path) -> dict:
         "comparison": load_json(results_dir / COMPARISON_FILE),
         "history": history(results_dir),
         "issues": open_issues(results_dir),
+        "monitoring": {app: m for app in MONITOR_APPS
+                       if (m := load_json(results_dir / f"monitor_{app}_latest.json"))},
     }
 
 
@@ -617,6 +622,80 @@ def render_issues(data: dict) -> str:
 </section>"""
 
 
+ALERT_BADGES = {
+    "alert": '<span class="badge bad"><span aria-hidden="true">✕</span> Alert</span>',
+    "warn": '<span class="badge warn"><span aria-hidden="true">!</span> Warning</span>',
+    "info": '<span class="badge none"><span aria-hidden="true">–</span> Note</span>',
+}
+APP_LABELS = {"rag": "RAG assistant", "agent": "Agent"}
+
+
+def _monitor_card(app: str, m: dict) -> str:
+    stats = m.get("stats", {})
+    alerts = m.get("alerts", [])
+    worst = ("alert" if any(a["level"] == "alert" for a in alerts)
+             else "warn" if any(a["level"] == "warn" for a in alerts) else None)
+    headline = {"alert": "Alerts firing", "warn": "Warnings"}.get(worst, "No alerts")
+    cls = {"alert": "bad", "warn": "warn"}.get(worst, "good")
+    p95, cost = stats.get("p95_latency_ms"), stats.get("cost_per_1000_requests")
+    facts = [f"{m.get('requests', 0)} requests", f"from <code>{esc(m.get('trace_file', '?'))}</code>",
+             f"p95 {p95 / 1000:.2f}s" if p95 is not None else "p95 n/a",
+             f"${cost:.2f} per 1,000" if cost is not None else "cost n/a",
+             f"{len(m.get('review_queue', []))} in the review queue"]
+    alert_rows = "".join(
+        f"<tr><td>{ALERT_BADGES.get(a['level'], esc(a['level']))}</td><td>{esc(a['message'])}</td>"
+        f"<td class=\"small\">{', '.join(f'<code>{esc(c)}</code>' for c in a['cases'][:8])}"
+        f"{' …' if len(a['cases']) > 8 else ''}</td></tr>" for a in alerts)
+    check_rows = "".join(
+        f"<tr><td><code>{esc(name)}</code></td><td class=\"small muted\">{esc(c['severity'])}</td>"
+        f"<td>{esc(c['what'])}</td><td class=\"num\">{c['count']}</td>"
+        f"<td class=\"small\">{', '.join(f'<code>{esc(x)}</code>' for x in c['cases'][:6])}"
+        f"{' …' if len(c['cases']) > 6 else ''}</td></tr>"
+        for name, c in m.get("checks", {}).items() if c["count"])
+    judge = m.get("judge", {})
+    judge_line = (f"<p class=\"note\">Judge (faithfulness, {fmt(judge['sample_rate'])} sample): "
+                  f"{judge['judged']} judged, {judge['unfaithful']} with an unsupported claim, "
+                  f"{judge['errors']} error(s).</p>" if judge.get("sample_rate") else
+                  '<p class="note">The judge wasn\'t run (<code>--judge-sample</code> 0).</p>')
+    score = (m.get("review_scores") or {}).get(app)
+    score_line = ""
+    if score:
+        score_line = (f"<p class=\"note\">Against a person's review "
+                      f"(<code>{esc(m.get('reviews_file', ''))}</code>): {score['queued_with_problem']} "
+                      f"of {score['queued']} queued requests had a problem (precision "
+                      f"{fmt(score['precision'])}); {score['queued_with_problem']} of "
+                      f"{score['problems']} problems were queued (recall {fmt(score['recall'])}).</p>")
+    return f"""
+  <figure>
+    <figcaption>{esc(APP_LABELS.get(app, app))} <span class="badge {cls}">{esc(headline)}</span></figcaption>
+    <p class="note small">{' · '.join(facts)}</p>
+    {f'<div class="table-wrap"><table><tbody>{alert_rows}</tbody></table></div>' if alert_rows else ''}
+    {judge_line}{score_line}
+    <details><summary>What each check flagged</summary>
+    <div class="table-wrap"><table><thead><tr><th>Check</th><th>Severity</th><th>What it looks for</th>
+    <th class="num">Requests</th><th>Cases</th></tr></thead><tbody>{check_rows or
+    '<tr><td colspan="5" class="muted">Nothing flagged.</td></tr>'}</tbody></table></div></details>
+  </figure>"""
+
+
+def render_monitoring(data: dict) -> str:
+    mon = data.get("monitoring") or {}
+    if not mon:
+        body = ('<p class="empty">No monitor results yet. Record traces with <code>python traffic.py</code>, '
+                'then run <code>python monitor.py</code>.</p>')
+    else:
+        body = "".join(_monitor_card(app, m) for app, m in mon.items())
+    return f"""
+<section>
+  <h2>How is production doing?</h2>
+  <p class="lede">The latest <code>monitor.py</code> run for each app, on recorded traces (Phase 6). Production
+  has no answer keys, so these checks look at what a trace alone can show: the app's own rules, claims about the
+  documents, each step doing its job, and (on a sample) whether the judge finds every claim supported. A flag means
+  a person should look, not that the answer is wrong.</p>
+  {body}
+</section>"""
+
+
 CSS = """
 .viz-root{color-scheme:light;--surface-0:#f6f5f2;--surface-1:#fcfcfb;--border:#e4e2dc;--grid:#ebe9e4;
 --text-primary:#0b0b0b;--text-secondary:#52514e;--text-muted:#6f6e69;--series-1:#2a78d6;--series-1-wash:#2a78d61a;
@@ -661,6 +740,7 @@ border-radius:5px;border:1px solid var(--grid)}
 border:1px solid currentColor;white-space:nowrap}
 .badge.good{color:var(--good-text)}.badge.bad{color:var(--critical-text)}.badge.warn{color:var(--warning-text)}
 .badge.none{color:var(--text-muted)}
+figure + figure{margin-top:14px}
 .callout{border-left:3px solid var(--series-1);background:var(--series-1-wash);padding:12px 16px;border-radius:0 8px 8px 0;
 margin-bottom:12px}
 .note{color:var(--text-secondary);margin:0 0 12px}
@@ -732,6 +812,7 @@ def render_html(data: dict, generated_at: str | None = None) -> str:
 {render_comparison(data)}
 {render_history(data)}
 {render_issues(data)}
+{render_monitoring(data)}
 <footer>Built {esc(generated_at)} by <code>python dashboard.py</code> from the files in <code>results/</code>.
 No API calls; rebuild any time.</footer>
 </main>

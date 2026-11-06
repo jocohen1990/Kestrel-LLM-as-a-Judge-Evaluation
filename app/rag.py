@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from app import tracing
 from app.llm import LLMResponse, generate
 from app.paths import CORPUS_DIR
-from app.retriever import Chunk, Retriever, load_chunks
+from app.retriever import Chunk, Retriever, load_chunks, tokenize
 
 REFUSAL = "I don't know based on the provided documents."
 
@@ -154,6 +154,30 @@ PROMPTS["v6"] = {
         _V5_REFUSAL_LINE_END, _V5_REFUSAL_LINE_END + _V6_IDENTITY_RULE, 1),
 }
 
+# v7: v6 plus one sentence, written after Run 22 (held-out production traffic).
+# Asked in French how many enterprise customers Kestrel had at the end of 2025
+# (u025), v6 refused with the exact refusal sentence although the passage that
+# answers it was retrieved FIRST. The agent answered the same question. The
+# likely trigger is the same rule v6 had to fix for personal introductions:
+# "the message isn't a question about Kestrel". v7 says a question in another
+# language still is one, and answers it in the user's language (decided after
+# Run 22: in the user's language, unless it's a made-up one, then in English).
+# The refusal sentence stays exactly as written, in English, so every exact-
+# refusal check and the monitors still recognize it. The example language is
+# German, so the rule doesn't name the French question that prompted it. Not the default until it passes the golden set, injection,
+# jailbreak (jb004 is a Spanish attack), bias and the translated robustness set.
+_V7_LANGUAGE_RULE = (
+    "- A question about Kestrel is still a question about Kestrel when it's asked in another "
+    "language (German, for example). Answer it in that language, with the same facts you would give "
+    "in English; if the language is made up, answer in English. The refusal sentence never changes: "
+    "use it exactly as written above, in English.\n"
+)
+PROMPTS["v7"] = {
+    **PROMPTS["v6"],
+    "system": PROMPTS["v6"]["system"].replace(
+        _V6_IDENTITY_RULE, _V6_IDENTITY_RULE + _V7_LANGUAGE_RULE, 1),
+}
+
 # The prompt used when none is specified. A run's results file records which
 # version produced it, so a score change can always be traced to a prompt.
 # v5 from Run 8: v4's results (same accuracy as v2, exact refusals, no attack
@@ -182,10 +206,20 @@ DEFAULT_PROMPT_VERSION = "v6"
 # would be tuning to the test. The rewrite prompt's examples deliberately use
 # abbreviations that appear in NO eval dataset (YoY, opex), and the fix is
 # checked on paraphrases_v2, written before the fix and never used to tune it.
+#   r4  r3, but typo correction leaves alone every word the rewrite itself wrote
+#       (added after Run 22). Typo correction changes any query word the corpus
+#       doesn't contain, and can't tell a misspelling from an ordinary word the
+#       filings don't use: in u001 "head office" became "had officer" and the
+#       search returned the leadership paragraph. The rewrite model spells
+#       better than an edit-distance guess, so a word it kept or wrote is taken
+#       as spelled right. A typo it fixed is corrected as before (it isn't in the
+#       rewrite), and a rewrite that talks to the user (Run 20 t040) no longer
+#       has its words "fixed" into corpus words.
 RETRIEVER_VERSIONS = {
     "r1": {"typo_tolerance": False, "rewrite": False},
     "r2": {"typo_tolerance": True, "rewrite": False},
     "r3": {"typo_tolerance": True, "rewrite": True},
+    "r4": {"typo_tolerance": True, "rewrite": True, "trust_rewrite": True},
 }
 # r3 since Run 13: golden set 32/32 (g022's Q2 paragraph is finally retrieved),
 # the Spanish question jb109 answered, held-out rewordings 142 -> 150 of 155,
@@ -264,14 +298,17 @@ class RagAssistant:
                 # Search the original words AND the rewrite, so the rewrite can add
                 # matches but never remove one the original question already had.
                 search_query = f"{question}\n{rewrite.text.strip()}"
+            keep = frozenset()
+            if rewrite is not None and self.retriever_config.get("trust_rewrite"):
+                keep = frozenset(tokenize(rewrite.text))
             with tracing.span("bm25.search", kind="retrieval") as span:
-                scored = self.retriever.search_scored(search_query, k=self.k)
+                scored = self.retriever.search_scored(search_query, k=self.k, keep=keep)
                 if tracing.active():
                     span.set({
                         "retrieval.docs": [c.doc for c, _ in scored],
                         "retrieval.scores": [round(score, 3) for _, score in scored],
                         "retrieval.top_score": round(scored[0][1], 3) if scored else 0.0,
-                        "retrieval.corrections": self.retriever.corrections(search_query),
+                        "retrieval.corrections": self.retriever.corrections(search_query, keep),
                     })
                     span.set_content("retrieval.query", search_query)
                     span.set_content("retrieval.passages", [c.text for c, _ in scored])
