@@ -20,7 +20,13 @@ def evaluate_case(case: dict, assistant, use_judge: bool = True,
                   judge_output: str = DEFAULT_OUTPUT_MODE) -> dict:
     """Run one case end to end and return a flat result row (easy to save as JSON)."""
     result = assistant.answer(case["question"])
-    rule = score_case(case, result.answer)
+    graded = result.answer
+    if case.get("language", "en") != "en":
+        # golden v4: a question in French gets an answer in French ("2 850"
+        # clients), read the way the robustness eval reads translated variants.
+        from evals.robustness import localize_numbers
+        graded = localize_numbers(result.answer)
+    rule = score_case(case, graded)
 
     row = {
         "id": case["id"],

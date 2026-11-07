@@ -113,17 +113,21 @@ def build_app(args):
                         retriever_version=args.retriever)
 
 
-def replay(rows: list[dict], app, exporter, capture_content: bool = True, echo=print) -> dict:
+def replay(rows: list[dict], app, exporter, capture_content: bool = True, echo=print,
+           traffic_file: str | None = None) -> dict:
     """Send each request through the service. Returns counts; never raises for
     one bad request."""
     answered, failed = 0, 0
+    # The traffic file's name goes on every trace (added in Phase 6 step 3), so a
+    # golden-set candidate can say exactly which request it came from.
+    extra = {"traffic.file": traffic_file} if traffic_file else {}
     for row in rows:
         start = time.perf_counter()
         try:
             result = handle(row["question"], app, session_id=row["session"],
                             channel=row["channel"], exporter=exporter,
                             capture_content=capture_content,
-                            extra={"traffic.case_id": row["id"]})
+                            extra={"traffic.case_id": row["id"], **extra})
             answered += 1
             echo(f"{row['id']}  {time.perf_counter() - start:5.2f}s  "
                  f"{' '.join(result.answer.split())[:90]}")
@@ -150,7 +154,8 @@ def main(argv=None) -> int:
     app = build_app(args)
     warmup(args.model)   # outside any trace, so connection setup isn't in the numbers
     print(f"Replaying {len(rows)} requests through the {args.app} app...\n")
-    counts = replay(rows, app, exporter, capture_content=not args.no_content)
+    counts = replay(rows, app, exporter, capture_content=not args.no_content,
+                    traffic_file=Path(args.traffic).name)
 
     print(f"\n{counts['answered']} answered, {counts['failed']} failed. Traces: {out}")
     traces = None

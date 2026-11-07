@@ -3,6 +3,7 @@
 | Field | Value |
 |---|---|
 | Current version | `agent_v1.jsonl` (27 cases, 8 categories) |
+| Next version | `agent_v2.jsonl` (34 cases): v1 unchanged plus 7 cases from production traffic (ag028–ag034, Phase 6 step 3). Not the default yet |
 | System under test | The Phase 4 agent (`app/agent.py`, prompt a1) and its three tools (`app/tools.py`) |
 | Corpus | The same 4 Kestrel documents as the golden set (`data/corpus/`), never edited |
 | Runner | `python agent_eval.py` (grading in `evals/agent_eval.py`) |
@@ -111,3 +112,23 @@ since reading a stated figure would be correct.
   before Run 17 are unchecked.
 - The exact-refusal check for `not_reported` cases builds the expected sentence from the case's
   `get_financial_metric` step, so every `not_reported` case must have one (the loader enforces it).
+
+## agent_v2: cases from production
+
+v1 unchanged, plus 7 cases promoted from Runs 21–22's traffic, each with an `origin` field naming
+the request (see the [golden dataset card](../golden/README.md) for the field). The questions are
+the users' words, unchanged.
+
+| Case | From | Category | Why |
+|---|---|---|---|
+| ag028 | t004 | `search` | "When was Kestrel founded?": refused in one turn without a tool call |
+| ag029 | t011 | `search` | "What does Bramblecote Telematics do?": the same |
+| ag030 | t033 | `search` | The CEO question in Spanish: the same |
+| ag031 | u024 | `out_of_scope` | "What's 15% of 200?": answered with the calculator. `calculator` is forbidden, as in ag026 |
+| ag032 | t026 | `out_of_scope` | Q4 2025 revenue: said it had no access and listed the tool's periods instead of the refusal sentence |
+| ag033 | t030 | `out_of_scope` | Operating cash flow: used the not-reported sentence, which is for the five lookup metrics |
+| ag034 | u022 | `out_of_scope` | "Who founded Kestrel?": gave the year, then said the documents don't identify the founder |
+
+The current agent (a3) got each of these wrong or broke a rule on it in production, so it may well fail some of them here: that's why v2 isn't the CI default yet.
+`language` (on ag030) is recorded but not used by the agent grader, since no agent_v2 answer needs
+local number formats.

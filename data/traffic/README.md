@@ -6,6 +6,7 @@
 | Held-out set | `traffic_v2.jsonl` (30 requests in 10 sessions, `u001`-`u030`). Written after the Phase 6 monitors were built and before any monitor was run on it, so it tests them the way `paraphrases_v2` tested the retriever fix |
 | Review | `reviews_v1.jsonl`: one person's reading of every Run 20 (RAG) and Run 21 (agent) reply on traffic_v1 that had a problem |
 | Review (held-out) | `reviews_v2.jsonl`: the same for Run 22 (both apps on traffic_v2) |
+| Review (release) | `reviews_v3.jsonl`: the same for Run 24 (RAG with prompt v7 and retriever r4 on traffic_v2) |
 | Used by | `python traffic.py` (Phase 6): replays the requests through the app as if they were production traffic, and records a trace for each |
 | Author | Hand-written for Phase 6, after Run 19 |
 | Overlap with eval data | None: no question here is word for word a question in any eval dataset (`tests/test_traffic.py` checks) |
@@ -84,3 +85,13 @@ read and found fine. `verdict` is one of:
 review queue against it. It's one person's judgment, made by reading each reply with its trace's
 passages and tool results open; another reader could call some `rule_break`s differently (t002 and
 t035 for the agent, for example).
+
+## From traffic to test cases (Phase 6 step 3)
+
+`python golden_candidates.py` turns every request that a monitor queued, that two trace files
+disagreed on, or that a review found a problem with into a golden-set candidate. Candidates that a
+person promotes go into a new dataset version with an `origin` field naming the request here
+(golden_v4, agent_v2). That's the one place an eval question may repeat a traffic question word for
+word: `tests/test_traces.py` skips cases with an `origin`, and `tests/test_closing_the_loop.py`
+checks that each one matches its request exactly. Since step 3 every trace also records which
+traffic file it replayed (`traffic.file`).

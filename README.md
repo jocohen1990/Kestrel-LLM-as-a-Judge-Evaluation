@@ -4,7 +4,7 @@ An end-to-end evaluation suite for an LLM-powered financial Q&A assistant, built
 a QA engineer tests software: versioned test data, graders that are themselves tested,
 measurable quality thresholds, and a CI pipeline that blocks regressions.
 
-> **Status:** Phases 1–5 of 6 complete; Phase 6 (production-style tracing and monitoring) is under way. Its first step adds [tracing](#tracing-production-traffic-phase-6): every request through the app's front door is recorded as a trace (each retrieval, model call and tool call, with its timing, tokens and cost), and `traffic.py` replays 40 unlabeled "production" questions to produce them. [Run 20](#run-20-the-first-traced-replay-phase-6), the first replay, found three wrong answers the evals had never shown (multi-fact and one-word questions where the search missed a passage) and four requests where the query rewrite returned something other than a search query. Step 2 adds [monitors](#monitoring-production-phase-6) that read those traces without answer keys: rule checks built from those failures, the judge's faithfulness check on a sample, alert rules and a review queue. On held-out traffic ([Run 22](#run-22-held-out-traffic-for-the-monitors-phase-6)) the checks caught the pipeline and format problems they were built for but missed both of the RAG assistant's wrong answers (refusals of answerable questions), and one of 30 traces was lost on the way to disk. [Run 21](#run-21-the-agent-on-the-same-traffic-phase-6) replayed the same traffic through the agent: it got the multi-fact question right, but refused three answerable questions without calling a tool, and it costs 3.8x as much per request. Phase 5 added a model comparison scorecard and a [results dashboard](#results-dashboard-phase-5) (`python dashboard.py`: one HTML page with every CI gate, the model comparison, each suite's history and the cases still worth a look). [Run 19](#run-19-three-assistant-models-on-the-same-evals-phase-5) compared Haiku 4.5, Haiku 5.5 and Sonnet 5.5: all three pass every CI gate, Haiku 5.5 costs about a seventh as much per question, and Haiku 4.5 is the fastest. The default model is unchanged for now. Phase 4 (agent evaluation, Runs 14–18) grades a LangGraph agent's tool choice, arguments, path and answer: the default prompt a3 is fully correct on 26 of 27 cases and answers all 27, and every run showed answer accuracy alone would have hidden the cases right for the wrong reason, such as arithmetic done in the model's head. One kind of question (what's left on the credit facility) is still done in the model's head and is recorded as a known limit; the eval catches it even when the agent calls the calculator afterwards to check. See the [Phase 4 summary](#phase-4-summary). Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
+> **Status:** All six phases complete. Phase 6 (production-style tracing and monitoring) ended by [closing the loop](#comparing-traces-and-closing-the-loop-phase-6): two trace files of the same traffic are compared request by request, and every flagged request becomes a golden-set candidate. On Runs 20–22, every request where one app answered and the other declined was a real problem ([Run 23](#run-23-closing-the-loop-on-the-saved-traces-phase-6)). The first release comparison ([Run 24](#run-24-the-first-release-comparison-r4--v7-in-production-phase-6)) showed prompt v7 fixing the French refusal (u025) and retriever r4 breaking a question Run 22 got right (u018), so r4 doesn't ship as it is. Every wrong reply found in production is now a test case in golden_v4 or agent_v2, which aren't the CI defaults yet. See the [Phase 6 summary](#phase-6-summary). Phase 6's first step adds [tracing](#tracing-production-traffic-phase-6): every request through the app's front door is recorded as a trace (each retrieval, model call and tool call, with its timing, tokens and cost), and `traffic.py` replays 40 unlabeled "production" questions to produce them. [Run 20](#run-20-the-first-traced-replay-phase-6), the first replay, found three wrong answers the evals had never shown (multi-fact and one-word questions where the search missed a passage) and four requests where the query rewrite returned something other than a search query. Step 2 adds [monitors](#monitoring-production-phase-6) that read those traces without answer keys: rule checks built from those failures, the judge's faithfulness check on a sample, alert rules and a review queue. On held-out traffic ([Run 22](#run-22-held-out-traffic-for-the-monitors-phase-6)) the checks caught the pipeline and format problems they were built for but missed both of the RAG assistant's wrong answers (refusals of answerable questions), and one of 30 traces was lost on the way to disk. [Run 21](#run-21-the-agent-on-the-same-traffic-phase-6) replayed the same traffic through the agent: it got the multi-fact question right, but refused three answerable questions without calling a tool, and it costs 3.8x as much per request. Phase 5 added a model comparison scorecard and a [results dashboard](#results-dashboard-phase-5) (`python dashboard.py`: one HTML page with every CI gate, the model comparison, each suite's history and the cases still worth a look). [Run 19](#run-19-three-assistant-models-on-the-same-evals-phase-5) compared Haiku 4.5, Haiku 5.5 and Sonnet 5.5: all three pass every CI gate, Haiku 5.5 costs about a seventh as much per question, and Haiku 4.5 is the fastest. The default model is unchanged for now. Phase 4 (agent evaluation, Runs 14–18) grades a LangGraph agent's tool choice, arguments, path and answer: the default prompt a3 is fully correct on 26 of 27 cases and answers all 27, and every run showed answer accuracy alone would have hidden the cases right for the wrong reason, such as arithmetic done in the model's head. One kind of question (what's left on the credit facility) is still done in the model's head and is recorded as a known limit; the eval catches it even when the agent calls the calculator afterwards to check. See the [Phase 4 summary](#phase-4-summary). Phase 3 (safety and robustness) covers repeat-run consistency, prompt injection, jailbreaks, paraphrase and typo robustness, and bias probes. The default setup (prompt v6, retriever r3) answers 32 of 32 golden questions, blocks 18 of 18 jailbreaks and 20 of 21 injections, passes 150 of 155 held-out reworded or misspelled questions (Run 13), and gives the same answer whoever asks: v6 replaced v5 after the bias probes caught v5 refusing askers who stated their age and gender (Runs 11–12). See the [roadmap](#roadmap).
 
 ## What's being tested
 
@@ -37,7 +37,7 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-pytest -v                          # 802 offline tests: free, no API key needed
+pytest -v                          # 861 offline tests: free, no API key needed
 
 cp .env.example .env               # then add your ANTHROPIC_API_KEY
 python run_evals.py                # golden v3, prompt v6, retriever r3, LLM judge (judge-v2)
@@ -307,6 +307,77 @@ traffic the review queue held 4 real problems in 5 for RAG and 2 in 9 for the ag
 missed both wrong RAG answers: a refusal looks like any other refusal to every check here.
 Two small fixes from it (French digit grouping, "do not identify") make monitors m2.
 
+### Comparing traces and closing the loop (Phase 6)
+
+```bash
+# free: two trace files of the same traffic, request by request
+python compare_traces.py traces/<rag file>.jsonl traces/<agent file>.jsonl --reviews data/traffic/reviews_v2.jsonl
+python compare_traces.py traces/<before>.jsonl traces/<after>.jsonl      # one app, before and after a change
+python compare_traces.py A.jsonl B.jsonl --reviews REV_A --reviews-b REV_B   # releases, each with its own review
+python compare_traces.py A.jsonl B.jsonl --strict                     # exit 1 if B raises an alert A didn't
+
+# free: every flagged request as a golden-set candidate
+python golden_candidates.py             # every file in traces/, every reviews_v*.jsonl
+python golden_candidates.py --false-alarms
+```
+
+A wrong refusal is the exact refusal sentence, which is what a right refusal looks like. No check on
+one trace can tell them apart (Run 22: 0 of 2 queued). Two traces of the **same request** can: if
+one answered and the other declined, at most one of them is right. `compare_traces.py` runs the
+monitors on both files, pairs the traces by traffic case id, and sorts every request by what
+changed:
+
+| Difference | Meaning | Queued? |
+|---|---|---|
+| `answer_vs_decline` | One side answered, the other declined | Yes: one of them is wrong |
+| `outcome_changed` | Any other change: asked back instead of answering, an error | Yes |
+| `missing` | A trace on one side only (Run 22's lost u019) | Yes |
+| `flags_changed` | A review or alert check fires on one side only | No: that side's monitor queue already has it. Listed for releases, as flags fixed and flags new |
+| `answer_changed` | Same outcome and flags, different words (releases only) | No: rewording is expected after a prompt change. `--all` lists them |
+
+It works out which kind of comparison it is from the traces. **Across apps** (the RAG assistant and
+the agent) neither side is the baseline. **Across releases** (the same app with a new prompt,
+retriever or model) A is the baseline and B the candidate. That's the production half of a release
+check: the evals say whether B passes the golden set, and this says what B did differently on
+traffic nobody wrote answers for. A review of A's replies doesn't describe B's, so with only
+`--reviews` it lists the B replies that changed and need reading again.
+
+`--reviews` scores the comparison the way `monitor.py` scores the monitors: how many queued requests
+had a problem, and whether **the monitors plus the comparison** find more than the monitors alone. A
+difference counts as a hit if either side had a problem, since a person reads both replies.
+
+`golden_candidates.py` closes the loop. Every request that a monitor queued, two traces disagreed
+on, or a review found a problem with becomes a candidate, with every reason and each app's answer:
+
+| Priority | Candidate |
+|---|---|
+| 1 | A review found the reply wrong |
+| 2 | The two traces disagreed, or a review found a rule break |
+| 3 | A review found a pipeline problem (the reply was fine), or a monitor flagged it and that traffic hasn't been reviewed |
+| 4 | A monitor flagged it and the review found nothing wrong: a false alarm, listed with `--false-alarms` |
+
+A candidate has no answer key, because production has none. To promote one, read the documents,
+write the case into a new dataset version with an `origin` field (which request, which traffic file,
+which run, what found it), and run the script again: it shows as promoted. Nothing is written into a
+dataset automatically, and a test checks that every promoted case repeats its request word for word
+and came from a reviewed problem. The comparison and the candidates are saved to
+`results/comparison_latest.json` and `results/golden_candidates_latest.json`, and the dashboard's
+fifth section shows both. Since step 3, `traffic.py` also records the traffic file's name on every
+trace.
+
+**golden_v4 and agent_v2** are those promotions: 8 cases in golden_v4 and 7 in agent_v2, from 13
+requests (t033 and u022 are in both; g040 was added after Run 24). They aren't the defaults: CI still runs golden_v3 and agent_v1, because the current setup
+fails some of the new cases by design (they're its known failures), and a gate that fails on day one
+says nothing new. golden_v4 adds two optional fields. `origin` says where a case came from, and
+`language` marks a question that isn't in English, so the grader reads "2 850" as 2850 the way the
+robustness eval reads translated variants. It also adds one category, `multi_fact` (several facts
+in one question, Run 20's t023 and t024). Details are in the [dataset card](data/golden/README.md).
+
+```bash
+python run_evals.py --golden data/golden/golden_v4.jsonl
+python agent_eval.py --cases data/agent/agent_v2.jsonl
+```
+
 ### Testing robustness, jailbreaks and bias
 
 ```bash
@@ -479,18 +550,21 @@ evals/                The evaluation framework
   pricing.py          API prices per model, with the date checked
   traces.py           Reading traces: summary, latency per step, cost, one trace as a tree (Phase 6)
   monitors.py         Production monitors: checks on each trace, sampled judge, alert rules, review scoring (Phase 6)
+  compare.py          Two trace files of the same traffic, request by request: across apps or releases (Phase 6)
+  candidates.py       Flagged production requests as golden-set candidates, with every reason (Phase 6)
 data/
   corpus/             The four Kestrel documents
-  golden/             golden_v1, golden_v2 (frozen), golden_v3, dataset card
+  golden/             golden_v1, golden_v2 (frozen), golden_v3, golden_v4 (v3 + 8 production cases), dataset card
   labels/             Labeling guide and human labeling sheets
   attacks/            Prompt-injection (injection_v1) and jailbreak (jailbreak_v1) attacks, dataset card
   robustness/         Hand-written reworded and casual questions (paraphrases_v1, held-out v2),
                       golden questions in other languages (translations_v1), dataset card
   bias/               Counterfactual bias groups (bias_v1), dataset card
-  agent/              Agent cases with required tool steps (agent_v1), calculator probes (calc_probes_v1, v2), dataset card
+  agent/              Agent cases with required tool steps (agent_v1; agent_v2 adds 7 production cases),
+                      calculator probes (calc_probes_v1, v2), dataset card
   traffic/            Pretend production traffic, no expected answers (traffic_v1, held-out traffic_v2),
-                      a person's review of Runs 20-21 (reviews_v1), dataset card
-tests/                802 offline tests
+                      reviews of Runs 20-21 (reviews_v1), Run 22 (reviews_v2) and Run 24 (reviews_v3), dataset card
+tests/                861 offline tests
 run_evals.py          Eval runner and quality gates
 calibrate.py          Judge validation commands
 consistency.py        Repeat-run consistency check
@@ -506,6 +580,8 @@ dashboard.py          Results dashboard (Phase 5): writes results/dashboard.html
 traffic.py            Replay traffic through the app, a trace per request (Phase 6)
 traces.py             Summarize or inspect recorded traces (Phase 6)
 monitor.py            Run the production monitors on recorded traces (Phase 6)
+compare_traces.py     Compare two trace files of the same traffic (Phase 6)
+golden_candidates.py  Golden-set candidates from every flagged request (Phase 6)
 traces/               Recorded traces (git-ignored: they can hold user text)
 .github/workflows/    CI pipeline
 ```
@@ -519,7 +595,7 @@ traces/               Recorded traces (git-ignored: they can hold user text)
 | 3 | Safety and robustness: repeat-run consistency (Run 4), prompt injection including injections hidden in documents (Runs 5–8), paraphrase and typo robustness (Run 9), jailbreaks (Run 10), bias probes (Run 11) | ✅ Done |
 | 4 | Agent evaluation: LangGraph agent with tools, graded on tool choice, arguments, and trajectory | ✅ Done (Runs 14–18, [summary](#phase-4-summary)) |
 | 5 | Model comparison scorecard and a results dashboard | ✅ Done (scorecard: [Run 19](#run-19-three-assistant-models-on-the-same-evals-phase-5); [dashboard](#results-dashboard-phase-5)) |
-| 6 | Production-style tracing and monitoring | 🟡 Steps 1–2 of 3 done ([tracing](#tracing-production-traffic-phase-6), [monitoring](#monitoring-production-phase-6)) |
+| 6 | Production-style tracing and monitoring | ✅ Done ([tracing](#tracing-production-traffic-phase-6), [monitoring](#monitoring-production-phase-6), [closing the loop](#comparing-traces-and-closing-the-loop-phase-6); Runs 20–24, [summary](#phase-6-summary)) |
 
 Phase 6 plan:
 
@@ -529,11 +605,13 @@ Phase 6 plan:
    rates; a review queue; a monitoring section on the dashboard. The checks are scored against a
    person's review of the same replies, the way the judge was checked against human labels, and
    were tested on held-out traffic in [Run 22](#run-22-held-out-traffic-for-the-monitors-phase-6).
-3. ⬜ **Closing the loop.** Flagged production requests become candidates for the next golden set
-   version, and a comparison between two traces of the same traffic (two releases, or the RAG
-   assistant and the agent) shows whether a change helped in production, not just in the evals.
-   Run 22 suggests where to start: requests that one app answered and the other declined were real
-   problems 7 times out of 7 across Runs 20–22, including every wrong refusal.
+3. ✅ **Closing the loop.** Flagged production requests become candidates for the next golden set
+   version (`golden_candidates.py`; 13 promoted into golden_v4 and agent_v2), and a comparison
+   between two traces of the same traffic (`compare_traces.py`: two releases, or the RAG assistant
+   and the agent) shows whether a change helped in production, not just in the evals. Measured on
+   the saved traces in [Run 23](#run-23-closing-the-loop-on-the-saved-traces-phase-6). Its first use
+   on two releases, [Run 24](#run-24-the-first-release-comparison-r4--v7-in-production-phase-6),
+   showed v7 fixing u025 and r4 breaking u018.
 
 ## Findings
 
@@ -1874,6 +1952,9 @@ the held-out result; the fixes below were made after seeing this data.
 
 ### Fixes proposed after Run 22 (not yet measured)
 
+*Measured in production in [Run 24](#run-24-the-first-release-comparison-r4--v7-in-production-phase-6):
+v7 fixed u025; r4 didn't fix u001 and broke u018. The evals for both are still to run.*
+
 Two fixes for Run 22's wrong answers, each a new version so the current default stays exactly as
 measured. Neither is the default until the runs below say so.
 
@@ -1936,6 +2017,8 @@ python monitor.py --judge-sample 1 --reviews data/traffic/reviews_v2.jsonl
 
 The `--reviews` score on that last replay will be against Run 22's review, so a request that changed
 needs reading again before the numbers mean anything.
+Since step 3, `compare_traces.py` lists exactly which requests changed, and the replay's
+before-and-after comparison is part of the plan: see [Changes after Run 23](#changes-after-run-23).
 
 **The OneDrive test (to do).** Run 22's lost trace is most likely OneDrive, but nothing confirmed it:
 no warning was printed. `traffic.py --copy-to DIR` (or `KESTREL_TRACES_COPY_DIR=` in `.env`) now
@@ -1945,11 +2028,197 @@ many traces each copy holds. On the next replays, keep a copy outside OneDrive, 
 and a request missing from both points at the app. If OneDrive is the cause, move `traces/` out of
 the synced folder for good.
 
+### Run 23: closing the loop, on the saved traces (Phase 6)
+
+No new API calls: `compare_traces.py` on the two pairs of trace files that replayed the same traffic
+(Run 20 vs Run 21 on traffic_v1, both halves of Run 22 on traffic_v2), scored against
+`reviews_v1` and `reviews_v2`, then `golden_candidates.py` on all four files. Monitors m3 on every
+file, so the monitor-only numbers differ slightly from Run 22's held-out m1 numbers.
+
+| | traffic_v1 (Runs 20 vs 21) | traffic_v2 (Run 22) |
+|---|---|---|
+| Requests in both files | 40 | 29 (u019's RAG trace was lost; the comparison reports it as `missing`) |
+| One answered, the other declined | 3: t004, t011, t033 | 4: u001, u022, u024, u025 |
+| ... with a problem on at least one side | **3 of 3** | **4 of 4** |
+| Requests with a problem (either app) | 15, 6 of them wrong | 9, 2 of them wrong |
+| Wrong replies in the monitor queues alone | 6 of 6 | **0 of 2** |
+| ... in the monitor queues plus the comparison | 6 of 6 | **2 of 2** |
+| Every problem, monitors alone / plus the comparison | 14 of 15 / 14 of 15 (t012 missed) | 6 of 9 / **9 of 9** |
+| Requests the comparison adds to the queues | 0 | 3: u001, u024, u025 |
+
+What it showed:
+
+- **The 7-of-7 holds, counted properly.** The comparison found exactly the seven disagreements
+  noticed by hand in Run 22, and each had a problem on one side. Five of them were the side that
+  declined being wrong (t004, t011, t033 for the agent; u001, u025 for RAG); in u024 the agent
+  shouldn't have answered; in u022 both sides broke a rule. It's still the data the idea came from, so
+  this confirms the count, not that it generalizes.
+- **On traffic_v2 it found what nothing else did.** The two wrong RAG refusals (u001, u025) and the
+  agent's off-topic answer (u024) were in neither monitor queue. With the comparison, every problem a
+  person found in Run 22 is queued.
+- **On traffic_v1 it added nothing new, but it pointed at the same three requests with no noise.**
+  The agent's three wrong refusals were already queued by `declined_without_tools`, which flagged 14
+  requests to find them. The comparison flagged 3, all real. If a second app's traces are available,
+  `declined_without_tools` could drop to an info-level count: the agent's queue would go from 17 to
+  9 on traffic_v1 and keep 9 of its 10 problems (losing t035, the one-word "revenue", where asking
+  back is arguably fine). On traffic_v2 it would go from 8 to 6 and hold all 4 agent problems, up
+  from 3. That would make it monitors m4, and it only works where two setups see the same traffic, so
+  it isn't done here.
+- **What a comparison can't see: both sides wrong the same way.** t024 got "four risks" from RAG and
+  "three main risks" from the agent. Both answered, so there's no disagreement; only
+  `count_equals_passages` caught it. t023 and t035 were wrong for RAG while the agent answered or
+  asked back, which isn't answered-vs-declined either. The comparison adds to the monitors; it
+  doesn't replace them.
+- **30 candidates, 12 promoted.** `golden_candidates.py` listed every flagged request: 8 reviewed
+  wrong, 9 disagreements or rule breaks, 7 pipeline problems, and 6 false alarms (all
+  `declined_without_tools` on correct refusals). Every wrong reply and 4 of the rule breaks became
+  cases: golden_v4 g033–g039 (t023, t024, t033, t035, u001, u025, u022) and agent_v2 ag028–ag034
+  (t004, t011, t033, u024, t026, t030, u022). Not promoted, on purpose: the follow-up t002 (needs
+  memory between requests, which no eval has); u020 and u021, which repeat ag033's and ag032's
+  patterns; t012 (an unasked extra figure) and t029 (more text after the refusal, which the
+  exact-refusal check on every out-of-scope case already covers); and the pipeline rows. Six of those
+  are about the query rewrite, which no golden answer can test (a rewrite eval would be the place for
+  them), and t021 is Phase 4's known calculator limit, already covered by ag017 and the calculator
+  probes.
+
+Caveats: no new replies were generated or read. Every number comes from Runs 20–22's traces and
+reviews, and those reviews are one person's reading. The comparison was designed after seeing these
+disagreements, so this run measures it on its training data. The real tests are the release
+comparison below and traffic it hasn't seen.
+
+### Changes after Run 23
+
+- **`compare_traces.py` and `evals/compare.py`**: the comparison above, across apps or releases,
+  with review scoring and a `--strict` exit code for a new alert.
+- **`golden_candidates.py` and `evals/candidates.py`**: flagged requests to candidates, with
+  priorities, every reason, and promotion tracked through `origin` fields.
+- **golden_v4** (39 cases) and **agent_v2** (34 cases): v3 and v1 unchanged, plus 7 production cases
+  each. Not the CI defaults yet. golden_v4 cases can carry `language`, and the grader reads local
+  number formats for them.
+- **Traces record their traffic file** (`traffic.file`), and the dashboard's production section
+  shows the latest comparison and the candidate list.
+
+What's left for the release check (costs a few cents of API calls):
+
+```bash
+# 1. the r4 + v7 replay of the traffic that found u001 and u025
+python traffic.py --traffic data/traffic/traffic_v2.json1 --prompt v7 --retriever r4
+# 2. the release comparison: Run 22's RAG file is A (baseline), the new file is B
+python compare_traces.py traces/traces_20261106_022822.json1 traces/<new file>.json1 --reviews data/traffic/reviews_v2.json1
+# 3. read the B replies it lists as changed, record them in reviews_v3.jsonl, then score B properly
+python compare_traces.py traces/traces_20261106_022822.json1 traces/<new file>.json1 --reviews data/traffic/reviews_v2.json1 --reviews-b data/traffic/reviews_v3.json1
+# 4. and the new cases in the evals, old setup vs new
+python run_evals.py --golden data/golden/golden_v4.json1
+python run_evals.py --golden data/golden/golden_v4.json1 --prompt v7 --retriever r4
+```
+
+A fix that works shows up three ways: g037/g038 pass in the evals, u001/u025 move from declined to
+answered in the comparison, and no request that was fine in Run 22 starts disagreeing. For a held-out
+test of the comparison itself, the next traffic file (traffic_v3) should be written before either
+app replays it, as traffic_v2 was for the monitors.
+
+### Run 24: the first release comparison, r4 + v7 in production (Phase 6)
+
+The fixes proposed after Run 22 (retriever r4, prompt v7) replayed on the same traffic as Run 22
+(`traffic.py --traffic data/traffic/traffic_v2.jsonl --prompt v7 --retriever r4`), then
+`compare_traces.py` with Run 22's RAG file as A (the baseline) and the new file as B. I read every B
+reply that changed and recorded B's problems in `data/traffic/reviews_v3.jsonl`, so each side is
+scored against its own review. The evals haven't been run on r4 + v7 yet; this is the production
+half only.
+
+| | A: v6 + r3 (Run 22) | B: v7 + r4 |
+|---|---|---|
+| Requests traced | 29 of 30 (u019 lost) | **30 of 30** |
+| p95 latency | 1.63s | 1.56s |
+| Cost per 1,000 requests | $0.99 | **$1.15** (+16%) |
+| Refusal rate | 34% | 37% |
+| Review queue | 4 | 5 |
+| Wrong replies (by reading) | u001, u025 | u001, **u018** |
+| Rule breaks / pipeline problems | u022 / u023, u029, u030 | u008, u022 / u023, u029, u030 |
+
+The comparison: 29 requests in both, 2 answered on one side and declined on the other (u018,
+u025), 6 only reworded, 1 missing from A. Against both reviews, 8 requests had a problem on one side
+or both:
+
+| Found by | Problems (8) | Wrong replies (3: u001, u018, u025) |
+|---|---|---|
+| Comparison queue | 2 of 2 queued were real | 2 of 3 |
+| Both monitor queues | 5 of 8 | 1 of 3 (u018) |
+| Monitors + comparison | 6 of 8 | 2 of 3 |
+| Missed by both | u001, u008 | u001 |
+
+What it showed:
+
+- **v7 fixed u025.** The French customer question is now answered in French with the right
+  figure. That's the language rule doing what it was written for.
+- **r4 didn't fix u001, as predicted.** It stopped "head office" becoming "had officer", but the
+  rewrite ("Kestrel head office location city") still has no word the headquarters paragraph uses,
+  so the best match scored 0.07 and the reply was still a refusal.
+- **r4 broke u018, which Run 22 got right.** "List Kestrel's CEO, CFO and headquarters city" now
+  gets the refusal sentence, then a claim that the documents don't give the headquarters city
+  (Omaha is in the annual report's first paragraph). The traces show why: in Run 22, r3's typo
+  correction turned "headquarters" into "headquartered", the word the filing uses, and found the
+  paragraph. r4 trusts the rewrite's spelling, so that correction no longer happens. The rule that
+  stopped one bad correction also stopped a good one. B's monitors did flag the reply
+  (`says_documents_lack`, `refusal_with_more`), but a flag on one run can't say the reply used to
+  be right. The comparison can: answered in A, declined in B, so the change caused it.
+- **Two problems nothing caught.** u001 was wrong in both versions in the same way, so there was no
+  difference to see: a comparison only finds what changed. u008's answer is right but ends
+  "according to the 2026 Risk Factors document", and no check looks for a document named by its
+  title (`mentions_internals` looks for "the provided documents", passages and tools).
+- **v7 costs more.** Its prompt is longer, so cost per request went up 16% at the same latency.
+- **u019's trace was saved this time** (30 of 30). That's one run, not an answer to whether OneDrive
+  lost the trace in Run 22; that needs `--copy-to`.
+
+Verdict: **r4 doesn't ship as it is.** It trades one wrong answer for another. A version that still
+corrects a word the documents don't contain when a document word starts with it or nearly matches
+it ("headquarters" to "headquartered") but leaves real words like "head" alone would be r5, and
+u001 needs the rewrite to use the filings' wording, which no retriever change gives it. **v7 is a
+candidate**, pending its evals (golden, injection, jailbreak, bias) and a decision on the cost.
+
+Closing the loop on this run: u018 is now golden_v4 case **g040** (`multi_fact`), so a retriever
+change that loses the headquarters paragraph fails an eval, not just a production comparison.
+
+### Phase 6 summary
+
+Phase 6 asked what an LLM app's quality looks like after release, when no one has written the
+answers.
+
+- **Tracing** (step 1): every request through the app's front door is a trace with a span per
+  step. The first replay (Run 20) found wrong answers the evals had never shown: multi-fact
+  questions losing a fact, a count copied from the number of passages, query rewrites that talked
+  to the user.
+- **Monitoring without answer keys** (step 2): rule checks built from those failures, a sampled
+  faithfulness judge, window alert rules and a review queue, scored against a person's review and
+  tested on held-out traffic (Run 22). The checks caught what they were built for and missed every
+  wrong refusal, because a wrong refusal is the exact refusal sentence.
+- **Closing the loop** (step 3): comparing two traces of the same request finds what one trace
+  can't. On Runs 20–22, every request where one app answered and the other declined was a real
+  problem (Run 23), and the first release comparison caught a regression that came with a fix
+  (Run 24). Every wrong reply found in Runs 20–24 is now a test case: golden_v4 g033–g040 and agent_v2
+  ag028–ag034.
+- **What's still open**: wrong answers that don't change between versions (u001), checks for rule
+  breaks nobody has written a check for yet (u008), and a held-out test of the comparison itself.
+  See the known gaps below.
+
 ### Known gaps
 
-- **No check can tell a wrong refusal from a right one** (Run 22: 0 of 2 wrong RAG answers queued).
-  Comparing two apps or releases on the same traffic is the best lead (7 of 7 in Runs 20–22), but
-  it was found on Run 22 and is untested.
+- **No check on one trace can tell a wrong refusal from a right one** (Run 22: 0 of 2 wrong RAG
+  answers queued). Comparing two traces of the same request catches them (Run 23: 7 of 7
+  disagreements were real problems, and with it the queues hold 8 of 8 wrong replies), but it needs a
+  second app or release on the same traffic, it can't see two sides wrong the same way (t024) or a
+  reply that's wrong in both versions (Run 24's u001), and it hasn't been tested on held-out
+  traffic.
+- **No check for a document named by its title.** Run 24's u008 ended "according to the 2026 Risk
+  Factors document"; `mentions_internals` only looks for "the provided documents", passages and
+  tools.
+- **Retriever r4 isn't fit to ship** (Run 24: it lost u018's headquarters paragraph), and prompt v7
+  hasn't been through the evals. Both stay opt-in.
+- **golden_v4 and agent_v2 aren't in CI.** They hold the current setup's known production failures,
+  so they'd fail the gates today. Promote them when a fix passes them, or gate only the v3/v1 cases
+  plus the new cases that pass.
+- **Promoting a candidate is manual.** That's on purpose (an answer key needs a person reading the
+  documents), but it means the loop is only as fast as the review.
 - **Typo correction rewrites real words the filings don't use** ("head office" became "had officer",
   Run 22 u001). Retriever r2 and r3 both have it; the evals never showed it. r4 is the proposed fix,
   [not yet measured](#fixes-proposed-after-run-22-not-yet-measured), and u001 also needs the rewrite to
@@ -1974,7 +2243,9 @@ the synced folder for good.
 - **The thresholds come from two 40-request runs** and the review that sets precision and recall is
   one person's reading.
 - **Monitors run on a whole file at a time.** A real service would run them on a rolling window
-  (the last hour, the last 1,000 requests) and compare windows; that's step 3.
+  (the last hour, the last 1,000 requests). `compare_traces.py` compares two files of the same
+  traffic, not two windows of different traffic: windows of live traffic would need rates compared
+  with some allowance for chance, not request-by-request pairs.
 
 - **Run 20's failures aren't fixed** (multi-fact questions losing a fact, t024 counting k, t035's
   one-word question, rewrites that aren't queries). Recorded here and in the

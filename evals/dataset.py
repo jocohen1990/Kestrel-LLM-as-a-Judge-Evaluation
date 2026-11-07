@@ -18,7 +18,10 @@ REQUIRED_FIELDS = {
 VALID_CATEGORIES = {
     "numeric", "factual", "multi_hop", "out_of_scope",            # v1
     "calculation", "comparison", "false_premise", "ambiguous",    # added in v2
+    "multi_fact",                                                 # added in v4 (Run 20 t023, t024)
 }
+# v4: cases that came from production traffic say which request (Phase 6 step 3).
+ORIGIN_FIELDS = {"traffic_id", "traffic_file", "run", "found_by"}
 
 
 class DatasetError(ValueError):
@@ -52,6 +55,17 @@ def load_golden(path: Path) -> list[dict]:
         checks = case["expected_numbers"] or case["must_include"] or case["must_include_any"]
         if case["category"] != "out_of_scope" and not checks:
             raise DatasetError(f"Line {line_no}: {case['id']} has nothing to grade against")
+
+        # Optional field added in v4: where a production-sourced case came from.
+        if "origin" in case:
+            origin = case["origin"]
+            if not isinstance(origin, dict) or set(origin) != ORIGIN_FIELDS:
+                raise DatasetError(f"Line {line_no}: {case['id']} origin needs exactly "
+                                   f"{sorted(ORIGIN_FIELDS)}")
+        # Optional field added in v4: the question's language, when it isn't
+        # English. The number grader then reads local formats ("2 850").
+        if case.setdefault("language", "en") == "":
+            raise DatasetError(f"Line {line_no}: {case['id']} has an empty language")
 
         seen_ids.add(case["id"])
         cases.append(case)

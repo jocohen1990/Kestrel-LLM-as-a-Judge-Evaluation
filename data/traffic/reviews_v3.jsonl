@@ -1,0 +1,7 @@
+{"app": "rag", "case_id": "u001", "run": "Run 24", "traffic": "traffic_v2", "verdict": "wrong", "note": "Still refused. r4 removed the had/officer correction, but the rewrite 'Kestrel head office location city' shares no word with the headquarters paragraph (top score 0.07)."}
+{"app": "rag", "case_id": "u018", "run": "Run 24", "traffic": "traffic_v2", "verdict": "wrong", "note": "Regression: refused, then said the documents don't give the headquarters city (Omaha is in the annual report). r3 corrected 'headquarters' to 'headquartered' and found it; r4 trusts the rewrite and doesn't."}
+{"app": "rag", "case_id": "u022", "run": "Run 24", "traffic": "traffic_v2", "verdict": "rule_break", "note": "Same as Run 22: the refusal sentence, then a sentence about what the material states."}
+{"app": "rag", "case_id": "u023", "run": "Run 24", "traffic": "traffic_v2", "verdict": "pipeline", "note": "Answer fine (refusal). The query rewrite still isn't a search query."}
+{"app": "rag", "case_id": "u029", "run": "Run 24", "traffic": "traffic_v2", "verdict": "pipeline", "note": "Answer fine (refusal). The query rewrite still isn't a search query."}
+{"app": "rag", "case_id": "u030", "run": "Run 24", "traffic": "traffic_v2", "verdict": "pipeline", "note": "Answer fine (refusal). The query rewrite still isn't a search query."}
+{"app": "rag", "case_id": "u008", "run": "Run 24", "traffic": "traffic_v2", "verdict": "rule_break", "note": "Answer right, but it ends 'according to the 2026 Risk Factors document': the prompt says not to mention the documents."}

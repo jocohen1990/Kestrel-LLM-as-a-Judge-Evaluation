@@ -8,6 +8,8 @@ It answers five questions, in this order:
   4. What still needs a look?           The cases that failed or were flagged in the latest runs.
   5. How is production doing?           The latest monitor run per app (monitor_<app>_latest.json,
                                         Phase 6): alerts, what each check flagged, the review queue.
+                                        Then the latest trace comparison (comparison_latest.json)
+                                        and golden-set candidates (golden_candidates_latest.json).
 
 Like evals/scorecard.py, nothing here calls an API: it only reads files, so it
 is free to rebuild and can be tested offline. The page is one self-contained
@@ -275,6 +277,9 @@ def build_dashboard(results_dir: Path) -> dict:
         "issues": open_issues(results_dir),
         "monitoring": {app: m for app in MONITOR_APPS
                        if (m := load_json(results_dir / f"monitor_{app}_latest.json"))},
+        # Phase 6 step 3
+        "trace_comparison": load_json(results_dir / "comparison_latest.json"),
+        "golden_candidates": load_json(results_dir / "golden_candidates_latest.json"),
     }
 
 
@@ -678,6 +683,56 @@ def _monitor_card(app: str, m: dict) -> str:
   </figure>"""
 
 
+def _trace_comparison_card(c: dict) -> str:
+    a, b = c["a"], c["b"]
+    mode = "Across releases" if c.get("mode") == "releases" else "Across apps"
+    queued = [r for r in c.get("rows", []) if r["case"] in set(c.get("queue", []))]
+    rows = "".join(
+        f"<tr><td><code>{esc(r['case'])}</code></td><td class=\"small muted\">{esc(r['kind'])}</td>"
+        f"<td>{esc(r['question'])}</td>"
+        f"<td class=\"small\">{esc(r['a']['outcome']) if r['a'] else 'no trace'}</td>"
+        f"<td class=\"small\">{esc(r['b']['outcome']) if r['b'] else 'no trace'}</td></tr>"
+        for r in queued)
+    s = c.get("review_scores")
+    score_line = ""
+    if s:
+        mo, mp = s["monitors_alone"], s["monitors_plus_comparison"]
+        score_line = (f"<p class=\"note\">Against a person's review: {s['queued_with_problem']} of "
+                      f"{s['queued']} queued requests had a problem (precision {fmt(s['precision'])}). "
+                      f"Wrong answers found by the monitors alone: {fmt(mo['recall_wrong'])}; "
+                      f"with the comparison: {fmt(mp['recall_wrong'])}.</p>")
+    files = c.get("files", {})
+    return f"""
+  <figure>
+    <figcaption>Trace comparison: {esc(mode)}</figcaption>
+    <p class="note small">A: {esc(a['setup']['label'])} (<code>{esc(files.get('a', '?'))}</code>) ·
+    B: {esc(b['setup']['label'])} (<code>{esc(files.get('b', '?'))}</code>) · {c.get('paired', 0)} requests in both ·
+    {len(c.get('queue', []))} queued, {len(c.get('new_to_review', []))} in neither monitor queue</p>
+    {score_line}
+    <div class="table-wrap"><table><thead><tr><th>Case</th><th>Difference</th><th>Question</th><th>A</th><th>B</th>
+    </tr></thead><tbody>{rows or '<tr><td colspan="5" class="muted">No differences to read.</td></tr>'}</tbody>
+    </table></div>
+  </figure>"""
+
+
+def _candidates_card(g: dict) -> str:
+    n = g.get("counts", {})
+    rows = "".join(
+        f"<tr><td><code>{esc(c['traffic_id'])}</code></td><td class=\"num\">{c['priority']}</td>"
+        f"<td>{esc(c['question'])}</td><td class=\"small\">{esc(c['why'])}</td>"
+        f"<td class=\"small\">{esc(', '.join(c['promoted_to']) or c['status'])}</td></tr>"
+        for c in g.get("candidates", []) if c["status"] != "false_alarm")
+    return f"""
+  <figure>
+    <figcaption>Golden-set candidates</figcaption>
+    <p class="note small">{n.get('candidates', 0)} flagged requests · {n.get('promoted', 0)} promoted to a
+    dataset · {n.get('open', 0)} open · {n.get('false_alarms', 0)} false alarms (not listed)</p>
+    <details><summary>Every candidate</summary>
+    <div class="table-wrap"><table><thead><tr><th>Request</th><th class="num">Priority</th><th>Question</th>
+    <th>Why</th><th>Status</th></tr></thead><tbody>{rows}</tbody></table></div></details>
+  </figure>"""
+
+
 def render_monitoring(data: dict) -> str:
     mon = data.get("monitoring") or {}
     if not mon:
@@ -685,6 +740,10 @@ def render_monitoring(data: dict) -> str:
                 'then run <code>python monitor.py</code>.</p>')
     else:
         body = "".join(_monitor_card(app, m) for app, m in mon.items())
+    if data.get("trace_comparison"):
+        body += _trace_comparison_card(data["trace_comparison"])
+    if data.get("golden_candidates"):
+        body += _candidates_card(data["golden_candidates"])
     return f"""
 <section>
   <h2>How is production doing?</h2>

@@ -154,7 +154,8 @@ def test_tree_marks_errors():
 EVAL_FILES = ["golden/golden_v1.jsonl", "golden/golden_v2.jsonl", "golden/golden_v3.jsonl",
               "robustness/paraphrases_v1.jsonl", "robustness/paraphrases_v2.jsonl",
               "attacks/injection_v1.jsonl", "attacks/jailbreak_v1.jsonl", "bias/bias_v1.jsonl",
-              "agent/agent_v1.jsonl", "agent/calc_probes_v1.jsonl", "agent/calc_probes_v2.jsonl"]
+              "agent/agent_v1.jsonl", "agent/calc_probes_v1.jsonl", "agent/calc_probes_v2.jsonl",
+              "golden/golden_v4.jsonl", "agent/agent_v2.jsonl"]
 
 
 def eval_questions() -> set[str]:
@@ -164,6 +165,11 @@ def eval_questions() -> set[str]:
         for line in (ROOT / "data" / name).read_text(encoding="utf-8").splitlines():
             if line.strip():
                 row = json.loads(line)
+                if row.get("origin"):
+                    # Phase 6 step 3: a case promoted from a production request repeats
+                    # that request on purpose. tests/test_closing_the_loop.py checks
+                    # it names the request it came from.
+                    continue
                 for key in ("question", "prompt", "attack"):
                     if isinstance(row.get(key), str):
                         questions.add(normalize(row[key]))
