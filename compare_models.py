@@ -21,7 +21,7 @@ hand. Each script saves its results file as usual. Then it finds the file each
 run saved, and evals/scorecard.py lines the models up.
 
 Everything except the model stays fixed: the default prompt, retriever, k and agent
-(app/rag.py, app/agent.py; v6, r3, k=4 and a4 since Phase 7), the same datasets
+(app/rag.py, app/agent.py; v9, r8, k=8 and a4 since Phase 8), the same datasets
 (golden_v4 and agent_v2 since Phase 7), and the same judge (claude-sonnet-5-5) for every model. A
 results file made with other settings is never used, so an old prompt-v1 run
 can't sneak into the comparison.
@@ -54,6 +54,7 @@ DEFAULT_MODELS = [DEFAULT_MODEL, "claude-haiku-5-5", "claude-sonnet-5-5"]
 APPROX_CALLS = {
     "golden": "about 120 calls: 40 questions x 2 with the rewrite, plus 40 judge calls",
     "injection": "about 62 calls: 21 attacks + 10 controls, x 2 with the rewrite",
+    "injection_v2": "about 76 calls: 22 attacks + 16 controls, x 2 with the rewrite",
     "jailbreak": "about 56 calls: 28 rows x 2",
     "bias": "about 56 calls: 28 rows x 2",
     "agent": "about 100 calls: 34 cases, 2-4 turns each",
@@ -66,6 +67,7 @@ APPROX_CALLS = {
 APPROX_MINUTES = {
     "golden": 2.7,
     "injection": 1.8,
+    "injection_v2": 2.0,   # Phase 8; estimated from injection's time, not yet measured
     "jailbreak": 1.6,
     "bias": 1.4,
     "agent": 1.5,
@@ -128,7 +130,7 @@ def run_suite(suite_name: str, model: str) -> tuple[Path, dict] | None:
     started = datetime.now(timezone.utc).isoformat()
     # The scripts' own gates may exit 1 (e.g. run_evals.py's pass-rate gate).
     # That's a result, not a crash: the scorecard reads the gates from the file.
-    proc = subprocess.run([sys.executable, suite.script, "--model", model], cwd=ROOT)
+    proc = subprocess.run([sys.executable, suite.script, *suite.args, "--model", model], cwd=ROOT)
     found = find_run(RESULTS_DIR, suite, model)
     if found is None or found[1]["timestamp"] < started:
         print(f"!! {suite.script} --model {model} saved no results (exit code {proc.returncode})")

@@ -220,10 +220,12 @@ def test_a4s_new_wording_copies_no_agent_case():
 
 
 def test_defaults_wait_for_the_evals():
-    # Nothing new is the default until the live runs say so (Phase 7 step 4).
-    assert agent.DEFAULT_AGENT_VERSION == "a4"   # Run 26
-    assert rag.DEFAULT_RETRIEVER_VERSION == "r3"
-    assert rag.DEFAULT_PROMPT_VERSION == "v6"
+    # Nothing new is the default until the live runs say so. Phase 7 shipped a4 (Run 26) and
+    # kept the RAG defaults (v6, r3, k=4); Phase 8 shipped v9 + r8 at k=8 (Run 33).
+    assert agent.DEFAULT_AGENT_VERSION == "a4"
+    assert rag.DEFAULT_RETRIEVER_VERSION == "r8"
+    assert rag.DEFAULT_PROMPT_VERSION == "v9"
+    assert rag.DEFAULT_K == 8
 
 
 # ---- run_evals.py --ids ---------------------------------------------------------------------

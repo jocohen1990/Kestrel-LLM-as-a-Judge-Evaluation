@@ -174,6 +174,7 @@ def test_rewrite_prompt_examples_come_from_no_eval_question():
         assert not any(abbreviation in q for q in questions), abbreviation
 
 
-def test_default_retriever_is_r3():
-    """r3 chosen in Run 13 over r1 (Runs 1-12) and r2 (typo tolerance only)."""
-    assert rag.DEFAULT_RETRIEVER_VERSION == "r3"
+def test_default_retriever_is_r8():
+    """r3 chosen in Run 13 over r1 (Runs 1-12) and r2 (typo tolerance only); r8 (r7 + the
+    passage filter) shipped in Phase 8 (Run 33)."""
+    assert rag.DEFAULT_RETRIEVER_VERSION == "r8"

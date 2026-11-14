@@ -7,6 +7,7 @@ import copy
 import json
 
 import compare_traces as compare_cli
+from app import rag
 from app.rag import REFUSAL
 from evals import compare as c
 from evals import monitors as m
@@ -55,7 +56,7 @@ def test_a_refusal_with_more_text_still_declined(monkeypatch):
 def test_setup_reads_the_versions_and_spots_a_mixed_file(monkeypatch):
     t = rag_trace(monkeypatch, ANSWER)
     setup = c.setup_of([t])
-    assert setup["app"] == "rag" and "prompt_version=v6" in setup["label"]
+    assert setup["app"] == "rag" and f"prompt_version={rag.DEFAULT_PROMPT_VERSION}" in setup["label"]
     assert c.setup_of([t, release(t)])["app"] == "mixed"
 
 

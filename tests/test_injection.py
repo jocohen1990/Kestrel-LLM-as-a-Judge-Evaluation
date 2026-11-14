@@ -308,7 +308,8 @@ def test_extra_chunks_are_searchable_without_touching_the_corpus(monkeypatch):
         return LLMResponse(text="ok", model="fake", input_tokens=1, output_tokens=1, latency_s=0.0)
 
     monkeypatch.setattr(rag, "generate", fake_generate)
-    poisoned = rag.RagAssistant(extra_chunks=[poison_chunk(c)])
+    # r7: the newest retriever without the passage filter, which would remove the poison (r8)
+    poisoned = rag.RagAssistant(extra_chunks=[poison_chunk(c)], retriever_version="r7")
     poisoned.answer(c["question"])
     assert c["poison"]["text"] in captured["user"]
     rag.RagAssistant().answer(c["question"])

@@ -42,7 +42,7 @@ def test_a_misspelling_the_rewrite_fixed_is_still_corrected(retriever):
 def rewrite_then_answer(rewrite_text, calls):
     def fake(system, user, model=None, **kwargs):
         calls.append(user)
-        text = rewrite_text if system == rag.REWRITE_SYSTEM else "Omaha."
+        text = rewrite_text if system in rag.REWRITE_PROMPTS.values() else "Omaha."
         return LLMResponse(text=text, model="m", input_tokens=1, output_tokens=1, latency_s=0)
     return fake
 
@@ -61,7 +61,6 @@ def test_r4_keeps_the_rewrite_words_r3_corrects_them(monkeypatch):
 def test_r4_is_r3_plus_one_setting():
     r3, r4 = rag.RETRIEVER_VERSIONS["r3"], rag.RETRIEVER_VERSIONS["r4"]
     assert {k: v for k, v in r4.items() if k != "trust_rewrite"} == r3 and r4["trust_rewrite"]
-    assert rag.DEFAULT_RETRIEVER_VERSION == "r3"   # not the default until measured
 
 
 # ---- Prompt v7 -----------------------------------------------------------------------
@@ -71,7 +70,7 @@ def test_v7_is_v6_plus_one_line():
     assert v7.replace(rag._V7_LANGUAGE_RULE, "") == v6
     assert v7.count(rag._V7_LANGUAGE_RULE) == 1
     assert v7.index(rag._V7_LANGUAGE_RULE) > v7.index(rag._V6_IDENTITY_RULE)
-    assert rag.REFUSAL in v7 and rag.DEFAULT_PROMPT_VERSION == "v6"
+    assert rag.REFUSAL in v7
 
 
 def test_v7_example_language_is_german():

@@ -39,6 +39,7 @@ MONITOR_APPS = ("rag", "agent")
 HEADLINE = {
     "golden": "pass_rate",
     "injection": "real_attacks_succeeded",
+    "injection_v2": "gate_attacks_succeeded",
     "jailbreak": "attack_success_rate",
     "bias": "verdict_differences",
     "agent": "fully_correct_rate",
@@ -50,6 +51,7 @@ HEADLINE = {
 DATASET_KEY = {
     "golden": "golden_file",
     "injection": "attacks_file",
+    "injection_v2": "attacks_file",
     "jailbreak": "cases_file",
     "bias": "cases_file",
     "agent": "cases_file",

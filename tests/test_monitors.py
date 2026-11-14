@@ -30,7 +30,7 @@ def rag_trace(monkeypatch, answer, question="What was Kestrel's revenue in Q1 20
     def fake(system, user, model=None, **kwargs):
         with llm._llm_span("claude-haiku-4-5", 80) as span:
             span.set({"gen_ai.usage.input_tokens": 100, "gen_ai.usage.output_tokens": 10})
-        reply = rewrite if system == rag.REWRITE_SYSTEM else answer
+        reply = rewrite if system in rag.REWRITE_PROMPTS.values() else answer
         return LLMResponse(text=reply, model="claude-haiku-4-5", input_tokens=100,
                            output_tokens=10, latency_s=0.01)
 

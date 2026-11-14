@@ -205,7 +205,7 @@ def test_retrieval_row_makes_no_model_call():
 def test_original_questions_retrieve_their_paragraph():
     # Baseline for every comparison: only g022, the known Run 2 miss, fails at k=4.
     # If this changes, the retriever changed and old robustness results aren't comparable.
-    r1 = RagAssistant(retriever_version="r1")
+    r1 = RagAssistant(retriever_version="r1", k=4)
     misses = [c["id"] for c in ELIGIBLE
               if retrieval_row({"id": c["id"], "source_id": c["id"], "style": "original",
                                 "question": c["question"]}, c, r1)["passage_hit"] is False]

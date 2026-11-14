@@ -8,13 +8,13 @@ import json
 import dashboard
 from app.agent import DEFAULT_AGENT_VERSION, DEFAULT_MAX_TURNS
 from app.llm import DEFAULT_MODEL
-from app.rag import DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION
+from app.rag import DEFAULT_K, DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION
 from evals.dashboard import (build_dashboard, fmt, gate_status, gate_totals, history, open_issues,
                              render_html, short_model, version_label)
 from evals.judge import DEFAULT_JUDGE_MODEL, DEFAULT_JUDGE_PROMPT
 from evals.scorecard import SUITES
 
-RAG = {"prompt_version": DEFAULT_PROMPT_VERSION, "retriever_version": DEFAULT_RETRIEVER_VERSION, "k": 4}
+RAG = {"prompt_version": DEFAULT_PROMPT_VERSION, "retriever_version": DEFAULT_RETRIEVER_VERSION, "k": DEFAULT_K}
 
 
 def case(i, **extra):
@@ -40,6 +40,11 @@ def latest_runs(ts="2026-10-30T03:00:00+00:00"):
             "summary": {"attack_success_rate": 1 / 21, "task_preserved_rate": 1.0,
                         "succeeded_ids": ["inj007"], "mentions_internals_ids": []},
             "cases": [case(i) for i in range(21)]},
+        "injection_v2_latest.json": {
+            "timestamp": ts, "model": DEFAULT_MODEL, "attacks_file": "injection_v2.jsonl", **RAG,
+            "summary": {"attack_success_rate": 1 / 22, "task_preserved_rate": 0.88,
+                        "succeeded_ids": ["inj125"], "mentions_internals_ids": []},
+            "cases": [case(i) for i in range(22)]},
         "jailbreak_latest.json": {
             "timestamp": ts, "model": DEFAULT_MODEL, "cases_file": "jailbreak_v1.jsonl", **RAG,
             "summary": {"attack_success_rate": 0.0, "over_refusal_rate": 0.0, "succeeded_ids": [],
@@ -77,7 +82,7 @@ def test_every_ci_gate_is_checked(tmp_path):
     gates = gate_status(tmp_path)
     assert [g["suite"] for g in gates] == list(SUITES)
     totals = gate_totals(gates)
-    assert totals == {"passed": 9, "failed": 0, "not_run": 0,
+    assert totals == {"passed": 10, "failed": 0, "not_run": 0,
                       "total": sum(len(s.gates) for s in SUITES.values())}
     assert all(g["default_setup"] for g in gates)
 
@@ -89,7 +94,7 @@ def test_a_failing_gate_is_counted_and_shown(tmp_path):
     data = build_dashboard(tmp_path)
     assert data["gate_totals"]["failed"] == 1
     page = render_html(data, generated_at="test")
-    assert "1 of 9 gates failing" in page
+    assert "1 of 10 gates failing" in page
     assert "✕</span> Fail" in page
 
 
@@ -98,8 +103,8 @@ def test_a_missing_results_file_is_not_run_not_passed(tmp_path):
     del files["robustness_latest.json"]
     write(tmp_path, files)
     totals = gate_totals(gate_status(tmp_path))
-    assert totals["not_run"] == 1 and totals["passed"] == 8
-    assert "8 of 9 gates passing, 1 not run" in render_html(build_dashboard(tmp_path), "test")
+    assert totals["not_run"] == 1 and totals["passed"] == 9
+    assert "9 of 10 gates passing, 1 not run" in render_html(build_dashboard(tmp_path), "test")
 
 
 def test_latest_file_from_a_non_default_setup_is_called_out(tmp_path):
@@ -135,7 +140,8 @@ def test_history_keeps_full_default_model_runs_in_time_order(tmp_path):
         "latest.json": golden_run("2026-10-22T00:00:00+00:00", 1.0),
     })
     h = history(tmp_path)["golden"]
-    assert [(p["label"], p["value"]) for p in h["points"]] == [("v1 r3", 0.90), (f"{DEFAULT_PROMPT_VERSION} r3", 1.0)]
+    assert [(p["label"], p["value"]) for p in h["points"]] == [(f"v1 {DEFAULT_RETRIEVER_VERSION}", 0.90),
+                                                                 (f"{DEFAULT_PROMPT_VERSION} {DEFAULT_RETRIEVER_VERSION}", 1.0)]
     assert h["gate"] == {"op": ">=", "limit": 0.85}
 
 
@@ -253,7 +259,7 @@ def test_cli_writes_the_page(tmp_path, capsys):
     assert dashboard.main(["--results-dir", str(tmp_path), "--out", str(out)]) == 0
     assert out.read_text(encoding="utf-8").startswith("<!DOCTYPE html>")
     printed = capsys.readouterr().out
-    assert "Gates: 9 passed, 0 failed, 0 not run (of 9)" in printed
+    assert "Gates: 10 passed, 0 failed, 0 not run (of 10)" in printed
 
 
 def test_cli_default_output_is_in_the_results_folder(tmp_path):

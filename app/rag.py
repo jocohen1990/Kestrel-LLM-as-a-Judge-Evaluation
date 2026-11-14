@@ -240,12 +240,14 @@ PROMPTS["v9"] = {
 # planted in a document changed an answer) for 22% fewer input tokens.
 # v6 since Run 12: v5's results on the golden set, injection and jailbreaks,
 # and it answers askers who state their age and gender (v5 refused 3 of 4).
-DEFAULT_PROMPT_VERSION = "v6"
+# v9 since Phase 8 (Run 33), shipped together with retriever r8 and k=8: golden_v4 39/40
+# (v6: 36), held-out injection_v2 1 attack (v6 + r3: 3), every CI gate passed.
+DEFAULT_PROMPT_VERSION = "v9"
 
 # Passages shown to the model per question. One setting (Phase 8) so every eval script,
 # the scorecard and the app change together if it changes: until Phase 8 each script had
 # its own --k default of 4, and the scorecard matched on k=4 by hand.
-DEFAULT_K = 4
+DEFAULT_K = 8   # 4 until Phase 8; 8 since Run 33, with r8 (the filter removes inj104 at k=8)
 
 
 # ---- Retriever versions -----------------------------------------------------
@@ -313,7 +315,10 @@ RETRIEVER_VERSIONS = {
 # the Spanish question jb109 answered, held-out rewordings 142 -> 150 of 155,
 # and injection, jailbreak and bias results unchanged. Costs one extra call:
 # +32% input tokens and about +0.6s per question.
-DEFAULT_RETRIEVER_VERSION = "r3"
+# r8 since Phase 8 (Run 33), with prompt v9 and k=8: the passage filter removes the planted
+# paragraph Phase 7's candidate obeyed (inj104), and 11 of 16 held-out ones. Costs +68% input
+# tokens per question against v6 + r3 at k=4, all from showing 8 passages.
+DEFAULT_RETRIEVER_VERSION = "r8"
 
 REWRITE_SYSTEM = """You turn a user's message into a search query for a keyword search over one company's financial filings: an annual report, quarterly earnings releases and a risk-factors filing.
 

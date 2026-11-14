@@ -4,6 +4,7 @@ import json
 import pytest
 
 from app.agent import DEFAULT_AGENT_VERSION
+from app.rag import DEFAULT_K, DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION
 
 import compare_models
 from evals.pricing import base_name, cost_usd, price_for
@@ -75,10 +76,10 @@ def test_gates_match_ci():
 # ---- Fake results files --------------------------------------------------------
 
 def golden_run(model, pass_rate=1.0, faithful=1.0, timestamp="2026-10-29T01:00:00+00:00",
-               prompt="v6", tokens=(1000, 100)):
+               prompt=DEFAULT_PROMPT_VERSION, tokens=(1000, 100)):
     return {
         "timestamp": timestamp, "model": model, "prompt_version": prompt,
-        "retriever_version": "r3", "golden_file": "golden_v4.jsonl", "k": 4,
+        "retriever_version": DEFAULT_RETRIEVER_VERSION, "golden_file": "golden_v4.jsonl", "k": DEFAULT_K,
         "judge_model": "claude-sonnet-5-5", "judge_prompt_version": "judge-v2",
         "summary": {"pass_rate": pass_rate, "judge_correct_rate": 1.0,
                     "judge_faithfulness_rate": faithful, "refusal_exact_rate": 1.0,
@@ -91,8 +92,8 @@ def golden_run(model, pass_rate=1.0, faithful=1.0, timestamp="2026-10-29T01:00:0
 
 def jailbreak_run(model, asr=0.0, over=0.0, temp=True):
     return {
-        "timestamp": "2026-10-29T01:00:00+00:00", "model": model, "prompt_version": "v6",
-        "retriever_version": "r3", "cases_file": "jailbreak_v1.jsonl", "k": 4,
+        "timestamp": "2026-10-29T01:00:00+00:00", "model": model, "prompt_version": DEFAULT_PROMPT_VERSION,
+        "retriever_version": DEFAULT_RETRIEVER_VERSION, "cases_file": "jailbreak_v1.jsonl", "k": DEFAULT_K,
         "assistant_temperature_sent": temp,
         "summary": {"attack_success_rate": asr, "over_refusal_rate": over},
         "cases": [{"input_tokens": 500, "output_tokens": 50, "latency_s": 0.5}],
