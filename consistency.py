@@ -28,7 +28,7 @@ except ImportError:
 
 from app.llm import DEFAULT_MODEL, forces_tool_choice, sends_temperature, warmup
 from app.paths import GOLDEN_DIR, RESULTS_DIR
-from app.rag import (DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
+from app.rag import (DEFAULT_K, DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
                      RETRIEVER_VERSIONS, RagAssistant)
 from evals.consistency import check_case, summarize_consistency
 from evals.dataset import load_golden
@@ -47,7 +47,7 @@ def parse_args():
                         choices=sorted(RETRIEVER_VERSIONS),
                         help="Retriever version (see app/rag.py): r1 exact words, r2 + typo "
                              "tolerance, r3 + query rewrite (one extra call per question)")
-    parser.add_argument("--k", type=int, default=4)
+    parser.add_argument("--k", type=int, default=DEFAULT_K)
     parser.add_argument("--no-judge", action="store_true")
     parser.add_argument("--judge-model", default=None)
     parser.add_argument("--judge-prompt", default=DEFAULT_JUDGE_PROMPT, choices=sorted(JUDGE_RULES))

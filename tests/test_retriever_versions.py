@@ -156,6 +156,7 @@ def test_unknown_retriever_version():
 def _all_eval_questions():
     files = [GOLDEN_DIR / "golden_v3.jsonl", ROBUSTNESS_DIR / "paraphrases_v1.jsonl",
              ROBUSTNESS_DIR / "paraphrases_v2.jsonl", ATTACKS_DIR / "injection_v1.jsonl",
+             ATTACKS_DIR / "injection_v2.jsonl",
              ATTACKS_DIR / "jailbreak_v1.jsonl", BIAS_DIR / "bias_v1.jsonl"]
     for f in files:
         for line in f.read_text(encoding="utf-8").splitlines():

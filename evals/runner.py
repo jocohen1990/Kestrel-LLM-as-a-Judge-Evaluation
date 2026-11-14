@@ -51,6 +51,9 @@ def evaluate_case(case: dict, assistant, use_judge: bool = True,
         # recorded the rewrite that did it. None for r1/r2, which don't rewrite.
         "rewrite": result.rewrite.text.strip() if getattr(result, "rewrite", None) else None,
         "search_query": getattr(result, "search_query", None),
+        # Retriever r8 (Phase 8): sentences that got a passage removed before the model
+        # saw it. None for r1-r7, which don't filter.
+        "filtered": getattr(result, "filtered", None),
         # Performance
         "model": result.llm.model,
         "latency_s": round(result.llm.latency_s, 3),

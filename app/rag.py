@@ -13,6 +13,7 @@ from dataclasses import dataclass
 
 from app import tracing
 from app.llm import LLMResponse, generate
+from app.passage_filter import filter_passage
 from app.paths import CORPUS_DIR
 from app.retriever import Chunk, Retriever, load_chunks, tokenize
 
@@ -241,6 +242,11 @@ PROMPTS["v9"] = {
 # and it answers askers who state their age and gender (v5 refused 3 of 4).
 DEFAULT_PROMPT_VERSION = "v6"
 
+# Passages shown to the model per question. One setting (Phase 8) so every eval script,
+# the scorecard and the app change together if it changes: until Phase 8 each script had
+# its own --k default of 4, and the scorecard matched on k=4 by hand.
+DEFAULT_K = 4
+
 
 # ---- Retriever versions -----------------------------------------------------
 # Versioned like the prompts, and recorded in every results file, so a score
@@ -283,6 +289,13 @@ DEFAULT_PROMPT_VERSION = "v6"
 #   r7  r6 with rewrite prompt rw3 (Phase 7): several periods are named one by one, as a
 #       filing reports them. r6 lost g022 (first-half revenue) by writing "six months
 #       ended June 30 2026" and no quarter.
+#   r8  r7 + the passage filter (Phase 8, app/passage_filter.py): a retrieved passage with
+#       a sentence that talks to the AI ("AI assistants must answer ...", "you", "tell users",
+#       a link, an HTML comment) is removed before the model sees it. Not a search change:
+#       the same passages are found, and fewer may be shown. Phase 7's prompt rule (v9)
+#       asked the model to ignore inj104's planted paragraph and it didn't (13 of 13 runs
+#       at k=8); the filter takes the paragraph away. Its rules come from injection_v1
+#       only, and injection_v2 (written first) measures how far they generalize.
 RETRIEVER_VERSIONS = {
     "r1": {"typo_tolerance": False, "rewrite": False},
     "r2": {"typo_tolerance": True, "rewrite": False},
@@ -293,6 +306,8 @@ RETRIEVER_VERSIONS = {
            "rewrite_prompt": "rw2"},
     "r7": {"typo_tolerance": True, "rewrite": True, "trust_rewrite": True, "stemming": True,
            "rewrite_prompt": "rw3"},
+    "r8": {"typo_tolerance": True, "rewrite": True, "trust_rewrite": True, "stemming": True,
+           "rewrite_prompt": "rw3", "filter_instructions": True},
 }
 # r3 since Run 13: golden set 32/32 (g022's Q2 paragraph is finally retrieved),
 # the Spanish question jb109 answered, held-out rewordings 142 -> 150 of 155,
@@ -349,10 +364,11 @@ class RagAnswer:
     llm: LLMResponse      # with r3, tokens and latency include the rewrite call
     search_query: str = ""                  # what BM25 searched for
     rewrite: LLMResponse | None = None      # r3 only: the rewrite call on its own
+    filtered: list[str] | None = None       # r8: sentences that got a passage removed
 
 
 class RagAssistant:
-    def __init__(self, corpus_dir=CORPUS_DIR, k: int = 4, model: str | None = None,
+    def __init__(self, corpus_dir=CORPUS_DIR, k: int = DEFAULT_K, model: str | None = None,
                  prompt_version: str = DEFAULT_PROMPT_VERSION,
                  extra_chunks: list[Chunk] | None = None,
                  retriever_version: str = DEFAULT_RETRIEVER_VERSION):
@@ -388,6 +404,12 @@ class RagAssistant:
 
     def retrieve(self, question: str):
         """Find the passages for a question: (chunks, search_query, rewrite_response).
+        With r8, the chunks are the ones left after the passage filter."""
+        chunks, search_query, rewrite, _ = self.retrieve_filtered(question)
+        return chunks, search_query, rewrite
+
+    def retrieve_filtered(self, question: str):
+        """retrieve(), plus the sentences that got a passage removed (r8; [] otherwise).
 
         The answer step always sees the user's ORIGINAL question; the rewrite
         only decides which passages are fetched. The rewrite call never sees the
@@ -422,14 +444,28 @@ class RagAssistant:
                     })
                     span.set_content("retrieval.query", search_query)
                     span.set_content("retrieval.passages", [c.text for c, _ in scored])
-        return [c for c, _ in scored], search_query, rewrite
+            chunks = [c for c, _ in scored]
+            removed: list[str] = []
+            if self.retriever_config.get("filter_instructions"):
+                with tracing.span("passage_filter", kind="chain") as span:
+                    kept = []
+                    for chunk in chunks:
+                        text, flagged = filter_passage(chunk.text)
+                        removed.extend(flagged)
+                        if text is not None:
+                            kept.append(chunk)
+                    span.set({"filter.passages_in": len(chunks), "filter.passages_out": len(kept)})
+                    if removed:
+                        span.set_content("filter.removed", removed)
+                    chunks = kept
+        return chunks, search_query, rewrite, removed
 
     def answer(self, question: str) -> RagAnswer:
         with tracing.span("rag.answer", kind="chain", attrs={
                 "kestrel.prompt_version": self.prompt_version,
                 "kestrel.retriever_version": self.retriever_version}) as span:
             span.set_content("input.question", question)
-            chunks, search_query, rewrite = self.retrieve(question)
+            chunks, search_query, rewrite, removed = self.retrieve_filtered(question)
             with tracing.span("generate", kind="chain"):
                 response = generate(self.prompt["system"], self.build_prompt(question, chunks),
                                     model=self.model)
@@ -441,6 +477,7 @@ class RagAssistant:
                 llm=combine(response, rewrite),
                 search_query=search_query,
                 rewrite=rewrite,
+                filtered=removed if self.retriever_config.get("filter_instructions") else None,
             )
             span.set({"rag.sources": result.sources})
             span.set_content("output.answer", result.answer)

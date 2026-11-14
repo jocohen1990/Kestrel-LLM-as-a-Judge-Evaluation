@@ -26,7 +26,7 @@ except ImportError:
 
 from app.llm import DEFAULT_MODEL, sends_temperature, warmup
 from app.paths import BIAS_DIR, RESULTS_DIR
-from app.rag import (DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
+from app.rag import (DEFAULT_K, DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
                      RETRIEVER_VERSIONS, RagAssistant)
 from evals.bias import load_bias, run_row, summarize_bias
 
@@ -41,7 +41,7 @@ def parse_args():
                         choices=sorted(RETRIEVER_VERSIONS),
                         help="Retriever version (see app/rag.py): r1 exact words, r2 + typo "
                              "tolerance, r3 + query rewrite (one extra call per question)")
-    parser.add_argument("--k", type=int, default=4)
+    parser.add_argument("--k", type=int, default=DEFAULT_K)
     parser.add_argument("--min-consistency", type=float, default=None,
                         help="Fail (exit 1) if the share of consistent groups is below this")
     # The CI gate uses this one. Verdicts are reliable; word flags aren't (a model

@@ -27,7 +27,7 @@ except ImportError:
 
 from app.llm import DEFAULT_MODEL, sends_temperature, warmup
 from app.paths import ATTACKS_DIR, RESULTS_DIR
-from app.rag import (DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
+from app.rag import (DEFAULT_K, DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
                      RETRIEVER_VERSIONS, RagAssistant)
 from evals.jailbreak import KINDS, load_jailbreaks, run_case, summarize_jailbreak
 
@@ -43,7 +43,7 @@ def parse_args():
                         choices=sorted(RETRIEVER_VERSIONS),
                         help="Retriever version (see app/rag.py): r1 exact words, r2 + typo "
                              "tolerance, r3 + query rewrite (one extra call per question)")
-    parser.add_argument("--k", type=int, default=4)
+    parser.add_argument("--k", type=int, default=DEFAULT_K)
     parser.add_argument("--max-asr", type=float, default=None,
                         help="Fail (exit 1) if the attack success rate is above this")
     parser.add_argument("--max-over-refusal", type=float, default=None,

@@ -34,7 +34,7 @@ except ImportError:
 
 from app.llm import forces_tool_choice, warmup
 from app.paths import GOLDEN_DIR, RESULTS_DIR
-from app.rag import (DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
+from app.rag import (DEFAULT_K, DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
                      RETRIEVER_VERSIONS, RagAssistant)
 from evals.dataset import load_golden
 from evals.judge import (DEFAULT_JUDGE_MODEL, DEFAULT_JUDGE_PROMPT, DEFAULT_OUTPUT_MODE,
@@ -59,7 +59,7 @@ def parse_args():
                         help="Only these case ids (Phase 7, for repeat runs). Saves a timestamped "
                              "file but not latest.json, so a partial run never replaces the "
                              "dashboard's full one")
-    parser.add_argument("--k", type=int, default=4, help="Passages to retrieve per question")
+    parser.add_argument("--k", type=int, default=DEFAULT_K, help="Passages to retrieve per question")
     parser.add_argument("--threshold", type=float, default=0.85,
                         help="Minimum rule-based pass rate")
     parser.add_argument("--min-faithfulness", type=float, default=0.9,

@@ -26,7 +26,7 @@ except ImportError:
 
 from app.llm import DEFAULT_MODEL, sends_temperature, warmup
 from app.paths import GOLDEN_DIR, RESULTS_DIR, ROBUSTNESS_DIR
-from app.rag import (DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
+from app.rag import (DEFAULT_K, DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
                      RETRIEVER_VERSIONS, RagAssistant)
 from evals.dataset import load_golden
 from evals.robustness import (ALL_STYLES, STYLES, build_variants, load_hand_variants, retrieval_row,
@@ -47,7 +47,7 @@ def parse_args():
                         choices=sorted(RETRIEVER_VERSIONS),
                         help="Retriever version (see app/rag.py): r1 exact words, r2 + typo "
                              "tolerance, r3 + query rewrite (one extra call per question)")
-    parser.add_argument("--k", type=int, default=4)
+    parser.add_argument("--k", type=int, default=DEFAULT_K)
     parser.add_argument("--retrieval-only", action="store_true",
                         help="Only check retrieval (free, no API key needed)")
     parser.add_argument("--min-robustness", type=float, default=None,

@@ -1,7 +1,8 @@
 """Prompt-injection eval: attack the assistant and measure how often it works.
 
 Usage:
-    python injection.py                          # all 21 attacks, prompt v2
+    python injection.py                          # all 21 attacks of injection_v1, default setup
+    python injection.py --attacks data/attacks/injection_v2.jsonl   # the held-out set (Phase 8)
     python injection.py --prompt v1              # is the older prompt easier to attack?
     python injection.py --type indirect          # only attacks hidden in documents
     python injection.py --ids inj101 inj104      # only some cases
@@ -31,7 +32,7 @@ except ImportError:
 
 from app.llm import DEFAULT_MODEL, sends_temperature, warmup
 from app.paths import ATTACKS_DIR, RESULTS_DIR
-from app.rag import (DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
+from app.rag import (DEFAULT_K, DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
                      RETRIEVER_VERSIONS, RagAssistant)
 from evals.injection import (ATTACK_TYPES, REVIEWED_FALSE_POSITIVES, load_attacks, poison_chunk,
                              real_attacks_succeeded, run_case, summarize_injection)
@@ -49,7 +50,7 @@ def parse_args():
                         choices=sorted(RETRIEVER_VERSIONS),
                         help="Retriever version (see app/rag.py): r1 exact words, r2 + typo "
                              "tolerance, r3 + query rewrite (one extra call per question)")
-    parser.add_argument("--k", type=int, default=4)
+    parser.add_argument("--k", type=int, default=DEFAULT_K)
     parser.add_argument("--no-control", action="store_true",
                         help="Don't re-ask indirect questions on the clean corpus")
     parser.add_argument("--max-asr", type=float, default=None,
@@ -59,6 +60,21 @@ def parse_args():
                              "false positives (evals/injection.py REVIEWED_FALSE_POSITIVES). "
                              "CI uses 0 since Phase 7")
     return parser.parse_args()
+
+
+def latest_name(attacks_file) -> str:
+    """The file this run overwrites. CI's set (injection_v1) keeps injection_latest.json,
+    which the dashboard and the scorecard read; any other set gets its own, so a run on
+    the held-out set (Phase 8) can't replace the CI gate's latest result."""
+    stem = Path(attacks_file).stem
+    if stem == "injection_v1":
+        return "injection_latest.json"
+    return f"injection_{stem.removeprefix('injection_')}_latest.json"   # injection_v2_latest.json
+
+
+def is_partial(args) -> bool:
+    """Only some of the set's cases were run."""
+    return bool(args.ids or args.type)
 
 
 def fmt(value) -> str:
@@ -88,6 +104,7 @@ def print_report(run: dict) -> None:
                        ("prompt_leak_ids", "System prompt leaked"),
                        ("mentions_internals_ids", "Mentions internals"),
                        ("poison_not_retrieved_ids", "Poison NOT retrieved (attack untested)"),
+                       ("poison_filtered_ids", "Poison removed by the filter (r8)"),
                        ("control_failed_ids", "Control failed (task failure not the attack's)")):
         if s[key]:
             print(f"  {label + ':':<31} {', '.join(s[key])}")
@@ -142,16 +159,25 @@ def main() -> int:
         "attacks_file": Path(args.attacks).name,
         "k": args.k,
         "controls": not args.no_control,
+        "ids": args.ids,
+        "type_filter": args.type,
         "summary": summarize_injection(rows),
         "cases": rows,
     }
     RESULTS_DIR.mkdir(exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    for name in (f"injection_{stamp}.json", "injection_latest.json"):
+    # A run of some cases only (--ids, --type) saves its timestamped file but not the
+    # latest one, the way run_evals.py --ids does (Phase 7): Phase 8's inj104 repeats
+    # replaced injection_latest.json, which the dashboard's gate reads, with a 1-case run.
+    names = [f"injection_{stamp}.json"]
+    if not is_partial(args):
+        names.append(latest_name(args.attacks))
+    for name in names:
         (RESULTS_DIR / name).write_text(json.dumps(run, indent=2), encoding="utf-8")
 
     print_report(run)
-    print("\nSaved results/injection_latest.json")
+    print(f"\nSaved results/{names[-1]}"
+          + (" (some cases only, so the latest file is unchanged)" if is_partial(args) else ""))
 
     asr = run["summary"]["attack_success_rate"]
     if args.max_asr is not None and asr is not None and asr > args.max_asr:

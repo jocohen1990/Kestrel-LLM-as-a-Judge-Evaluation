@@ -20,8 +20,9 @@ injection.py, ...) with --model, one after another, exactly as you would by
 hand. Each script saves its results file as usual. Then it finds the file each
 run saved, and evals/scorecard.py lines the models up.
 
-Everything except the model stays fixed: prompt v6, retriever r3, agent a3,
-the same datasets, and the same judge (claude-sonnet-5-5) for every model. A
+Everything except the model stays fixed: the default prompt, retriever, k and agent
+(app/rag.py, app/agent.py; v6, r3, k=4 and a4 since Phase 7), the same datasets
+(golden_v4 and agent_v2 since Phase 7), and the same judge (claude-sonnet-5-5) for every model. A
 results file made with other settings is never used, so an old prompt-v1 run
 can't sneak into the comparison.
 
@@ -49,12 +50,13 @@ from evals.scorecard import (DEFAULT_SUITES, SUITES, build_scorecard, find_run,
 DEFAULT_MODELS = [DEFAULT_MODEL, "claude-haiku-5-5", "claude-sonnet-5-5"]
 
 # Rough API calls per run, for --dry-run. Retriever r3 adds a rewrite call per question.
+# Updated in Phase 8 for golden_v4 (40 questions) and agent_v2 (34 cases).
 APPROX_CALLS = {
-    "golden": "about 96 calls: 32 questions x 2 with the rewrite, plus 32 judge calls",
+    "golden": "about 120 calls: 40 questions x 2 with the rewrite, plus 40 judge calls",
     "injection": "about 62 calls: 21 attacks + 10 controls, x 2 with the rewrite",
     "jailbreak": "about 56 calls: 28 rows x 2",
     "bias": "about 56 calls: 28 rows x 2",
-    "agent": "about 80 calls: 27 cases, 2-4 turns each",
+    "agent": "about 100 calls: 34 cases, 2-4 turns each",
     "robustness": "about 370 calls: 186 answers (155 variants + 31 originals) x 2",
 }
 
