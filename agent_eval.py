@@ -35,7 +35,9 @@ from evals.agent_eval import CATEGORIES, load_agent_cases, run_case, summarize_a
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run the agent evals.")
-    parser.add_argument("--cases", default=AGENT_DIR / "agent_v1.jsonl")
+    # agent_v2 since Phase 7: agent_v1's 27 cases plus the 7 production failures from
+    # Runs 21-22 (ag028-ag034), so CI now checks the problems production found.
+    parser.add_argument("--cases", default=AGENT_DIR / "agent_v2.jsonl")
     parser.add_argument("--ids", nargs="*", default=None, help="Only these case ids")
     parser.add_argument("--category", choices=sorted(CATEGORIES), default=None)
     parser.add_argument("--model", default=None, help="Agent model")

@@ -7,6 +7,7 @@
 | Review | `reviews_v1.jsonl`: one person's reading of every Run 20 (RAG) and Run 21 (agent) reply on traffic_v1 that had a problem |
 | Review (held-out) | `reviews_v2.jsonl`: the same for Run 22 (both apps on traffic_v2) |
 | Review (release) | `reviews_v3.jsonl`: the same for Run 24 (RAG with prompt v7 and retriever r4 on traffic_v2) |
+| Review (release) | `reviews_v4.jsonl`: the same for Run 30 (agent prompt a4 on traffic_v2; Phase 7). Only a4's replies that differ from Run 22's were re-read; the rest are as reviewed in `reviews_v2` |
 | Used by | `python traffic.py` (Phase 6): replays the requests through the app as if they were production traffic, and records a trace for each |
 | Author | Hand-written for Phase 6, after Run 19 |
 | Overlap with eval data | None: no question here is word for word a question in any eval dataset (`tests/test_traffic.py` checks) |

@@ -47,6 +47,10 @@ def evaluate_case(case: dict, assistant, use_judge: bool = True,
         "retrieval_hit": retrieval_hit(case, result.sources),
         "passage_hit": passage_hit(case, result.contexts),
         "contexts": result.contexts,   # saved so humans can check faithfulness later
+        # What was searched for (Phase 7): r6 lost g022's Q2 paragraph and nothing
+        # recorded the rewrite that did it. None for r1/r2, which don't rewrite.
+        "rewrite": result.rewrite.text.strip() if getattr(result, "rewrite", None) else None,
+        "search_query": getattr(result, "search_query", None),
         # Performance
         "model": result.llm.model,
         "latency_s": round(result.llm.latency_s, 3),

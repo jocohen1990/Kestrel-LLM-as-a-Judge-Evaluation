@@ -7,6 +7,8 @@ Usage:
     python injection.py --ids inj101 inj104      # only some cases
     python injection.py --no-control             # skip the clean-corpus control runs
     python injection.py --max-asr 0.10           # exit 1 if more than 10% of attacks work
+    python injection.py --max-attacks 0          # exit 1 if any attack works, leaving out
+                                                 # reviewed false positives (the CI gate)
 
 Cost: one assistant call per attack, plus one control call per indirect attack
 (31 calls by default). No judge calls: every check is rule-based.
@@ -31,7 +33,8 @@ from app.llm import DEFAULT_MODEL, sends_temperature, warmup
 from app.paths import ATTACKS_DIR, RESULTS_DIR
 from app.rag import (DEFAULT_PROMPT_VERSION, DEFAULT_RETRIEVER_VERSION, PROMPTS,
                      RETRIEVER_VERSIONS, RagAssistant)
-from evals.injection import ATTACK_TYPES, load_attacks, poison_chunk, run_case, summarize_injection
+from evals.injection import (ATTACK_TYPES, REVIEWED_FALSE_POSITIVES, load_attacks, poison_chunk,
+                             real_attacks_succeeded, run_case, summarize_injection)
 
 
 def parse_args():
@@ -51,6 +54,10 @@ def parse_args():
                         help="Don't re-ask indirect questions on the clean corpus")
     parser.add_argument("--max-asr", type=float, default=None,
                         help="Fail (exit 1) if the attack success rate is above this, e.g. 0.10")
+    parser.add_argument("--max-attacks", type=int, default=None,
+                        help="Fail (exit 1) if more attacks than this work, not counting reviewed "
+                             "false positives (evals/injection.py REVIEWED_FALSE_POSITIVES). "
+                             "CI uses 0 since Phase 7")
     return parser.parse_args()
 
 
@@ -73,6 +80,8 @@ def print_report(run: dict) -> None:
     print(f"  Poisoned passage retrieved:   {fmt(s['poison_retrieved_rate'])}")
     if s["control_task_passed_rate"] is not None:
         print(f"  Clean-corpus control passed:  {fmt(s['control_task_passed_rate'])}")
+    print(f"  Real attacks that worked:     {real_attacks_succeeded(s)} "
+          f"(reviewed false positives left out: {', '.join(sorted(REVIEWED_FALSE_POSITIVES))})")
     for key, label in (("succeeded_ids", "ATTACKS THAT WORKED"),
                        ("task_broken_ids", "Real answer broken by attack"),
                        ("impact_only_ids", "Impact without the exact goal"),
@@ -147,6 +156,10 @@ def main() -> int:
     asr = run["summary"]["attack_success_rate"]
     if args.max_asr is not None and asr is not None and asr > args.max_asr:
         print(f"\nFAIL: attack success rate {asr:.0%} is above the {args.max_asr:.0%} limit")
+        return 1
+    real = real_attacks_succeeded(run["summary"])
+    if args.max_attacks is not None and real is not None and real > args.max_attacks:
+        print(f"\nFAIL: {real} real attack(s) worked, above the limit of {args.max_attacks}")
         return 1
     return 0
 

@@ -37,6 +37,42 @@ def tokenize(text: str) -> list[str]:
     return [w for w in words if w not in STOPWORDS]
 
 
+def stem(word: str) -> str:
+    """Cut a word back to a root that its other forms share, so they match in search.
+
+    Retriever r5 (Phase 7). BM25 only matches identical words, so "headquarters"
+    in a question gets no credit for "headquartered" in the filing (Run 24, u018).
+    Both become "headquarter". This is a deliberately small "light stemmer", written
+    out by hand like BM25 above; well-known full versions (Porter, Snowball) have
+    dozens of rules. Its four steps, in order:
+
+      1. plurals:  "companies" -> "company", "risks" -> "risk"
+                   (not "ss"/"us"/"is" endings: "business", "status", "basis")
+      2. verb endings "ing" / "ed":  "trucking" -> "truck", "reported" -> "report"
+      3. a final "e":  "revenue" and "revenues" both end up "revenu"
+      4. nothing else. In particular NOT "er": "officer" must not become "office"
+         (u001: the leadership paragraph's "officer" was the wrong match).
+
+    A step only applies if at least 4 letters are left, so short words stay whole
+    ("during" doesn't become "dur"). Words of 4 letters or fewer, and numbers, are
+    never changed. Over the corpus's 216 words it merges 9 groups, all real word
+    forms (tests/test_phase7.py lists them), and splits nothing.
+    """
+    if not word.isalpha() or len(word) <= 4:
+        return word
+    if word.endswith("ies") and len(word) - 3 >= 3:
+        word = word[:-3] + "y"
+    elif word.endswith("s") and not word.endswith(("ss", "us", "is")):
+        word = word[:-1]
+    for suffix in ("ing", "ed"):
+        if word.endswith(suffix) and len(word) - len(suffix) >= 4:
+            word = word[:-len(suffix)]
+            break
+    if word.endswith("e") and len(word) - 1 >= 4:
+        word = word[:-1]
+    return word
+
+
 def edit_distance(a: str, b: str, limit: int) -> int:
     """Damerau-Levenshtein distance (optimal string alignment): how many single-letter
     edits turn `a` into `b`. An edit is inserting, deleting or replacing a letter, or
@@ -112,18 +148,30 @@ class Retriever:
     """
 
     def __init__(self, chunks: list[Chunk], k1: float = 1.5, b: float = 0.75,
-                 typo_tolerance: bool = False):
+                 typo_tolerance: bool = False, stemming: bool = False):
         """typo_tolerance: correct query words that appear nowhere in the corpus to
         the closest word that does (retriever r2, added after Run 9: one misspelled
         word per question was harmless, but three lost the answer's paragraph
         5 times out of 31, because BM25 gives "Feburary" no credit for "February").
-        Off by default, so r1 stays exactly as measured in Runs 1-12."""
+        Off by default, so r1 stays exactly as measured in Runs 1-12.
+
+        stemming: index and search word roots instead of exact words (retriever r5,
+        Phase 7; see stem()). Off by default, so r1-r4 score exactly as measured."""
         if not chunks:
             raise ValueError("No chunks to index. Is the corpus folder empty?")
         self.chunks = chunks
         self.k1 = k1
         self.b = b
-        self.doc_tokens = [tokenize(c.text) for c in chunks]
+        self.stemming = stemming
+        self.typo_tolerance = typo_tolerance
+
+        # The real words in each chunk. Typo correction compares against these:
+        # a correction should name a word the filings actually use.
+        raw_tokens = [tokenize(c.text) for c in chunks]
+        self.word_freq = Counter(word for tokens in raw_tokens for word in set(tokens))
+
+        # What BM25 actually indexes: the same words, or their roots with stemming on.
+        self.doc_tokens = [[self.index_term(w) for w in tokens] for tokens in raw_tokens]
         self.term_counts = [Counter(tokens) for tokens in self.doc_tokens]
         self.avg_len = sum(len(t) for t in self.doc_tokens) / len(self.doc_tokens)
 
@@ -132,7 +180,10 @@ class Retriever:
         n = len(chunks)
         self.idf = {w: math.log(1 + (n - df + 0.5) / (df + 0.5)) for w, df in doc_freq.items()}
         self.doc_freq = doc_freq
-        self.typo_tolerance = typo_tolerance
+
+    def index_term(self, word: str) -> str:
+        """The form a word is indexed and searched under."""
+        return stem(word) if self.stemming else word
 
     def correct(self, word: str) -> str:
         """The corpus word a misspelled query word most likely meant, or the word unchanged.
@@ -141,17 +192,23 @@ class Retriever:
         swapped for another. Numbers are never touched ("2025" must not become
         "2026"). Closest match wins; ties go to the word in more passages, the
         usual tie-break in spelling correction (a common word is a likelier target).
+
+        With stemming, a word whose root is in the corpus isn't a typo either:
+        "headquarters" is another form of "headquartered", and the search already
+        matches them, so it's left alone.
         """
         limit = typo_limit(word)
-        if word in self.idf or not word.isalpha() or limit == 0:
+        if word in self.word_freq or not word.isalpha() or limit == 0:
+            return word
+        if self.stemming and stem(word) in self.idf:
             return word
         best, best_key = word, None
-        for candidate in self.idf:
+        for candidate in self.word_freq:
             if not candidate.isalpha():
                 continue
             d = edit_distance(word, candidate, limit)
             if d <= limit:
-                key = (d, -self.doc_freq[candidate], candidate)
+                key = (d, -self.word_freq[candidate], candidate)
                 if best_key is None or key < best_key:
                     best, best_key = candidate, key
         return best
@@ -160,9 +217,9 @@ class Retriever:
         """keep: words never to correct, even though the corpus doesn't have them
         (retriever r4 passes the query rewrite's own words; see app/rag.py)."""
         tokens = tokenize(query)
-        if not self.typo_tolerance:
-            return tokens
-        return [t if t in keep else self.correct(t) for t in tokens]
+        if self.typo_tolerance:
+            tokens = [t if t in keep else self.correct(t) for t in tokens]
+        return [self.index_term(t) for t in tokens]
 
     def corrections(self, query: str, keep: frozenset = frozenset()) -> dict[str, str]:
         """Which query words were corrected, and to what. For reports and debugging."""
@@ -181,9 +238,9 @@ class Retriever:
             total += self.idf[word] * tf * (self.k1 + 1) / denominator
         return total
 
-    def search(self, query: str, k: int = 4) -> list[Chunk]:
+    def search(self, query: str, k: int = 4, keep: frozenset = frozenset()) -> list[Chunk]:
         """Return the k chunks with the highest BM25 score for the query."""
-        return [chunk for chunk, _ in self.search_scored(query, k)]
+        return [chunk for chunk, _ in self.search_scored(query, k, keep)]
 
     def search_scored(self, query: str, k: int = 4,
                       keep: frozenset = frozenset()) -> list[tuple[Chunk, float]]:

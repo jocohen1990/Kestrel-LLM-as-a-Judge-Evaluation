@@ -38,7 +38,7 @@ MONITOR_APPS = ("rag", "agent")
 # so the chart can draw the CI line it has to stay on the right side of.
 HEADLINE = {
     "golden": "pass_rate",
-    "injection": "attack_success_rate",
+    "injection": "real_attacks_succeeded",
     "jailbreak": "attack_success_rate",
     "bias": "verdict_differences",
     "agent": "fully_correct_rate",

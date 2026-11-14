@@ -1,13 +1,14 @@
 """Run the golden dataset through the RAG assistant and save a scorecard.
 
 Usage:
-    python run_evals.py                          # golden v3, with the LLM judge
+    python run_evals.py                          # golden v4, with the LLM judge
     python run_evals.py --no-judge               # rule-based graders only (cheaper)
     python run_evals.py --golden data/golden/golden_v1.jsonl
     python run_evals.py --prompt v1              # compare against the original prompt
     python run_evals.py --model <model-name>     # evaluate a different assistant model
     python run_evals.py --judge-model <name>     # use a different judge
     python run_evals.py --judge-prompt judge-v1  # grade with the original judge prompt
+    python run_evals.py --ids g036 g037 --no-judge   # only these cases; latest.json untouched
 
 Tests vs. evals, a distinction worth explaining in interviews:
   * `pytest` (the tests/ folder) checks that OUR CODE works. Offline, free,
@@ -44,7 +45,9 @@ from evals.runner import evaluate_case
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run LLM evals against the golden dataset.")
-    parser.add_argument("--golden", default=GOLDEN_DIR / "golden_v3.jsonl", help="Golden dataset file")
+    # golden_v4 since Phase 7: golden_v3's 32 plus the 8 production failures from Runs
+    # 20-24 (g033-g040). The default setup passes 36/40 (90%) on it, above the 0.85 gate.
+    parser.add_argument("--golden", default=GOLDEN_DIR / "golden_v4.jsonl", help="Golden dataset file")
     parser.add_argument("--model", default=None, help="Assistant model (defaults to app.llm.DEFAULT_MODEL)")
     parser.add_argument("--prompt", default=DEFAULT_PROMPT_VERSION, choices=sorted(PROMPTS),
                         help="Assistant prompt version (see app/rag.py)")
@@ -52,6 +55,10 @@ def parse_args():
                         choices=sorted(RETRIEVER_VERSIONS),
                         help="Retriever version (see app/rag.py): r1 exact words, r2 + typo "
                              "tolerance, r3 + query rewrite (one extra call per question)")
+    parser.add_argument("--ids", nargs="*", default=None,
+                        help="Only these case ids (Phase 7, for repeat runs). Saves a timestamped "
+                             "file but not latest.json, so a partial run never replaces the "
+                             "dashboard's full one")
     parser.add_argument("--k", type=int, default=4, help="Passages to retrieve per question")
     parser.add_argument("--threshold", type=float, default=0.85,
                         help="Minimum rule-based pass rate")
@@ -113,6 +120,11 @@ def check_gates(summary: dict, args) -> list[str]:
 def main() -> int:
     args = parse_args()
     cases = load_golden(args.golden)
+    if args.ids:
+        unknown = set(args.ids) - {c["id"] for c in cases}
+        if unknown:
+            raise SystemExit(f"unknown case ids: {sorted(unknown)}")
+        cases = [c for c in cases if c["id"] in set(args.ids)]
     assistant = RagAssistant(k=args.k, model=args.model, prompt_version=args.prompt,
                             retriever_version=args.retriever)
     judge_model = None if args.no_judge else (
@@ -151,6 +163,7 @@ def main() -> int:
                                      if judge_model and args.judge_output == "tool" else None),
         "golden_file": Path(args.golden).name,
         "k": args.k,
+        "ids": args.ids,
         "threshold": args.threshold,
         "min_faithfulness": args.min_faithfulness,
         "summary": summarize(rows),
@@ -160,7 +173,8 @@ def main() -> int:
     # Save a timestamped copy (history) plus latest.json (for the dashboard).
     RESULTS_DIR.mkdir(exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    for name in (f"run_{stamp}.json", "latest.json"):
+    names = [f"run_{stamp}.json"] + ([] if args.ids else ["latest.json"])
+    for name in names:
         (RESULTS_DIR / name).write_text(json.dumps(run, indent=2), encoding="utf-8")
 
     print_scorecard(run)

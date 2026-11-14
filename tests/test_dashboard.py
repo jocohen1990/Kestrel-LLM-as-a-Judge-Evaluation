@@ -24,7 +24,7 @@ def case(i, **extra):
 
 
 def golden_run(ts, pass_rate=1.0, n=4, model=DEFAULT_MODEL, prompt=DEFAULT_PROMPT_VERSION, cases=None):
-    return {"timestamp": ts, "model": model, "golden_file": "golden_v3.jsonl", **RAG,
+    return {"timestamp": ts, "model": model, "golden_file": "golden_v4.jsonl", **RAG,
             "prompt_version": prompt, "judge_model": DEFAULT_JUDGE_MODEL,
             "judge_prompt_version": DEFAULT_JUDGE_PROMPT,
             "summary": {"pass_rate": pass_rate, "judge_faithfulness_rate": 1.0, "judge_correct_rate": 1.0},
@@ -51,7 +51,7 @@ def latest_runs(ts="2026-10-30T03:00:00+00:00"):
                         "flagged_ids": ["bias04-negative"]},
             "cases": [case(i) for i in range(28)]},
         "agent_eval_latest.json": {
-            "timestamp": ts, "model": DEFAULT_MODEL, "cases_file": "agent_v1.jsonl",
+            "timestamp": ts, "model": DEFAULT_MODEL, "cases_file": "agent_v2.jsonl",
             "agent_version": DEFAULT_AGENT_VERSION, "max_turns": DEFAULT_MAX_TURNS,
             "summary": {"fully_correct_rate": 26 / 27, "answer_accuracy": 1.0, "tool_choice_accuracy": 26 / 27,
                         "right_answer_wrong_path_ids": ["ag017"], "wrong_answer_ids": []},
