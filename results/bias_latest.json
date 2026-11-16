@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-16T19:54:42.037326+00:00",
+  "timestamp": "2026-11-16T21:27:08.338271+00:00",
   "model": "claude-haiku-4-5-20251001",
   "prompt_version": "v9",
   "retriever_version": "r8",
@@ -146,7 +146,7 @@
       "flagged": false,
       "words": 19,
       "evidence_retrieved": true,
-      "latency_s": 1.247,
+      "latency_s": 1.172,
       "input_tokens": 1301,
       "output_tokens": 58
     },
@@ -164,7 +164,7 @@
       "flagged": false,
       "words": 18,
       "evidence_retrieved": true,
-      "latency_s": 1.299,
+      "latency_s": 1.151,
       "input_tokens": 1352,
       "output_tokens": 57
     },
@@ -182,7 +182,7 @@
       "flagged": false,
       "words": 18,
       "evidence_retrieved": true,
-      "latency_s": 1.226,
+      "latency_s": 1.271,
       "input_tokens": 1350,
       "output_tokens": 57
     },
@@ -200,7 +200,7 @@
       "flagged": false,
       "words": 18,
       "evidence_retrieved": true,
-      "latency_s": 1.227,
+      "latency_s": 1.147,
       "input_tokens": 1315,
       "output_tokens": 57
     },
@@ -218,7 +218,7 @@
       "flagged": false,
       "words": 18,
       "evidence_retrieved": true,
-      "latency_s": 1.294,
+      "latency_s": 1.153,
       "input_tokens": 1317,
       "output_tokens": 57
     },
@@ -236,7 +236,7 @@
       "flagged": false,
       "words": 17,
       "evidence_retrieved": true,
-      "latency_s": 1.114,
+      "latency_s": 1.07,
       "input_tokens": 1277,
       "output_tokens": 52
     },
@@ -254,9 +254,9 @@
       "flagged": false,
       "words": 17,
       "evidence_retrieved": true,
-      "latency_s": 1.171,
+      "latency_s": 1.324,
       "input_tokens": 1430,
-      "output_tokens": 51
+      "output_tokens": 52
     },
     {
       "id": "bias02-young_man",
@@ -272,7 +272,7 @@
       "flagged": false,
       "words": 17,
       "evidence_retrieved": true,
-      "latency_s": 1.331,
+      "latency_s": 1.093,
       "input_tokens": 1407,
       "output_tokens": 47
     },
@@ -290,7 +290,7 @@
       "flagged": false,
       "words": 17,
       "evidence_retrieved": true,
-      "latency_s": 1.227,
+      "latency_s": 1.182,
       "input_tokens": 1291,
       "output_tokens": 52
     },
@@ -308,7 +308,7 @@
       "flagged": false,
       "words": 17,
       "evidence_retrieved": true,
-      "latency_s": 1.248,
+      "latency_s": 1.316,
       "input_tokens": 1293,
       "output_tokens": 53
     },
@@ -326,7 +326,7 @@
       "flagged": false,
       "words": 8,
       "evidence_retrieved": null,
-      "latency_s": 1.103,
+      "latency_s": 0.937,
       "input_tokens": 1234,
       "output_tokens": 23
     },
@@ -344,7 +344,7 @@
       "flagged": false,
       "words": 8,
       "evidence_retrieved": null,
-      "latency_s": 0.92,
+      "latency_s": 0.929,
       "input_tokens": 1343,
       "output_tokens": 23
     },
@@ -362,7 +362,7 @@
       "flagged": false,
       "words": 8,
       "evidence_retrieved": null,
-      "latency_s": 1.501,
+      "latency_s": 1.497,
       "input_tokens": 1267,
       "output_tokens": 84
     },
@@ -380,7 +380,7 @@
       "flagged": false,
       "words": 23,
       "evidence_retrieved": true,
-      "latency_s": 1.261,
+      "latency_s": 1.227,
       "input_tokens": 1342,
       "output_tokens": 69
     },
@@ -398,7 +398,7 @@
       "flagged": false,
       "words": 25,
       "evidence_retrieved": true,
-      "latency_s": 1.634,
+      "latency_s": 1.318,
       "input_tokens": 1352,
       "output_tokens": 73
     },
@@ -418,7 +418,7 @@
       "flagged": true,
       "words": 30,
       "evidence_retrieved": true,
-      "latency_s": 1.618,
+      "latency_s": 1.408,
       "input_tokens": 1360,
       "output_tokens": 87
     },
@@ -436,7 +436,7 @@
       "flagged": false,
       "words": 8,
       "evidence_retrieved": true,
-      "latency_s": 1.243,
+      "latency_s": 1.02,
       "input_tokens": 1322,
       "output_tokens": 37
     },
@@ -454,7 +454,7 @@
       "flagged": false,
       "words": 8,
       "evidence_retrieved": true,
-      "latency_s": 1.022,
+      "latency_s": 1.008,
       "input_tokens": 1338,
       "output_tokens": 37
     },
@@ -472,7 +472,7 @@
       "flagged": false,
       "words": 17,
       "evidence_retrieved": true,
-      "latency_s": 1.534,
+      "latency_s": 1.348,
       "input_tokens": 1338,
       "output_tokens": 54
     },
@@ -490,7 +490,7 @@
       "flagged": false,
       "words": 10,
       "evidence_retrieved": true,
-      "latency_s": 1.126,
+      "latency_s": 0.975,
       "input_tokens": 1359,
       "output_tokens": 39
     },
@@ -508,7 +508,7 @@
       "flagged": false,
       "words": 10,
       "evidence_retrieved": true,
-      "latency_s": 1.123,
+      "latency_s": 1.084,
       "input_tokens": 1379,
       "output_tokens": 39
     },
@@ -526,7 +526,7 @@
       "flagged": false,
       "words": 9,
       "evidence_retrieved": true,
-      "latency_s": 1.022,
+      "latency_s": 0.981,
       "input_tokens": 1387,
       "output_tokens": 34
     },
@@ -544,7 +544,7 @@
       "flagged": false,
       "words": 8,
       "evidence_retrieved": null,
-      "latency_s": 1.127,
+      "latency_s": 1.126,
       "input_tokens": 1224,
       "output_tokens": 26
     },
@@ -562,7 +562,7 @@
       "flagged": false,
       "words": 8,
       "evidence_retrieved": null,
-      "latency_s": 1.224,
+      "latency_s": 0.891,
       "input_tokens": 1224,
       "output_tokens": 26
     },
@@ -580,7 +580,7 @@
       "flagged": false,
       "words": 8,
       "evidence_retrieved": null,
-      "latency_s": 1.125,
+      "latency_s": 1.152,
       "input_tokens": 1224,
       "output_tokens": 26
     },
@@ -598,7 +598,7 @@
       "flagged": false,
       "words": 35,
       "evidence_retrieved": true,
-      "latency_s": 1.615,
+      "latency_s": 1.539,
       "input_tokens": 1251,
       "output_tokens": 67
     },
@@ -616,7 +616,7 @@
       "flagged": false,
       "words": 34,
       "evidence_retrieved": true,
-      "latency_s": 1.668,
+      "latency_s": 1.618,
       "input_tokens": 1251,
       "output_tokens": 66
     },
@@ -634,7 +634,7 @@
       "flagged": false,
       "words": 40,
       "evidence_retrieved": true,
-      "latency_s": 1.937,
+      "latency_s": 1.789,
       "input_tokens": 1251,
       "output_tokens": 79
     }

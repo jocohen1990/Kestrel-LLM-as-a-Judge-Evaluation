@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-16T19:55:43.585044+00:00",
+  "timestamp": "2026-11-16T21:28:07.102441+00:00",
   "model": "claude-haiku-4-5-20251001",
   "agent_version": "a4",
   "tools_version": "t2",
@@ -52,9 +52,9 @@
     "avg_steps": 1.35,
     "avg_turns": 2.06,
     "tool_errors": 0,
-    "input_tokens": 145537,
-    "output_tokens": 4365,
-    "avg_latency_s": 1.69,
+    "input_tokens": 145598,
+    "output_tokens": 4395,
+    "avg_latency_s": 1.63,
     "by_category": {
       "calculation": {
         "cases": 6,
@@ -156,7 +156,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.488,
+      "latency_s": 1.394,
       "input_tokens": 3981,
       "output_tokens": 101
     },
@@ -217,7 +217,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.43,
+      "latency_s": 1.36,
       "input_tokens": 3998,
       "output_tokens": 104
     },
@@ -278,7 +278,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.439,
+      "latency_s": 1.328,
       "input_tokens": 3994,
       "output_tokens": 102
     },
@@ -339,7 +339,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.484,
+      "latency_s": 1.517,
       "input_tokens": 3998,
       "output_tokens": 106
     },
@@ -347,7 +347,7 @@
       "id": "ag005",
       "category": "lookup",
       "question": "How much net income did Kestrel report for fiscal 2025?",
-      "answer": "Kestrel reported net income of $38.9 million for fiscal 2025, according to the Annual Report 2025.",
+      "answer": "Kestrel reported net income of $38.9 million for fiscal 2025.",
       "tool_choice_ok": true,
       "missing_tools": [],
       "forbidden_tools_used": [],
@@ -394,15 +394,15 @@
         },
         {
           "turn": 2,
-          "text": "Kestrel reported net income of $38.9 million for fiscal 2025, according to the Annual Report 2025.",
+          "text": "Kestrel reported net income of $38.9 million for fiscal 2025.",
           "stop_reason": "end_turn",
           "tool_calls": 0
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.584,
+      "latency_s": 1.606,
       "input_tokens": 3985,
-      "output_tokens": 110
+      "output_tokens": 101
     },
     {
       "id": "ag006",
@@ -460,7 +460,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.317,
+      "latency_s": 1.388,
       "input_tokens": 4104,
       "output_tokens": 77
     },
@@ -520,7 +520,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.43,
+      "latency_s": 1.326,
       "input_tokens": 4124,
       "output_tokens": 97
     },
@@ -580,7 +580,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.431,
+      "latency_s": 1.298,
       "input_tokens": 4120,
       "output_tokens": 87
     },
@@ -640,7 +640,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.411,
+      "latency_s": 1.357,
       "input_tokens": 4096,
       "output_tokens": 93
     },
@@ -700,7 +700,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.348,
+      "latency_s": 1.618,
       "input_tokens": 4133,
       "output_tokens": 89
     },
@@ -788,7 +788,7 @@
         }
       ],
       "answer_turn": 3,
-      "latency_s": 2.66,
+      "latency_s": 2.548,
       "input_tokens": 6425,
       "output_tokens": 233
     },
@@ -876,7 +876,7 @@
         }
       ],
       "answer_turn": 3,
-      "latency_s": 2.649,
+      "latency_s": 2.724,
       "input_tokens": 6461,
       "output_tokens": 255
     },
@@ -964,7 +964,7 @@
         }
       ],
       "answer_turn": 3,
-      "latency_s": 2.852,
+      "latency_s": 2.616,
       "input_tokens": 6455,
       "output_tokens": 257
     },
@@ -1034,13 +1034,13 @@
       "turn_log": [
         {
           "turn": 1,
-          "text": "",
+          "text": "I'll look up the enterprise customer counts at the end of 2025 and the end of Q2 2026.",
           "stop_reason": "tool_use",
           "tool_calls": 2
         },
         {
           "turn": 2,
-          "text": "Now I'll calculate the difference:",
+          "text": "Now I'll calculate the difference.",
           "stop_reason": "tool_use",
           "tool_calls": 1
         },
@@ -1052,9 +1052,9 @@
         }
       ],
       "answer_turn": 3,
-      "latency_s": 2.675,
-      "input_tokens": 6442,
-      "output_tokens": 249
+      "latency_s": 2.942,
+      "input_tokens": 6494,
+      "output_tokens": 275
     },
     {
       "id": "ag015",
@@ -1140,7 +1140,7 @@
         }
       ],
       "answer_turn": 3,
-      "latency_s": 2.756,
+      "latency_s": 2.831,
       "input_tokens": 6460,
       "output_tokens": 252
     },
@@ -1228,7 +1228,7 @@
         }
       ],
       "answer_turn": 3,
-      "latency_s": 2.965,
+      "latency_s": 2.549,
       "input_tokens": 6481,
       "output_tokens": 267
     },
@@ -1299,7 +1299,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.637,
+      "latency_s": 1.575,
       "input_tokens": 4153,
       "output_tokens": 113
     },
@@ -1386,7 +1386,7 @@
         }
       ],
       "answer_turn": 3,
-      "latency_s": 3.034,
+      "latency_s": 3.039,
       "input_tokens": 6735,
       "output_tokens": 280
     },
@@ -1447,7 +1447,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.465,
+      "latency_s": 1.437,
       "input_tokens": 3977,
       "output_tokens": 96
     },
@@ -1508,7 +1508,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.431,
+      "latency_s": 1.38,
       "input_tokens": 3979,
       "output_tokens": 98
     },
@@ -1569,7 +1569,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.84,
+      "latency_s": 1.305,
       "input_tokens": 3987,
       "output_tokens": 98
     },
@@ -1629,7 +1629,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.529,
+      "latency_s": 1.595,
       "input_tokens": 4158,
       "output_tokens": 106
     },
@@ -1637,7 +1637,7 @@
       "id": "ag023",
       "category": "guidance",
       "question": "Did Kestrel's Q2 2026 revenue come in above or below the outlook it gave in its Q1 2026 release?",
-      "answer": "Kestrel's Q2 2026 revenue of $116.0 million came in above the outlook it gave in the Q1 2026 release, which expected revenue in the range of $112 million to $115 million.",
+      "answer": "Kestrel's Q2 2026 revenue of $116.0 million came in above the outlook it gave in the Q1 2026 release, which expected Q2 2026 revenue in a range of $112 million to $115 million.",
       "tool_choice_ok": true,
       "missing_tools": [],
       "forbidden_tools_used": [],
@@ -1688,27 +1688,27 @@
       "turn_log": [
         {
           "turn": 1,
-          "text": "I'll look up the Q2 2026 revenue and search for the Q1 2026 outlook.",
+          "text": "I'll look up Kestrel's Q2 2026 revenue and search for the Q1 2026 outlook.",
           "stop_reason": "tool_use",
           "tool_calls": 2
         },
         {
           "turn": 2,
-          "text": "Kestrel's Q2 2026 revenue of $116.0 million came in above the outlook it gave in the Q1 2026 release, which expected revenue in the range of $112 million to $115 million.",
+          "text": "Kestrel's Q2 2026 revenue of $116.0 million came in above the outlook it gave in the Q1 2026 release, which expected Q2 2026 revenue in a range of $112 million to $115 million.",
           "stop_reason": "end_turn",
           "tool_calls": 0
         }
       ],
       "answer_turn": 2,
-      "latency_s": 2.267,
-      "input_tokens": 4335,
-      "output_tokens": 207
+      "latency_s": 2.079,
+      "input_tokens": 4339,
+      "output_tokens": 217
     },
     {
       "id": "ag024",
       "category": "false_premise",
       "question": "Why did Kestrel's revenue fall in Q2 2026 compared with a year earlier?",
-      "answer": "The premise of your question is incorrect. Kestrel's revenue actually **increased** in Q2 2026 compared with a year earlier: revenue rose to $116.0 million in Q2 2026 from $97.5 million in Q2 2025, a 19% year-over-year increase.",
+      "answer": "The premise of your question is incorrect. Kestrel's revenue did not fall in Q2 2026 compared with a year earlier. Revenue actually **increased 19% year over year, from $97.5 million in Q2 2025 to $116.0 million in Q2 2026**.",
       "tool_choice_ok": true,
       "missing_tools": [],
       "forbidden_tools_used": [],
@@ -1752,9 +1752,9 @@
           "turn": 1,
           "tool": "search_documents",
           "args": {
-            "query": "Q2 2026 revenue decline decrease"
+            "query": "Q2 2026 revenue decline decrease compared year ago"
           },
-          "output": "Kestrel Freight Analytics Annual Report 2025\nFinancial results for fiscal year 2025: total revenue was $412.6 million, an increase of 18% from $349.7 million in fiscal year 2024. Net income for fiscal year 2025 was $38.9 million.\n\nKestrel Freight Analytics Q2 2026 Earnings Release\nSecond quarter 2026 results: Kestrel reported Q2 2026 revenue of $116.0 million, up 19% year over year from $97.5 million in Q2 2025. Net income was $11.4 million, and diluted earnings per share (EPS) were $0.38.\n\nKestrel Freight Analytics Q1 2026 Earnings Release\nOutlook: for Q2 2026, Kestrel expects revenue in a range of $112 million to $115 million.",
+          "output": "Kestrel Freight Analytics Annual Report 2025\nFinancial results for fiscal year 2025: total revenue was $412.6 million, an increase of 18% from $349.7 million in fiscal year 2024. Net income for fiscal year 2025 was $38.9 million.\n\nKestrel Freight Analytics Q2 2026 Earnings Release\nSecond quarter 2026 results: Kestrel reported Q2 2026 revenue of $116.0 million, up 19% year over year from $97.5 million in Q2 2025. Net income was $11.4 million, and diluted earnings per share (EPS) were $0.38.\n\nKestrel Freight Analytics Q2 2026 Earnings Release\nOutlook and guidance: Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million.",
           "is_error": false
         }
       ],
@@ -1776,14 +1776,14 @@
         },
         {
           "turn": 2,
-          "text": "The premise of your question is incorrect. Kestrel's revenue actually **increased** in Q2 2026 compared with a year earlier: revenue rose to $116.0 million in Q2 2026 from $97.5 million in Q2 2025, a 19% year-over-year increase.",
+          "text": "The premise of your question is incorrect. Kestrel's revenue did not fall in Q2 2026 compared with a year earlier. Revenue actually **increased 19% year over year, from $97.5 million in Q2 2025 to $116.0 million in Q2 2026**.",
           "stop_reason": "end_turn",
           "tool_calls": 0
         }
       ],
       "answer_turn": 2,
-      "latency_s": 2.741,
-      "input_tokens": 4450,
+      "latency_s": 2.478,
+      "input_tokens": 4455,
       "output_tokens": 288
     },
     {
@@ -1824,7 +1824,7 @@
         }
       ],
       "answer_turn": 1,
-      "latency_s": 0.511,
+      "latency_s": 0.456,
       "input_tokens": 1931,
       "output_tokens": 13
     },
@@ -1866,7 +1866,7 @@
         }
       ],
       "answer_turn": 1,
-      "latency_s": 0.51,
+      "latency_s": 0.485,
       "input_tokens": 1947,
       "output_tokens": 13
     },
@@ -1908,7 +1908,7 @@
         }
       ],
       "answer_turn": 1,
-      "latency_s": 0.716,
+      "latency_s": 0.461,
       "input_tokens": 1939,
       "output_tokens": 13
     },
@@ -1968,7 +1968,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.227,
+      "latency_s": 1.167,
       "input_tokens": 4094,
       "output_tokens": 71
     },
@@ -2017,7 +2017,7 @@
         }
       ],
       "answer_turn": 1,
-      "latency_s": 0.504,
+      "latency_s": 0.518,
       "input_tokens": 1933,
       "output_tokens": 13
     },
@@ -2077,7 +2077,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.494,
+      "latency_s": 1.34,
       "input_tokens": 4096,
       "output_tokens": 84
     },
@@ -2119,7 +2119,7 @@
         }
       ],
       "answer_turn": 1,
-      "latency_s": 0.471,
+      "latency_s": 0.457,
       "input_tokens": 1929,
       "output_tokens": 13
     },
@@ -2127,7 +2127,7 @@
       "id": "ag032",
       "category": "out_of_scope",
       "question": "What was Kestrel's revenue in Q4 2025?",
-      "answer": "I don't have access to Q4 2025 data. The financial periods available in Kestrel's filings are FY2024, FY2025, Q1 2025, Q2 2025, Q1 2026, and Q2 2026. \n\nIf you're looking for full-year 2025 revenue, I can look that up for FY2025. Or if you meant a different quarter, please let me know which one.",
+      "answer": "I don't have access to Q4 2025 data. The financial periods available in Kestrel's filings are FY2024, FY2025, Q1 2025, Q2 2025, Q1 2026, and Q2 2026. \n\nIf you're looking for full-year 2025 revenue, I can look that up for you (FY2025), or I can provide Q1 or Q2 2025 figures.",
       "tool_choice_ok": true,
       "missing_tools": [],
       "forbidden_tools_used": [],
@@ -2150,7 +2150,9 @@
         "1",
         "2026",
         "2",
-        "2026"
+        "2026",
+        "1",
+        "2"
       ],
       "mentions_internals": false,
       "tool_errors": 0,
@@ -2163,15 +2165,15 @@
       "turn_log": [
         {
           "turn": 1,
-          "text": "I don't have access to Q4 2025 data. The financial periods available in Kestrel's filings are FY2024, FY2025, Q1 2025, Q2 2025, Q1 2026, and Q2 2026. \n\nIf you're looking for full-year 2025 revenue, I can look that up for FY2025. Or if you meant a different quarter, please let me know which one.",
+          "text": "I don't have access to Q4 2025 data. The financial periods available in Kestrel's filings are FY2024, FY2025, Q1 2025, Q2 2025, Q1 2026, and Q2 2026. \n\nIf you're looking for full-year 2025 revenue, I can look that up for you (FY2025), or I can provide Q1 or Q2 2025 figures.",
           "stop_reason": "end_turn",
           "tool_calls": 0
         }
       ],
       "answer_turn": 1,
-      "latency_s": 1.176,
+      "latency_s": 1.455,
       "input_tokens": 1935,
-      "output_tokens": 107
+      "output_tokens": 110
     },
     {
       "id": "ag033",
@@ -2245,7 +2247,7 @@
         }
       ],
       "answer_turn": 3,
-      "latency_s": 2.345,
+      "latency_s": 2.28,
       "input_tokens": 6628,
       "output_tokens": 168
     },
@@ -2305,7 +2307,7 @@
         }
       ],
       "answer_turn": 2,
-      "latency_s": 1.567,
+      "latency_s": 1.553,
       "input_tokens": 4074,
       "output_tokens": 105
     }
