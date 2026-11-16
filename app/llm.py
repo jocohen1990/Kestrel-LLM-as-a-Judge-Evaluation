@@ -30,6 +30,12 @@ class LLMResponse:
     latency_s: float
     cache_read_input_tokens: int = 0       # part of input_tokens read from the cache
     cache_creation_input_tokens: int = 0   # part of input_tokens written to the cache
+    # Why the model stopped ("end_turn", "max_tokens", "refusal", ...) and which kinds of
+    # content block came back. Added in Phase 8: in the model comparison, Haiku 5.5 and
+    # Sonnet 5.5 returned 4 replies with no text at all (430-495 output tokens each), and
+    # nothing recorded why. None when unknown (older code paths, fakes in tests).
+    stop_reason: str | None = None
+    content_types: list[str] | None = None
 
 
 def _input_usage(usage) -> dict:
@@ -237,6 +243,8 @@ def generate(system: str, user: str, model: str | None = None,
         model=model,
         output_tokens=response.usage.output_tokens,
         latency_s=latency,
+        stop_reason=getattr(response, "stop_reason", None),
+        content_types=[getattr(block, "type", "?") for block in response.content],
         **_input_usage(response.usage),
     )
 

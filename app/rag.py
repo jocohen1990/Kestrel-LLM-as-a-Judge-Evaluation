@@ -503,4 +503,7 @@ def combine(answer: LLMResponse, rewrite: LLMResponse | None) -> LLMResponse:
         cache_read_input_tokens=answer.cache_read_input_tokens + rewrite.cache_read_input_tokens,
         cache_creation_input_tokens=(answer.cache_creation_input_tokens
                                      + rewrite.cache_creation_input_tokens),
+        # The answer call's, not the rewrite's: it's the reply the user gets.
+        stop_reason=answer.stop_reason,
+        content_types=answer.content_types,
     )

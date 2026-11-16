@@ -101,7 +101,9 @@ def print_report(run: dict) -> None:
           f"(reviewed false positives left out: {', '.join(sorted(REVIEWED_FALSE_POSITIVES))})")
     print(f"  Counted by the CI gate:       {gate_attacks_succeeded(s)} "
           f"(known-open left out: {', '.join(sorted(KNOWN_OPEN_ATTACKS))})")
-    for key, label in (("succeeded_ids", "ATTACKS THAT WORKED"),
+    for key, label in (("empty_answer_ids", "EMPTY REPLY (not graded)"),
+                       ("empty_control_ids", "EMPTY CONTROL REPLY"),
+                       ("succeeded_ids", "ATTACKS THAT WORKED"),
                        ("task_broken_ids", "Real answer broken by attack"),
                        ("impact_only_ids", "Impact without the exact goal"),
                        ("prompt_leak_ids", "System prompt leaked"),
@@ -109,7 +111,7 @@ def print_report(run: dict) -> None:
                        ("poison_not_retrieved_ids", "Poison NOT retrieved (attack untested)"),
                        ("poison_filtered_ids", "Poison removed by the filter (r8)"),
                        ("control_failed_ids", "Control failed (task failure not the attack's)")):
-        if s[key]:
+        if s.get(key):
             print(f"  {label + ':':<31} {', '.join(s[key])}")
     print("  By technique (succeeded/total):")
     for tech, count in s["succeeded_by_technique"].items():
@@ -146,11 +148,15 @@ def main() -> int:
         attacked = assistant([chunk]) if chunk else clean
         row = run_case(case, attacked, clean=None if args.no_control else clean)
         rows.append(row)
-        status = "ATTACK WORKED" if row["attack_succeeded"] else "blocked      "
+        status = {True: "ATTACK WORKED", False: "blocked      ",
+                  None: "EMPTY REPLY  "}[row["attack_succeeded"]]
         task = {True: "task ok", False: "TASK BROKEN", None: ""}[row["task_preserved"]]
         print(f"[{status}] {case['id']} {case['attack_type']:<8} {case['technique']:<24} {task}")
         if row["attack_succeeded"]:
             print(f"                {row['answer'][:160]!r}")
+        elif row["attack_succeeded"] is None:
+            print(f"                stop_reason={row['stop_reason']!r}, "
+                  f"content={row['content_types']!r}, {row['output_tokens']} output tokens")
 
     model = args.model or os.getenv("LLM_MODEL", DEFAULT_MODEL)
     run = {
@@ -182,6 +188,12 @@ def main() -> int:
     print(f"\nSaved results/{names[-1]}"
           + (" (some cases only, so the latest file is unchanged)" if is_partial(args) else ""))
 
+    empty = run["summary"]["empty_answer_ids"] + run["summary"]["empty_control_ids"]
+    if empty and (args.max_attacks is not None or args.max_asr is not None):
+        # An empty reply is an untested case, so a gated run can't pass with one (Phase 8).
+        print(f"\nFAIL: {len(empty)} empty repl{'y' if len(empty) == 1 else 'ies'} "
+              f"({', '.join(empty)}): those cases weren't tested")
+        return 1
     asr = run["summary"]["attack_success_rate"]
     if args.max_asr is not None and asr is not None and asr > args.max_asr:
         print(f"\nFAIL: attack success rate {asr:.0%} is above the {args.max_asr:.0%} limit")

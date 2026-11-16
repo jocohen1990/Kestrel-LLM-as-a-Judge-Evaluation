@@ -218,6 +218,14 @@ def usage(run: dict) -> dict:
     }
 
 
+def empty_reply_ids(run: dict) -> list[str]:
+    """Cases whose reply had no text (Phase 8). Read from the rows, so it works on results
+    files saved before the evals recorded it. Rows with no "answer" field (none yet) are
+    left out."""
+    return [str(c.get("id")) for c in run.get("cases", [])
+            if "answer" in c and not (c["answer"] or "").strip()]
+
+
 def suite_result(suite: Suite, run: dict, source: str | None = None) -> dict:
     summary = run.get("summary", {})
     metrics = {m.key: m.get(summary) for m in suite.metrics}
@@ -245,6 +253,7 @@ def suite_result(suite: Suite, run: dict, source: str | None = None) -> dict:
         "temperature_sent": run.get("assistant_temperature_sent"),
         "metrics": metrics,
         "gates": gates,
+        "empty_reply_ids": empty_reply_ids(run),
         "usage": u,
         "cost_usd": cost,
         "judge_cost_usd": judge_cost,
@@ -265,6 +274,8 @@ def model_summary(model: str, results: dict[str, dict], suites: list[str]) -> di
         per_1k = round(golden["cost_usd"] / golden["usage"]["cases"] * 1000, 4)
     temps = {r["temperature_sent"] for r in results.values() if r["temperature_sent"] is not None}
     judge_models = {r["judge_model"] for r in results.values() if r.get("judge_model")}
+    empty = {n: results[n].get("empty_reply_ids", []) for n in suites
+             if n in results and results[n].get("empty_reply_ids")}
     return {
         "model": model,
         "suites_run": [n for n in suites if n in results],
@@ -272,8 +283,12 @@ def model_summary(model: str, results: dict[str, dict], suites: list[str]) -> di
         "gates_passed": sum(1 for g in gates if g["passed"]),
         "gates_total": len(gates),
         "failed_gates": failed,
+        # Empty replies (Phase 8): cases that weren't really tested. A model with any isn't
+        # "all passed", whatever its gates say, until someone looks at why.
+        "empty_replies": empty,
         # A gate can't pass on a suite that didn't run, so a missing suite isn't "all passed".
-        "all_gates_passed": not missing and not failed and all(g["passed"] for g in gates),
+        "all_gates_passed": (not missing and not failed and not empty
+                             and all(g["passed"] for g in gates)),
         "assistant_cost_usd": round(sum(costs), 4) if costs and None not in costs else None,
         "cost_per_1k_questions_usd": per_1k,
         "avg_latency_s": golden["usage"]["avg_latency_s"] if golden else None,
@@ -379,6 +394,10 @@ def format_scorecard(card: dict) -> str:
             lines.append(f"{m['model']}: failed {', '.join(m['failed_gates'])}")
         if m["graded_by_itself"]:
             lines.append(f"{m['model']}: graded by itself (judge is the same model)")
+        if m.get("empty_replies"):
+            listed = "; ".join(f"{n}: {', '.join(ids)}" for n, ids in m["empty_replies"].items())
+            lines.append(f"{m['model']}: empty replies, not graded ({listed}). Not recommended "
+                         f"until they're explained")
     rec = card["recommendation"]
     lines.append(f"\nRecommendation: {rec['model'] or 'none'}. {rec['reason']}")
     lines.append(f"Prices checked {card['prices_checked']} (evals/pricing.py).")

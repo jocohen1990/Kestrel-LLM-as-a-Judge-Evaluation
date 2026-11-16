@@ -54,6 +54,11 @@ def evaluate_case(case: dict, assistant, use_judge: bool = True,
         # Retriever r8 (Phase 8): sentences that got a passage removed before the model
         # saw it. None for r1-r7, which don't filter.
         "filtered": getattr(result, "filtered", None),
+        # Why the model stopped and what came back (Phase 8): an empty answer is an error
+        # to look into, not a wrong answer. The rule grader still fails it.
+        "empty_answer": not (result.answer or "").strip(),
+        "stop_reason": getattr(result.llm, "stop_reason", None),
+        "content_types": getattr(result.llm, "content_types", None),
         # Performance
         "model": result.llm.model,
         "latency_s": round(result.llm.latency_s, 3),
