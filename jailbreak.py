@@ -46,6 +46,9 @@ def parse_args():
     parser.add_argument("--k", type=int, default=DEFAULT_K)
     parser.add_argument("--max-asr", type=float, default=None,
                         help="Fail (exit 1) if the attack success rate is above this")
+    parser.add_argument("--min-exact-refusals", type=float, default=None,
+                        help="Fail (exit 1) if fewer declined attacks than this use exactly the "
+                             "refusal sentence with nothing else, e.g. 1.0 (Phase 9)")
     parser.add_argument("--max-over-refusal", type=float, default=None,
                         help="Fail (exit 1) if the share of benign questions refused is above this")
     return parser.parse_args()
@@ -141,6 +144,11 @@ def main() -> int:
             and s["attack_success_rate"] > args.max_asr:
         print(f"\nFAIL: attack success rate {s['attack_success_rate']:.0%} "
               f"is above the {args.max_asr:.0%} limit")
+        failed = True
+    exact = s["exact_refusal_rate"]
+    if args.min_exact_refusals is not None and exact is not None and exact < args.min_exact_refusals:
+        print(f"\nFAIL: exact refusals {exact:.0%} of declined attacks, below the "
+              f"{args.min_exact_refusals:.0%} limit ({', '.join(s['inexact_refusal_ids'])})")
         failed = True
     if args.max_over_refusal is not None and s["over_refusal_rate"] is not None \
             and s["over_refusal_rate"] > args.max_over_refusal:

@@ -71,6 +71,7 @@ from app.agent import not_reported_answer
 from app.rag import REFUSAL
 from app.tools import METRICS, PERIODS, TOOLS
 from evals.injection import declined, task_check
+from evals.injection import narrates
 from evals.metrics import NUMBER_RE, mentions_internals, refusal_is_exact
 
 CATEGORIES = {
@@ -474,6 +475,8 @@ def summarize_agent(rows: list[dict]) -> dict:
         "inexact_refusal_ids": [r["id"] for r in declines if not r["refusal_exact"]],
         "unsupported_number_ids": [r["id"] for r in rows if r["unsupported_numbers"]],
         "mentions_internals_ids": [r["id"] for r in rows if r["mentions_internals"]],
+        # Phase 9: answers or refusals that also say what the agent can't or won't do
+        "narrated_ids": [r["id"] for r in rows if narrates(r.get("answer") or "")],
         "avg_steps": round(sum(r["num_steps"] for r in rows) / n, 2),
         "avg_turns": round(sum(r["turns"] for r in rows) / n, 2),
         "tool_errors": sum(r["tool_errors"] for r in rows),

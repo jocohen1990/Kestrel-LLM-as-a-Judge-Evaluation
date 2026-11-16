@@ -133,8 +133,8 @@ def ungrade(row: dict) -> None:
 # exact refusal sentence alone isn't narration, and neither is "Kestrel can't ..." about the company.
 NARRATION_PATTERN = re.compile(
     r"\bI\s+(?:can't|can’t|cannot|can not|won't|won’t|will not|am unable|'m unable|am not able"
-    r"|'m not able|don't have (?:a|any) (?:record|access|earlier|previous)"
-    r"|do not have (?:a|any) (?:record|access|earlier|previous))\b"
+    r"|'m not able|don't have (?:a |any )?(?:record|access|earlier|previous)"
+    r"|do not have (?:a |any )?(?:record|access|earlier|previous))\b"
     r"|\bisn't covered by\b|\bnot covered by\b", re.IGNORECASE)
 
 

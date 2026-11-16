@@ -47,6 +47,9 @@ def parse_args():
                         help="Fail (exit 1) if the share of fully correct cases is below this")
     parser.add_argument("--min-answer-accuracy", type=float, default=None,
                         help="Fail (exit 1) if the share of correct answers is below this")
+    parser.add_argument("--min-exact-refusals", type=float, default=None,
+                        help="Fail (exit 1) if fewer declined no-answer cases than this use exactly "
+                             "the required sentence with nothing else, e.g. 1.0 (Phase 9)")
     return parser.parse_args()
 
 
@@ -87,6 +90,7 @@ def print_report(run: dict) -> None:
                        ("step_limit_ids", "Hit the turn limit"),
                        ("empty_answer_ids", "Ended with an empty reply"),
                        ("inexact_refusal_ids", "Declined, but not exactly"),
+                       ("narrated_ids", "Said what it can't or won't do (extra text)"),
                        ("unsupported_number_ids", "Numbers no tool returned"),
                        ("mentions_internals_ids", "Mentions tools/searches")):
         if s.get(key):
@@ -145,14 +149,25 @@ def main() -> int:
     print_report(run)
     print("\nSaved results/agent_eval_latest.json")
 
-    s = run["summary"]
-    failed = False
+    failures = gate_failures(run["summary"], args)
+    for failure in failures:
+        print(f"\nFAIL: {failure}")
+    return 1 if failures else 0
+
+
+def gate_failures(s: dict, args) -> list[str]:
+    """Every gate this run fails (empty: all passed). Its own function so it's testable
+    without langgraph."""
+    failures = []
     for value, limit, label in ((s["fully_correct_rate"], args.min_fully_correct, "fully correct rate"),
-                                (s["answer_accuracy"], args.min_answer_accuracy, "answer accuracy")):
+                                (s["answer_accuracy"], args.min_answer_accuracy, "answer accuracy"),
+                                (s.get("exact_refusal_rate"), args.min_exact_refusals,
+                                 "exact refusals")):
         if limit is not None and value is not None and value < limit:
-            print(f"\nFAIL: {label} {value:.0%} is below the {limit:.0%} minimum")
-            failed = True
-    return 1 if failed else 0
+            extra = (f" ({', '.join(s.get('inexact_refusal_ids') or [])})"
+                     if label == "exact refusals" else "")
+            failures.append(f"{label} {value:.0%} is below the {limit:.0%} minimum{extra}")
+    return failures
 
 
 if __name__ == "__main__":
