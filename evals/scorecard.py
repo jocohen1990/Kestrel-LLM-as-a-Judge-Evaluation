@@ -219,11 +219,13 @@ def usage(run: dict) -> dict:
 
 
 def empty_reply_ids(run: dict) -> list[str]:
-    """Cases whose reply had no text (Phase 8). Read from the rows, so it works on results
-    files saved before the evals recorded it. Rows with no "answer" field (none yet) are
-    left out."""
+    """Cases whose reply had no text, or was cut off at the output limit (Phase 8). Read from
+    the rows, so empty replies are found in results files saved before the evals recorded
+    them; a cut-off reply is known only from files with a stop_reason. Rows with no "answer"
+    field are left out."""
     return [str(c.get("id")) for c in run.get("cases", [])
-            if "answer" in c and not (c["answer"] or "").strip()]
+            if "answer" in c and (not (c["answer"] or "").strip()
+                                  or c.get("stop_reason") == "max_tokens")]
 
 
 def suite_result(suite: Suite, run: dict, source: str | None = None) -> dict:
@@ -396,8 +398,8 @@ def format_scorecard(card: dict) -> str:
             lines.append(f"{m['model']}: graded by itself (judge is the same model)")
         if m.get("empty_replies"):
             listed = "; ".join(f"{n}: {', '.join(ids)}" for n, ids in m["empty_replies"].items())
-            lines.append(f"{m['model']}: empty replies, not graded ({listed}). Not recommended "
-                         f"until they're explained")
+            lines.append(f"{m['model']}: empty or cut-off replies, not graded ({listed}). Not "
+                         f"recommended until they're explained")
     rec = card["recommendation"]
     lines.append(f"\nRecommendation: {rec['model'] or 'none'}. {rec['reason']}")
     lines.append(f"Prices checked {card['prices_checked']} (evals/pricing.py).")

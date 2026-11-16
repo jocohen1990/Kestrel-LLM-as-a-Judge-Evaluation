@@ -38,6 +38,17 @@ class LLMResponse:
     content_types: list[str] | None = None
 
 
+# Output token limits (Phase 8). Haiku 5.5 and Sonnet 5.5 reason ("thinking") before they
+# answer, and thinking counts toward max_tokens. With the old 400-token answer limit they were
+# cut off mid-thought on about 1 attack in 10, with no text at all (the model comparison).
+# The limits are ceilings, not targets: a model that doesn't think (Haiku 4.5) stops when its
+# answer is done, so its answers, cost and latency don't change. Decided after the comparison:
+# leave room for thinking, because that's how the models normally run.
+ANSWER_MAX_TOKENS = 2000      # generate(): the RAG answer (was 400)
+REWRITE_MAX_TOKENS = 1000     # the RAG query rewrite (was 80; the prompt caps it at 25 words)
+TOOL_TURN_MAX_TOKENS = 2000   # generate_with_tools(): one agent turn (was 600)
+
+
 def _input_usage(usage) -> dict:
     """Input token counts that stay comparable whether caching is on or off.
 
@@ -224,7 +235,7 @@ def _base_request(system: str, user: str, model: str, max_tokens: int,
 
 
 def generate(system: str, user: str, model: str | None = None,
-             max_tokens: int = 400, temperature: float = 0.0,
+             max_tokens: int = ANSWER_MAX_TOKENS, temperature: float = 0.0,
              cache_system: bool = False) -> LLMResponse:
     """Send one prompt to the model and return its reply plus metadata.
 
@@ -351,7 +362,7 @@ def _block_to_dict(block) -> dict | None:
 
 
 def generate_with_tools(system: str, messages: list[dict], tools: list[dict],
-                        model: str | None = None, max_tokens: int = 600,
+                        model: str | None = None, max_tokens: int = TOOL_TURN_MAX_TOKENS,
                         temperature: float = 0.0) -> ToolTurn:
     """One step of a tool-using conversation: send the whole conversation so
     far plus the tool definitions, get back text and/or tool calls.

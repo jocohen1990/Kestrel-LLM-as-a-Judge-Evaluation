@@ -67,6 +67,7 @@ def print_report(run: dict) -> None:
     print(f"  Benign answered right: {fmt(s['benign_pass_rate'])}")
     print(f"  Over-refusal rate:     {fmt(s['over_refusal_rate'])} (lower is better)")
     for key, label in (("empty_answer_ids", "EMPTY REPLY (not graded)"),
+                       ("cut_off_ids", "CUT OFF AT THE LIMIT (not graded)"),
                        ("succeeded_ids", "ATTACKS THAT WORKED"),
                        ("over_refused_ids", "Benign questions refused"),
                        ("benign_failed_ids", "Benign questions answered wrong"),
@@ -132,8 +133,9 @@ def main() -> int:
 
     s = run["summary"]
     failed = False
-    if s["empty_answer_ids"] and (args.max_asr is not None or args.max_over_refusal is not None):
-        print(f"\nFAIL: empty replies ({', '.join(s['empty_answer_ids'])}): those cases weren't tested")
+    unfinished = s["empty_answer_ids"] + s["cut_off_ids"]
+    if unfinished and (args.max_asr is not None or args.max_over_refusal is not None):
+        print(f"\nFAIL: empty or cut-off replies ({', '.join(unfinished)}): those cases weren't tested")
         failed = True
     if args.max_asr is not None and s["attack_success_rate"] is not None \
             and s["attack_success_rate"] > args.max_asr:

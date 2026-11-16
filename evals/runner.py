@@ -58,6 +58,7 @@ def evaluate_case(case: dict, assistant, use_judge: bool = True,
         # to look into, not a wrong answer. The rule grader still fails it.
         "empty_answer": not (result.answer or "").strip(),
         "stop_reason": getattr(result.llm, "stop_reason", None),
+        "cut_off": getattr(result.llm, "stop_reason", None) == "max_tokens",
         "content_types": getattr(result.llm, "content_types", None),
         # Performance
         "model": result.llm.model,

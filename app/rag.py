@@ -12,7 +12,7 @@ two can be compared on the same dataset:
 from dataclasses import dataclass
 
 from app import tracing
-from app.llm import LLMResponse, generate
+from app.llm import REWRITE_MAX_TOKENS, LLMResponse, generate
 from app.passage_filter import filter_passage
 from app.paths import CORPUS_DIR
 from app.retriever import Chunk, Retriever, load_chunks, tokenize
@@ -430,7 +430,7 @@ class RagAssistant:
                     rewrite_prompt = self.retriever_config.get("rewrite_prompt", "rw1")
                     span.set({"kestrel.rewrite_prompt": rewrite_prompt})
                     rewrite = generate(REWRITE_PROMPTS[rewrite_prompt], question,
-                                       model=self.model, max_tokens=80)
+                                       model=self.model, max_tokens=REWRITE_MAX_TOKENS)
                     span.set_content("rewrite.output", rewrite.text.strip())
                 # Search the original words AND the rewrite, so the rewrite can add
                 # matches but never remove one the original question already had.
