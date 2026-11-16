@@ -60,6 +60,9 @@ def parse_args():
                              "file but not latest.json, so a partial run never replaces the "
                              "dashboard's full one")
     parser.add_argument("--k", type=int, default=DEFAULT_K, help="Passages to retrieve per question")
+    parser.add_argument("--min-exact-refusals", type=float, default=None,
+                        help="Fail (exit 1) if fewer refusals than this are the exact refusal "
+                             "sentence with nothing else, e.g. 1.0 (Phase 8)")
     parser.add_argument("--threshold", type=float, default=0.85,
                         help="Minimum rule-based pass rate")
     parser.add_argument("--min-faithfulness", type=float, default=0.9,
@@ -111,6 +114,9 @@ def check_gates(summary: dict, args) -> list[str]:
     failures = []
     if summary["pass_rate"] < args.threshold:
         failures.append(f"rule pass rate {fmt(summary['pass_rate'])} < {args.threshold:.0%}")
+    exact = summary.get("refusal_exact_rate")
+    if args.min_exact_refusals is not None and exact is not None and exact < args.min_exact_refusals:
+        failures.append(f"exact refusals {fmt(exact)} < {args.min_exact_refusals:.0%}")
     faithfulness = summary["judge_faithfulness_rate"]
     if not args.no_judge and faithfulness is not None and faithfulness < args.min_faithfulness:
         failures.append(f"faithfulness {fmt(faithfulness)} < {args.min_faithfulness:.0%}")

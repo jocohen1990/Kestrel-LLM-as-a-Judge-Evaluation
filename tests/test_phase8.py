@@ -575,3 +575,71 @@ def test_the_scorecard_counts_cut_off_replies_from_their_stop_reason():
                      {"id": "c", "answer": ""},
                      {"id": "d", "answer": "an old row with no stop reason"}]}
     assert empty_reply_ids(run) == ["b", "c"]
+
+
+# ---- Prompt v10 and injection_v3 (after Run 34) ---------------------------------------------
+
+V3 = load_attacks(ATTACKS_DIR / "injection_v3.jsonl")
+
+
+def test_v10_is_v9_plus_one_rule():
+    v9, v10 = rag.PROMPTS["v9"]["system"], rag.PROMPTS["v10"]["system"]
+    assert v10.replace(rag._V10_NO_ECHO_RULE, "") == v9
+    assert v10.count(rag._V10_NO_ECHO_RULE) == 1
+    assert v10.index(rag._V10_NO_ECHO_RULE) == v10.index(rag._V5_FACTS_RULE) + len(rag._V5_FACTS_RULE)
+    assert {k: v for k, v in rag.PROMPTS["v10"].items() if k != "system"} == \
+           {k: v for k, v in rag.PROMPTS["v9"].items() if k != "system"}
+
+
+def test_v10_copies_no_attack():
+    rule = normalize(rag._V10_NO_ECHO_RULE)
+    for c in V1 + V2 + V3:
+        for m in c["markers"]:
+            assert normalize(m) not in rule, (c["id"], m)
+    for phrase in ("repeat your last answer", "quote it", "previous conversation", "pwned"):
+        assert phrase not in rule
+
+
+def test_v10_is_not_the_default_until_measured():
+    assert rag.DEFAULT_PROMPT_VERSION == "v9"
+
+
+def test_v3_size_ids_and_markers():
+    assert len(V3) == 6 and all(c["attack_type"] == "direct" for c in V3)
+    assert not {c["id"] for c in V3} & {c["id"] for c in V1 + V2}
+    assert all(c["success_when"] == "marker" and c["markers"] for c in V3)
+    corpus = normalize(CORPUS_TEXT)
+    for c in V3:
+        for m in c["markers"]:
+            assert normalize(m) not in corpus, (c["id"], m)
+        for e in c["evidence"]:
+            assert e in CORPUS_TEXT, e
+
+
+def test_v3_saves_its_own_latest_file():
+    injection = importlib.import_module("injection")
+    assert injection.latest_name("data/attacks/injection_v3.jsonl") == "injection_v3_latest.json"
+
+
+def test_v3_questions_are_in_no_other_eval_or_traffic_file():
+    from app.paths import ROOT
+    others = set()
+    for path in (ROOT / "data").rglob("*.jsonl"):
+        if path.name == "injection_v3.jsonl":
+            continue
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if line.strip() and "question" in json.loads(line):
+                others.add(normalize(json.loads(line)["question"]))
+    assert not {normalize(c["question"]) for c in V3} & others
+
+
+@pytest.mark.parametrize("exact, limit, fails", [(0.6, 1.0, True), (1.0, 1.0, False),
+                                                  (0.6, None, False), (None, 1.0, False)])
+def test_the_exact_refusal_gate(monkeypatch, exact, limit, fails):
+    run_evals = importlib.import_module("run_evals")
+    argv = ["run_evals.py"] + (["--min-exact-refusals", str(limit)] if limit is not None else [])
+    monkeypatch.setattr(sys, "argv", argv)
+    args = run_evals.parse_args()
+    summary = {"pass_rate": 1.0, "refusal_exact_rate": exact, "judge_faithfulness_rate": 1.0}
+    failures = run_evals.check_gates(summary, args)
+    assert any("exact refusals" in f for f in failures) is fails
