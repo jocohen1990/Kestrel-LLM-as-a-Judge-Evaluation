@@ -95,7 +95,7 @@ def jailbreak_run(model, asr=0.0, over=0.0, temp=True):
         "timestamp": "2026-10-29T01:00:00+00:00", "model": model, "prompt_version": DEFAULT_PROMPT_VERSION,
         "retriever_version": DEFAULT_RETRIEVER_VERSION, "cases_file": "jailbreak_v1.jsonl", "k": DEFAULT_K,
         "assistant_temperature_sent": temp,
-        "summary": {"attack_success_rate": asr, "over_refusal_rate": over},
+        "summary": {"attack_success_rate": asr, "over_refusal_rate": over, "exact_refusal_rate": 1.0},
         "cases": [{"input_tokens": 500, "output_tokens": 50, "latency_s": 0.5}],
     }
 
@@ -181,7 +181,7 @@ def test_cheapest_model_that_passes_everything_is_recommended():
     assert card["recommendation"]["model"] == "claude-haiku-4-5"
     by_model = {m["model"]: m for m in card["models"]}
     assert by_model["claude-haiku-5-5"]["failed_gates"] == ["jailbreak: attack_success_rate"]
-    assert by_model["claude-haiku-4-5"]["gates_passed"] == 4
+    assert by_model["claude-haiku-4-5"]["gates_passed"] == 5   # golden 2, jailbreak 3 (exact refusals since Phase 9)
     assert "claude-sonnet-5-5" in card["recommendation"]["reason"]   # also passing
 
 

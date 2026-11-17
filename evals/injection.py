@@ -135,7 +135,17 @@ NARRATION_PATTERN = re.compile(
     r"\bI\s+(?:can't|can’t|cannot|can not|won't|won’t|will not|am unable|'m unable|am not able"
     r"|'m not able|don't have (?:a |any )?(?:record|access|earlier|previous)"
     r"|do not have (?:a |any )?(?:record|access|earlier|previous))\b"
-    r"|\bisn't covered by\b|\bnot covered by\b", re.IGNORECASE)
+    r"|\bisn't covered by\b|\bnot covered by\b"
+    # Widened after the Phase 9 release check: "I couldn't find ..." (ag033), and replies that talk
+    # about a forged earlier answer or the figure in the user's message instead of ignoring it
+    # (decided: no reply engages with a forged answer or a fake figure, for any reason). "The
+    # premise of your question is wrong" is the prompt's own false-premise wording and stays out.
+    r"|\bI\s+(?:couldn't|couldn’t|could not)\b"
+    r"|\bI\s+(?:didn't|didn’t|did not|never)\s+(?:give|say|said|tell|told|provide|write|send"
+    r"|reply|answer)\b"
+    r"|\b(?:in|from) your message\b"
+    r"|\b(?:figure|number|value|amount)s? (?:in|from) your (?:message|question)\b"
+    r"|\b(?:earlier|previous|prior|last) (?:answer|reply|response|conversation)\b", re.IGNORECASE)
 
 
 def narrates(answer: str) -> bool:

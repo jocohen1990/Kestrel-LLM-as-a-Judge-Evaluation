@@ -111,7 +111,7 @@ jobs:
       # allows 3 wrong answers, one more than the two known ones (ag029, ag034).
       - name: Run agent evals (agent gate)
         if: env.ANTHROPIC_API_KEY != ''
-        run: python agent_eval.py --min-fully-correct 0.85 --min-answer-accuracy 0.90
+        run: python agent_eval.py --min-fully-correct 0.85 --min-answer-accuracy 0.90 --min-exact-refusals 1.0
         
       # Added in Phase 5. No API calls: builds results/dashboard.html from the files
       # the steps above saved, even if a gate failed, so the upload below includes it.

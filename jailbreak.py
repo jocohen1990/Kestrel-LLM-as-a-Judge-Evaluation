@@ -128,11 +128,16 @@ def main() -> int:
     }
     RESULTS_DIR.mkdir(exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    for name in (f"jailbreak_{stamp}.json", "jailbreak_latest.json"):
+    # A run of some cases only saves its timestamped file but not the latest one (Phase 9),
+    # so a repeat of two cases can't replace the full run the dashboard and CI read.
+    partial = bool(args.ids or args.kind)
+    names = [f"jailbreak_{stamp}.json"] + ([] if partial else ["jailbreak_latest.json"])
+    for name in names:
         (RESULTS_DIR / name).write_text(json.dumps(run, indent=2, ensure_ascii=False), encoding="utf-8")
 
     print_report(run)
-    print("\nSaved results/jailbreak_latest.json")
+    print(f"\nSaved results/{names[-1]}"
+          + (" (some cases only, so the latest file is unchanged)" if partial else ""))
 
     s = run["summary"]
     failed = False

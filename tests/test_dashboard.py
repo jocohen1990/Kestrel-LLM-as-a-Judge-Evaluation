@@ -47,7 +47,8 @@ def latest_runs(ts="2026-10-30T03:00:00+00:00"):
             "cases": [case(i) for i in range(22)]},
         "jailbreak_latest.json": {
             "timestamp": ts, "model": DEFAULT_MODEL, "cases_file": "jailbreak_v1.jsonl", **RAG,
-            "summary": {"attack_success_rate": 0.0, "over_refusal_rate": 0.0, "succeeded_ids": [],
+            "summary": {"attack_success_rate": 0.0, "over_refusal_rate": 0.0, "exact_refusal_rate": 1.0,
+                        "succeeded_ids": [],
                         "over_refused_ids": [], "mentions_internals_ids": ["jb108"]},
             "cases": [case(i) for i in range(28)]},
         "bias_latest.json": {
@@ -59,6 +60,7 @@ def latest_runs(ts="2026-10-30T03:00:00+00:00"):
             "timestamp": ts, "model": DEFAULT_MODEL, "cases_file": "agent_v2.jsonl",
             "agent_version": DEFAULT_AGENT_VERSION, "max_turns": DEFAULT_MAX_TURNS,
             "summary": {"fully_correct_rate": 26 / 27, "answer_accuracy": 1.0, "tool_choice_accuracy": 26 / 27,
+                        "exact_refusal_rate": 1.0,
                         "right_answer_wrong_path_ids": ["ag017"], "wrong_answer_ids": []},
             "cases": [case(i) for i in range(27)]},
         "robustness_latest.json": {
@@ -82,7 +84,7 @@ def test_every_ci_gate_is_checked(tmp_path):
     gates = gate_status(tmp_path)
     assert [g["suite"] for g in gates] == list(SUITES)
     totals = gate_totals(gates)
-    assert totals == {"passed": 10, "failed": 0, "not_run": 0,
+    assert totals == {"passed": 12, "failed": 0, "not_run": 0,
                       "total": sum(len(s.gates) for s in SUITES.values())}
     assert all(g["default_setup"] for g in gates)
 
@@ -94,7 +96,7 @@ def test_a_failing_gate_is_counted_and_shown(tmp_path):
     data = build_dashboard(tmp_path)
     assert data["gate_totals"]["failed"] == 1
     page = render_html(data, generated_at="test")
-    assert "1 of 10 gates failing" in page
+    assert "1 of 12 gates failing" in page
     assert "✕</span> Fail" in page
 
 
@@ -103,8 +105,8 @@ def test_a_missing_results_file_is_not_run_not_passed(tmp_path):
     del files["robustness_latest.json"]
     write(tmp_path, files)
     totals = gate_totals(gate_status(tmp_path))
-    assert totals["not_run"] == 1 and totals["passed"] == 9
-    assert "9 of 10 gates passing, 1 not run" in render_html(build_dashboard(tmp_path), "test")
+    assert totals["not_run"] == 1 and totals["passed"] == 11
+    assert "11 of 12 gates passing, 1 not run" in render_html(build_dashboard(tmp_path), "test")
 
 
 def test_latest_file_from_a_non_default_setup_is_called_out(tmp_path):
@@ -259,7 +261,7 @@ def test_cli_writes_the_page(tmp_path, capsys):
     assert dashboard.main(["--results-dir", str(tmp_path), "--out", str(out)]) == 0
     assert out.read_text(encoding="utf-8").startswith("<!DOCTYPE html>")
     printed = capsys.readouterr().out
-    assert "Gates: 10 passed, 0 failed, 0 not run (of 10)" in printed
+    assert "Gates: 12 passed, 0 failed, 0 not run (of 12)" in printed
 
 
 def test_cli_default_output_is_in_the_results_folder(tmp_path):

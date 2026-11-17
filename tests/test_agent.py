@@ -167,10 +167,11 @@ def test_every_version_is_sent_as_written(monkeypatch, version):
     assert REFUSAL in AGENT_PROMPTS[version]
 
 
-def test_default_is_a4_since_phase_7():
+def test_default_is_a5_since_phase_9():
     # Like the RAG prompts: a new version becomes the default only after a run
     # shows it's better. Change this test in the same commit as the default.
-    assert DEFAULT_AGENT_VERSION == "a4"
+    # a4 since Phase 7 (Run 26); a5 since Phase 9 (Run 37).
+    assert DEFAULT_AGENT_VERSION == "a5"
 
 
 # ---- Prompt a2 (after Run 14) ------------------------------------------------------
