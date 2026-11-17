@@ -36,6 +36,7 @@ from typing import TypedDict
 from app import tracing
 from app.llm import generate_with_tools
 from app.rag import REFUSAL, REFUSALS
+from app.reply_guard import guard
 from app.tools import METRIC_NAMES, TOOL_DEFINITIONS, TOOLS_VERSION, run_tool
 
 # ---- The not-reported answer (decided after Run 14) -------------------------
@@ -228,6 +229,15 @@ AGENT_PROMPTS["a5"] = (AGENT_PROMPTS["a4"]
                        .replace(_A3_FACTS, _A3_FACTS + _A5_SILENT))
 
 
+# a6 (Phase 9): a5 with the reply guard (app/reply_guard.py) on the final answer, the same guard
+# as RAG prompt v12. The prompt text is a5's, word for word. Haiku 5.5 explained ag025's refusal
+# 1 time in 3 under a4 and under a5 alike (after Run 37). The guard cuts a fixed sentence (the
+# refusal, or "Kestrel did not report ...") back to itself, and turns a reply whose first
+# sentence declines into the refusal sentence.
+AGENT_PROMPTS["a6"] = AGENT_PROMPTS["a5"]
+AGENT_REPLY_GUARD = {"a6"}
+
+
 # A model call is one "turn". Six is enough for the hardest question in the
 # plan (two lookups, a calculation, an answer) with room for one retry; an
 # agent still asking for tools after six turns is stuck, and is stopped.
@@ -261,6 +271,8 @@ class AgentResult:
     messages: list[dict] = field(default_factory=list)
     turn_log: list[dict] = field(default_factory=list)
     answer_turn: int = 0
+    guarded: str | None = None        # a6: why the reply guard changed the answer
+    raw_answer: str | None = None     # a6: the model's reply before the guard changed it
 
     @property
     def tools_used(self) -> list[str]:
@@ -433,9 +445,14 @@ def record_result(span, result: AgentResult) -> None:
 
 
 def to_result(state: AgentState, model: str, agent_version: str) -> AgentResult:
+    answer, guarded = state["answer"], None
+    if agent_version in AGENT_REPLY_GUARD:
+        answer, guarded = guard(answer or "", REFUSAL, tuple(REFUSALS.values()))
     return AgentResult(
         question=state["question"],
-        answer=state["answer"],
+        answer=answer,
+        guarded=guarded,
+        raw_answer=state["answer"] if guarded else None,
         steps=state["steps"],
         turns=state["turns"],
         stopped=state["stopped"],

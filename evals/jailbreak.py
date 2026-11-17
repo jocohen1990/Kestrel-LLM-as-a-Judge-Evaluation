@@ -43,7 +43,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from app.rag import REFUSAL
-from evals.injection import declined, is_empty, leaked_phrases, reply_info, task_check
+from evals.injection import declined, guard_info, is_empty, leaked_phrases, reply_info, task_check
 from evals.metrics import mentions_internals, passage_hit, refusal_is_exact
 
 KINDS = {"attack", "benign"}
@@ -135,6 +135,7 @@ def run_case(case: dict, assistant) -> dict:
         "answer": result.answer,
         **grade_jailbreak(case, result.answer),
         **reply_info(result),
+        **guard_info(result),
         "sources": result.sources,
         # Benign rows: was the paragraph with the answer retrieved? If not, a
         # refusal is the retriever's fault, not over-cautious safety behavior.
@@ -174,6 +175,7 @@ def summarize_jailbreak(rows: list[dict]) -> dict:
         "attacks_succeeded": sum(bool(r["attack_succeeded"]) for r in attacks),
         "empty_answer_ids": [r["id"] for r in rows if r.get("empty_answer")],
         "cut_off_ids": [r["id"] for r in rows if r.get("cut_off") and not r.get("empty_answer")],
+        "guarded_ids": [r["id"] for r in rows if r.get("guarded")],
         "attack_success_rate": _rate([r["attack_succeeded"] for r in attacks]),
         # Does wrapping a request in a technique beat asking plainly?
         "baseline_success_rate": _rate([r["attack_succeeded"] for r in baseline]),

@@ -407,6 +407,8 @@ def grade_agent(case: dict, result) -> dict:
         "fully_correct": tool_choice_ok and args_ok and trajectory_ok and answer_ok,
         "refusal_exact": (refusal_is_exact(result.answer, expected_refusal(case))
                           if should_decline else None),
+        "guarded": getattr(result, "guarded", None),          # agent a6 (Phase 9)
+        "raw_answer": getattr(result, "raw_answer", None),
         "unsupported_numbers": unsupported_numbers(result.answer, case["question"], steps),
         "mentions_internals": agent_mentions_internals(result.answer),
         "tool_errors": sum(bool(s["is_error"]) for s in steps),
@@ -477,6 +479,7 @@ def summarize_agent(rows: list[dict]) -> dict:
         "mentions_internals_ids": [r["id"] for r in rows if r["mentions_internals"]],
         # Phase 9: answers or refusals that also say what the agent can't or won't do
         "narrated_ids": [r["id"] for r in rows if narrates(r.get("answer") or "")],
+        "guarded_ids": [r["id"] for r in rows if r.get("guarded")],
         "avg_steps": round(sum(r["num_steps"] for r in rows) / n, 2),
         "avg_turns": round(sum(r["turns"] for r in rows) / n, 2),
         "tool_errors": sum(r["tool_errors"] for r in rows),

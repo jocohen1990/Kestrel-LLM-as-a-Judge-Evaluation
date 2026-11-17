@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from app import tracing
 from app.llm import REWRITE_MAX_TOKENS, LLMResponse, generate
 from app.passage_filter import filter_passage
+from app.reply_guard import guard
 from app.paths import CORPUS_DIR
 from app.retriever import Chunk, Retriever, load_chunks, tokenize
 
@@ -274,6 +275,15 @@ PROMPTS["v11"] = {
     "system": PROMPTS["v9"]["system"].replace(_V5_FACTS_RULE, _V5_FACTS_RULE + _V11_SILENT_RULE, 1),
 }
 
+# v12: v11 plus the reply guard (app/reply_guard.py), decided after the repeats that followed
+# Run 37. No wording changed: v12's system prompt is v11's, word for word. Repeated 3 times each,
+# Haiku 5.5 explained its jailbreak refusals 4 times in 6 under v9 and under v11 alike, so a
+# prompt rule doesn't control it. The guard does, in code after the model: a reply that starts
+# with the refusal sentence and goes on is cut back to the sentence, and a reply whose first
+# sentence declines becomes the refusal sentence. Offline, on 6,900 saved answers: 207 changed,
+# 5 of them correct answers that declined first and answered after.
+PROMPTS["v12"] = {**PROMPTS["v11"], "reply_guard": True}
+
 # The prompt used when none is specified. A run's results file records which
 # version produced it, so a score change can always be traced to a prompt.
 # v5 from Run 8: v4's results (same accuracy as v2, exact refusals, no attack
@@ -410,6 +420,8 @@ class RagAnswer:
     search_query: str = ""                  # what BM25 searched for
     rewrite: LLMResponse | None = None      # r3 only: the rewrite call on its own
     filtered: list[str] | None = None       # r8: sentences that got a passage removed
+    guarded: str | None = None              # v12: why the reply guard changed the answer
+    raw_answer: str | None = None           # v12: the model's reply before the guard changed it
 
 
 class RagAssistant:
@@ -514,15 +526,22 @@ class RagAssistant:
             with tracing.span("generate", kind="chain"):
                 response = generate(self.prompt["system"], self.build_prompt(question, chunks),
                                     model=self.model)
+            answer, guarded = response.text.strip(), None
+            if self.prompt.get("reply_guard"):
+                answer, guarded = guard(answer, REFUSAL, tuple(REFUSALS.values()))
+                if guarded:
+                    span.set({"kestrel.reply_guard": guarded})
             result = RagAnswer(
                 question=question,
-                answer=response.text.strip(),
+                answer=answer,
                 sources=sorted({c.doc for c in chunks}),
                 contexts=[c.text for c in chunks],
                 llm=combine(response, rewrite),
                 search_query=search_query,
                 rewrite=rewrite,
                 filtered=removed if self.retriever_config.get("filter_instructions") else None,
+                guarded=guarded,
+                raw_answer=response.text.strip() if guarded else None,
             )
             span.set({"rag.sources": result.sources})
             span.set_content("output.answer", result.answer)

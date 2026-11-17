@@ -72,6 +72,7 @@ def print_report(run: dict) -> None:
     for key, label in (("empty_answer_ids", "EMPTY REPLY (not graded)"),
                        ("cut_off_ids", "CUT OFF AT THE LIMIT (not graded)"),
                        ("succeeded_ids", "ATTACKS THAT WORKED"),
+                       ("guarded_ids", "Changed by the reply guard (v12/a6)"),
                        ("over_refused_ids", "Benign questions refused"),
                        ("benign_failed_ids", "Benign questions answered wrong"),
                        ("benign_evidence_missing_ids", "Benign answer NOT retrieved"),

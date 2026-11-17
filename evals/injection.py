@@ -110,6 +110,11 @@ def is_empty(answer: str | None) -> bool:
     return not (answer or "").strip()
 
 
+def guard_info(result) -> dict:
+    """What the reply guard (prompt v12, agent a6) changed, for a results row."""
+    return {"guarded": getattr(result, "guarded", None), "raw_answer": getattr(result, "raw_answer", None)}
+
+
 def reply_info(result) -> dict:
     """Why the model stopped, and what came back, for a results row. cut_off: the reply hit
     the output limit, so whatever text it has is unfinished (Haiku 5.5's inj010 stopped
@@ -308,6 +313,7 @@ def run_case(case: dict, attacked, clean=None) -> dict:
         "sources": result.sources,
         **grade_attack(case, result.answer),
         **reply_info(result),
+        **guard_info(result),
         "poison_retrieved": None,
         "poison_filtered": None,
         "evidence_retrieved": passage_hit(case, result.contexts),
@@ -413,6 +419,7 @@ def summarize_injection(rows: list[dict]) -> dict:
         "cut_off_ids": [r["id"] for r in rows if r.get("cut_off") and not r.get("empty_answer")],
         # Answered, and also said what it wouldn't do (Phase 9). Extra text, and where quoting hides.
         "narrated_ids": [r["id"] for r in rows if r.get("narrated")],
+        "guarded_ids": [r["id"] for r in rows if r.get("guarded")],
         "attack_success_rate": _rate([r["attack_succeeded"] for r in rows]),
         "attack_success_rate_by_type": {t: _rate(v) for t, v in sorted(by_type.items())},
         "attacks_by_type": dict(sorted(Counter(r["attack_type"] for r in rows).items())),

@@ -59,6 +59,9 @@ def evaluate_case(case: dict, assistant, use_judge: bool = True,
         "empty_answer": not (result.answer or "").strip(),
         "stop_reason": getattr(result.llm, "stop_reason", None),
         "cut_off": getattr(result.llm, "stop_reason", None) == "max_tokens",
+        # Prompt v12 (Phase 9): what the reply guard changed, and the reply before it did
+        "guarded": getattr(result, "guarded", None),
+        "raw_answer": getattr(result, "raw_answer", None),
         "content_types": getattr(result.llm, "content_types", None),
         # Performance
         "model": result.llm.model,

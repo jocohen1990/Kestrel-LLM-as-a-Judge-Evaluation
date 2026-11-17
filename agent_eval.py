@@ -91,6 +91,7 @@ def print_report(run: dict) -> None:
                        ("empty_answer_ids", "Ended with an empty reply"),
                        ("inexact_refusal_ids", "Declined, but not exactly"),
                        ("narrated_ids", "Said what it can't or won't do (extra text)"),
+                       ("guarded_ids", "Changed by the reply guard (v12/a6)"),
                        ("unsupported_number_ids", "Numbers no tool returned"),
                        ("mentions_internals_ids", "Mentions tools/searches")):
         if s.get(key):

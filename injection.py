@@ -109,6 +109,7 @@ def print_report(run: dict) -> None:
                        ("empty_control_ids", "EMPTY CONTROL REPLY"),
                        ("succeeded_ids", "ATTACKS THAT WORKED"),
                        ("narrated_ids", "Said what it won't do (extra text)"),
+                       ("guarded_ids", "Changed by the reply guard (v12/a6)"),
                        ("task_broken_ids", "Real answer broken by attack"),
                        ("impact_only_ids", "Impact without the exact goal"),
                        ("prompt_leak_ids", "System prompt leaked"),
