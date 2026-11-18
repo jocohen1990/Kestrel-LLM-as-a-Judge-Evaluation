@@ -156,7 +156,7 @@ EVAL_FILES = ["golden/golden_v1.jsonl", "golden/golden_v2.jsonl", "golden/golden
               "attacks/injection_v1.jsonl", "attacks/injection_v2.jsonl", "attacks/jailbreak_v1.jsonl",
               "bias/bias_v1.jsonl",
               "agent/agent_v1.jsonl", "agent/calc_probes_v1.jsonl", "agent/calc_probes_v2.jsonl",
-              "golden/golden_v4.jsonl", "agent/agent_v2.jsonl"]
+              "golden/golden_v4.jsonl", "agent/agent_v2.jsonl", "golden/golden_v5.jsonl"]
 
 
 def eval_questions() -> set[str]:

@@ -2,9 +2,8 @@
 
 | Field | Value |
 |---|---|
-| Current version | `golden_v3.jsonl` (32 cases): the CI default |
-| Next version | `golden_v4.jsonl` (40 cases): v3 plus 8 cases from production traffic. Not the default yet |
-| Previous versions | `golden_v2.jsonl` (32 cases), `golden_v1.jsonl` (20 cases), both kept unchanged |
+| Current version | `golden_v5.jsonl` (40 cases): the CI default since Phase 9. v4 with one grading fix (g034) |
+| Previous versions | `golden_v4.jsonl` (40 cases, the CI default in Phases 7–8), `golden_v3.jsonl` (32), `golden_v2.jsonl` (32), `golden_v1.jsonl` (20), all kept unchanged |
 | Corpus | 4 documents for the fictional company Kestrel Freight Analytics (`data/corpus/`) |
 | Author | Hand-written |
 
@@ -39,7 +38,7 @@ in one question), 2 `factual`, 1 `numeric`, 1 `ambiguous`, 1 `out_of_scope`.
 | `question` | What gets sent to the assistant |
 | `expected_answer` | Human-readable reference answer, given to the LLM judge |
 | `expected_numbers` | Every number the answer must contain |
-| `must_include` | Every phrase the answer must contain (case-insensitive) |
+| `must_include` | Every phrase the answer must contain (case-insensitive). *(v5)* An entry can also be a list of 2+ phrases, any one of which counts, for one fact with several right wordings: `["credit", "debt"]` |
 | `must_include_any` | *(v2)* At least one of these phrases must appear. Used where several wordings are valid, e.g. "rose" / "grew" / "increased" |
 | `source_docs` | Files the retriever must fetch; empty for out-of-scope and ambiguous |
 | `evidence` | *(v3)* Short strings copied exactly from the corpus that must appear in the retrieved **passages**, e.g. `"116.0"`. Empty for out-of-scope and ambiguous. A test checks every string exists in its source document |
@@ -54,6 +53,11 @@ in one question), 2 `factual`, 1 `numeric`, 1 `ambiguous`, 1 `out_of_scope`.
 
 ## Changelog
 
+- **v5** (Phase 9, after Run 38): v4 with one change. g034's `must_include` entry `"credit"` became
+  `["credit", "debt"]`. In Run 38 Haiku 5.5 named the risk "debt and liquidity", which is right (the
+  risk is about the $150 million credit facility); the rule check failed it and the judge passed it.
+  Re-scored, the 4 saved g034 answers on v4 that failed for that word pass on v5, and the judge had
+  marked all 4 correct. No other case changed, so v4 and v5 scores differ only on g034.
 - **v4**: v3 unchanged, plus 8 cases promoted from production traffic (Phase 6 step 3): 7 after Run 23 and g040 after Run 24. The Run 23 seven are
   the five requests the Run 20–22 reviews found the RAG assistant wrong on, the Spanish question
   the agent refused (t033), and u022.

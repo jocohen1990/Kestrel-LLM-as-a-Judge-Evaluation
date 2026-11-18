@@ -51,6 +51,15 @@ def load_golden(path: Path) -> list[dict]:
         if case["id"] in seen_ids:
             raise DatasetError(f"Line {line_no}: duplicate id {case['id']!r}")
 
+        # v5: a must_include entry may be a list of words, any one of which will do.
+        for entry in case["must_include"]:
+            ok = (isinstance(entry, str) and entry) or (
+                isinstance(entry, list) and len(entry) >= 2
+                and all(isinstance(w, str) and w for w in entry))
+            if not ok:
+                raise DatasetError(f"Line {line_no}: {case['id']} must_include entries are words "
+                                   f"or lists of 2+ words, not {entry!r}")
+
         # An answerable question needs at least one thing to check against.
         checks = case["expected_numbers"] or case["must_include"] or case["must_include_any"]
         if case["category"] != "out_of_scope" and not checks:

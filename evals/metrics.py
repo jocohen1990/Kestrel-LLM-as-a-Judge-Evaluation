@@ -71,6 +71,12 @@ class CaseResult:
     reason: str
 
 
+def _includes(entry: str | list[str], lowered: str) -> bool:
+    """A must_include entry is in the (lowercased) answer: the word, or any word of a list."""
+    words = [entry] if isinstance(entry, str) else entry
+    return any(w.lower() in lowered for w in words)
+
+
 def score_case(case: dict, answer: str) -> CaseResult:
     """Grade one model answer against one golden case."""
     refused = is_refusal(answer)
@@ -87,7 +93,9 @@ def score_case(case: dict, answer: str) -> CaseResult:
 
     lowered = answer.lower()
     missing_numbers = [n for n in case["expected_numbers"] if not number_present(n, answer)]
-    missing_words = [w for w in case["must_include"] if w.lower() not in lowered]
+    # An entry is a word, or (golden_v5) a list of words of which any one will do: g034 accepts
+    # "credit" or "debt" for the same risk ("debt and liquidity", "the credit facility").
+    missing_words = [w for w in case["must_include"] if not _includes(w, lowered)]
     any_of = case.get("must_include_any", [])
     missing_any = bool(any_of) and not any(phrase.lower() in lowered for phrase in any_of)
 

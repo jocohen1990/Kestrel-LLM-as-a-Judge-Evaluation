@@ -247,3 +247,25 @@ def test_summary_in_retrieval_only_mode_has_no_pass_numbers():
     s = summarize_robustness(rows)
     assert "overall_robustness" not in s
     assert s["by_style"]["typo"]["passages_lost"] == ["a-typo"]
+
+
+# ---- 4. The wording check (Phase 9, after Run 38) --------------------------------
+
+def test_run_variant_records_the_internals_check():
+    variant = {"id": "g006-casual", "source_id": "g006", "style": "casual",
+               "question": "Q1 2026 sales for Kestrel?"}
+    row_ = run_variant(variant, CASE, FakeAssistant("It was $108.3 million.", ["... $108.3 ..."]))
+    assert row_["mentions_internals"] is False
+    # g022-casual in Run 38: "... but the material doesn't give Q2 2026 revenue, ..."
+    row_ = run_variant(variant, CASE, FakeAssistant(
+        "It was $108.3 million; the material doesn't give Q2.", ["... $108.3 ..."]))
+    assert row_["mentions_internals"] is True and row_["passed"] is True
+
+
+def test_summary_reports_internals_and_skips_rows_without_the_check():
+    rows = [dict(row("a", "original", "a", True, True), mentions_internals=False),
+            dict(row("a-typo", "typo", "a", True, True), mentions_internals=True),
+            row("b", "original", "b", True, True)]          # saved before the check: left out
+    s = summarize_robustness(rows)
+    assert s["internals_mention_rate"] == 0.5 and s["internals_ids"] == ["a-typo"]
+    assert summarize_robustness([row("b", "original", "b", True, True)])["internals_mention_rate"] is None

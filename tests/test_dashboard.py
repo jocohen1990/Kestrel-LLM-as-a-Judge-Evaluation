@@ -24,7 +24,7 @@ def case(i, **extra):
 
 
 def golden_run(ts, pass_rate=1.0, n=4, model=DEFAULT_MODEL, prompt=DEFAULT_PROMPT_VERSION, cases=None):
-    return {"timestamp": ts, "model": model, "golden_file": "golden_v4.jsonl", **RAG,
+    return {"timestamp": ts, "model": model, "golden_file": "golden_v5.jsonl", **RAG,
             "prompt_version": prompt, "judge_model": DEFAULT_JUDGE_MODEL,
             "judge_prompt_version": DEFAULT_JUDGE_PROMPT,
             "summary": {"pass_rate": pass_rate, "judge_faithfulness_rate": 1.0, "judge_correct_rate": 1.0},

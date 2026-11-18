@@ -444,10 +444,30 @@ def record_result(span, result: AgentResult) -> None:
     span.set_content("output.answer", result.answer)
 
 
+def not_reported_lookup(steps: list[dict]) -> tuple[str, str] | None:
+    """(metric, period) when the metric tool said a figure isn't reported in this run, and only one
+    figure; None otherwise. In every saved agent run (24 runs), only the not_reported cases
+    (ag019-ag021) got a "Not reported:" answer from the tool, always for one figure."""
+    found = {(s["args"].get("metric"), s["args"].get("period")) for s in steps
+             if s["tool"] == "get_financial_metric" and not s.get("is_error")
+             and str(s.get("output", "")).startswith("Not reported:")}
+    if len(found) != 1:
+        return None
+    metric, period = found.pop()
+    return (metric, period) if metric in METRIC_NAMES and period else None
+
+
 def to_result(state: AgentState, model: str, agent_version: str) -> AgentResult:
     answer, guarded = state["answer"], None
     if agent_version in AGENT_REPLY_GUARD:
         answer, guarded = guard(answer or "", REFUSAL, tuple(REFUSALS.values()))
+        # After Run 38: when the guard replaces a declining reply and the metric tool said the
+        # figure isn't reported, the right sentence is the not-reported one, not the refusal
+        # (ag019 in an earlier run: "Kestrel's net income for fiscal year 2024 was not reported in
+        # the available documents."). A fixed sentence the model chose itself is left as it is.
+        lookup = not_reported_lookup(state["steps"]) if guarded == "explained_refusal" else None
+        if lookup:
+            answer = not_reported_answer(*lookup)
     return AgentResult(
         question=state["question"],
         answer=answer,

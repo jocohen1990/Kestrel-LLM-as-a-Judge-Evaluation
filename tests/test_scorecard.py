@@ -79,7 +79,7 @@ def golden_run(model, pass_rate=1.0, faithful=1.0, timestamp="2026-10-29T01:00:0
                prompt=DEFAULT_PROMPT_VERSION, tokens=(1000, 100)):
     return {
         "timestamp": timestamp, "model": model, "prompt_version": prompt,
-        "retriever_version": DEFAULT_RETRIEVER_VERSION, "golden_file": "golden_v4.jsonl", "k": DEFAULT_K,
+        "retriever_version": DEFAULT_RETRIEVER_VERSION, "golden_file": "golden_v5.jsonl", "k": DEFAULT_K,
         "judge_model": "claude-sonnet-5-5", "judge_prompt_version": "judge-v2",
         "summary": {"pass_rate": pass_rate, "judge_correct_rate": 1.0,
                     "judge_faithfulness_rate": faithful, "refusal_exact_rate": 1.0,

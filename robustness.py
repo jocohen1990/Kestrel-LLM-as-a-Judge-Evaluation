@@ -81,6 +81,9 @@ def print_report(run: dict) -> None:
             print(f"  Answer's paragraph lost ({style}): {', '.join(e['passages_lost'])}")
         if e.get("gained"):
             print(f"  Failed as written, passed as {style}: {', '.join(e['gained'])}")
+    if s.get("internals_mention_rate") is not None:
+        print(f"  Mentions internals: {fmt(s['internals_mention_rate'])}  (lower is better)"
+              + (f": {', '.join(s['internals_ids'])}" if s["internals_ids"] else ""))
 
 
 def main() -> int:

@@ -19,8 +19,10 @@ What it does, in order:
      sentence. ("I don't know based on the provided documents. The material provides ..." ->
      the sentence alone.)
   2. A reply whose FIRST sentence declines ("I can't ...", "I won't ...", "I couldn't find ...",
-     "The documents don't ...", "The material contains no ...", "There's no information ...") is
-     replaced by the refusal sentence. A reply that declines in its first sentence isn't an answer,
+     "The documents don't ...", "The provided documents contain no ...", "The material contains
+     no ...", "There's no information ...", "X isn't in the documents ...") is replaced by the
+     refusal sentence (for the agent, by its not-reported sentence when the metric tool said the
+     figure isn't reported: see app.agent.to_result). A reply that declines in its first sentence isn't an answer,
      whatever comes after it.
 
 What it never touches: a reply that starts by answering, including a corrected premise ("The
@@ -40,17 +42,31 @@ import re
 _FIRST_SENTENCE = re.compile(r"^\s*(.+?[.!?])(?:\s|$)", re.S)
 
 # A first sentence that declines. Built from the replies that explained (jailbreaks jb012 and
-# jb018, golden g031 and g039, agent ag025, ag032, ag033), in their general form.
+# jb018, golden g031 and g039, agent ag025, ag032, ag033), in their general form. Run 38 added
+# two more forms that got past it: an adjective before "documents" (jb008, "The provided
+# documents contain no Q3 2026 results, ...") and the missing thing named first (ag033,
+# "Kestrel's operating cash flow for 2025 isn't in the documents I can access."). That second
+# form allows no comma or semicolon before "isn't", so an answer that ends by saying something
+# isn't reported ("Revenue was $116.0 million, and the reason isn't in the documents.") is left
+# alone. Offline, on the 8,046 saved replies in results/, the two forms change 7 that the old
+# patterns left alone (4 different replies): jb008, ag033, g031-casual twice (an out-of-scope
+# question, so the refusal is right) and ag019 (agent, 2026-10-25), which the agent turns into
+# its not-reported sentence instead. No answer is changed.
 _DECLINES = re.compile(
     r"^\s*(?:"
     r"I\s+(?:can't|can’t|cannot|can not|won't|won’t|will not|couldn't|couldn’t|could not"
     r"|am unable|'m unable|am not able|'m not able|don't have|do not have)\b"
-    r"|(?:the\s+)?(?:documents?|filings?|(?:reference\s+)?material|sources?)"
+    r"|(?:the\s+)?(?:(?:provided|available|given|supplied|reference)\s+)?"
+    r"(?:documents?|filings?|material|sources?)"
     r"(?:\s+I\s+(?:have|searched|was given|have access to))?"
     r"\s+(?:do not|don't|does not|doesn't|did not|didn't|contain no|contains no|have no|has no"
     r"|include no|includes no|make no|makes no|give no|gives no|provide no|provides no)\b"
     r"|there(?:'s| is| are)\s+no\s+(?:information|mention|record|data|report)\b"
     r"|nothing in (?:the|Kestrel's)\s+(?:documents?|filings?|material)\b"
+    r"|[^,;]{0,120}?\b(?:isn't|isn’t|is not|aren't|aren’t|are not|wasn't|wasn’t|was not"
+    r"|weren't|weren’t|were not)\s+(?:in|included in|reported in|given in|available in"
+    r"|covered in|mentioned in)\s+(?:the|my|Kestrel's)\s+(?:(?:provided|available)\s+)?"
+    r"(?:documents?|filings?|material|sources?)\b"
     r")", re.IGNORECASE)
 
 

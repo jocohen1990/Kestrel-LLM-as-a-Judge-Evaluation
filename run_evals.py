@@ -47,7 +47,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Run LLM evals against the golden dataset.")
     # golden_v4 since Phase 7: golden_v3's 32 plus the 8 production failures from Runs
     # 20-24 (g033-g040). The default setup passes 36/40 (90%) on it, above the 0.85 gate.
-    parser.add_argument("--golden", default=GOLDEN_DIR / "golden_v4.jsonl", help="Golden dataset file")
+    # golden_v5 since Phase 9 (after Run 38): v4 with g034 accepting "credit" or "debt".
+    parser.add_argument("--golden", default=GOLDEN_DIR / "golden_v5.jsonl", help="Golden dataset file")
     parser.add_argument("--model", default=None, help="Assistant model (defaults to app.llm.DEFAULT_MODEL)")
     parser.add_argument("--prompt", default=DEFAULT_PROMPT_VERSION, choices=sorted(PROMPTS),
                         help="Assistant prompt version (see app/rag.py)")

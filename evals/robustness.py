@@ -52,7 +52,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from app.retriever import STOPWORDS
-from evals.metrics import passage_hit, retrieval_hit, score_case
+from evals.metrics import mentions_internals, passage_hit, retrieval_hit, score_case
 
 HAND_STYLES = ("reworded", "casual")
 GENERATED_STYLES = ("typo", "typos3", "lower")
@@ -272,6 +272,9 @@ def run_variant(variant: dict, case: dict, assistant) -> dict:
             "answer": result.answer,
             "passed": rule.passed,
             "reason": rule.reason,
+            # The golden runs' wording check (Phase 9, after Run 38): the prompt says never to
+            # mention "the material" or "the context". Reported, not gated, as in run_evals.py.
+            "mentions_internals": mentions_internals(result.answer),
             "latency_s": round(result.llm.latency_s, 3),
             "input_tokens": result.llm.input_tokens,
             "output_tokens": result.llm.output_tokens}
@@ -340,6 +343,11 @@ def summarize_robustness(rows: list[dict]) -> dict:
                "variants": sum(1 for r in rows if r["style"] != "original"),
                "by_style": by_style}
     if graded:
+        answered = [r for r in rows if r.get("mentions_internals") is not None]
+        summary.update({
+            "internals_mention_rate": _rate([r["mentions_internals"] for r in answered]),
+            "internals_ids": [r["id"] for r in answered if r["mentions_internals"]],
+        })
         held = sum(by_style[s]["original_passed"] for s in variant_styles)
         flips = sum(len(by_style[s]["flips"]) for s in variant_styles)
         summary.update({

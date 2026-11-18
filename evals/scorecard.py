@@ -75,7 +75,7 @@ def _s(key):
 # The gates copy .github/workflows/ci.yml. If you change one there, change it here.
 SUITES: dict[str, Suite] = {s.name: s for s in (
     Suite("golden", "Golden set (RAG answers)", "run_evals.py", "run_", "latest.json",
-          match={"golden_file": "golden_v4.jsonl", "prompt_version": DEFAULT_PROMPT_VERSION,
+          match={"golden_file": "golden_v5.jsonl", "prompt_version": DEFAULT_PROMPT_VERSION,
                  "retriever_version": DEFAULT_RETRIEVER_VERSION, "k": DEFAULT_K,
                  "judge_model": DEFAULT_JUDGE_MODEL, "judge_prompt_version": DEFAULT_JUDGE_PROMPT},
           metrics=(Metric("pass_rate", "Rule pass rate", _s("pass_rate")),
