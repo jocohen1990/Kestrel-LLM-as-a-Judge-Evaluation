@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-17T01:32:13.014296+00:00",
+  "timestamp": "2026-11-18T03:27:36.148480+00:00",
   "retrieval_only": false,
   "model": "claude-haiku-5-5",
   "prompt_version": "v12",
@@ -41,22 +41,14 @@
       },
       "casual": {
         "variants": 31,
-        "passage_hit_rate": 0.963,
-        "passage_misses": [
-          "g022-casual"
-        ],
-        "passages_lost": [
-          "g022-casual"
-        ],
-        "pass_rate": 0.968,
+        "passage_hit_rate": 1.0,
+        "passage_misses": [],
+        "passages_lost": [],
+        "pass_rate": 1.0,
         "original_passed": 31,
-        "robustness": 0.968,
-        "flips": [
-          "g022-casual"
-        ],
-        "flips_retrieval": [
-          "g022-casual"
-        ],
+        "robustness": 1.0,
+        "flips": [],
+        "flips_retrieval": [],
         "flips_model": [],
         "gained": []
       },
@@ -100,9 +92,13 @@
         "gained": []
       }
     },
-    "overall_robustness": 0.994,
-    "flips": 1,
-    "flips_retrieval": 1,
+    "internals_mention_rate": 0.005,
+    "internals_ids": [
+      "g026-casual"
+    ],
+    "overall_robustness": 1.0,
+    "flips": 0,
+    "flips_retrieval": 0,
     "flips_model": 0
   },
   "cases": [
@@ -127,7 +123,8 @@
       "answer": "Kestrel's total revenue for fiscal year 2025 was $412.6 million, up 18% from $349.7 million in fiscal year 2024.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.505,
+      "mentions_internals": false,
+      "latency_s": 1.312,
       "input_tokens": 1910,
       "output_tokens": 77
     },
@@ -145,16 +142,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What were Kestrel's annual sales in fiscal 2025?\nKestrel annual sales fiscal 2025 net revenue total revenues fiscal year 2025 annual report",
+      "search_query": "What were Kestrel's annual sales in fiscal 2025?\nKestrel annual sales fiscal 2025 net revenue total revenues fiscal year 2025",
       "corrections": {},
       "rewrite_input_tokens": 312,
-      "rewrite_output_tokens": 39,
+      "rewrite_output_tokens": 35,
       "answer": "Kestrel's total revenue for fiscal year 2025 was $412.6 million, up 18% from $349.7 million in fiscal year 2024.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.336,
+      "mentions_internals": false,
+      "latency_s": 1.365,
       "input_tokens": 1918,
-      "output_tokens": 90
+      "output_tokens": 86
     },
     {
       "id": "g001-casual",
@@ -170,18 +168,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "kestrel 2025 top line?\nKestrel 2025 revenue total net sales top line",
+      "search_query": "kestrel 2025 top line?\nKestrel 2025 revenue total net sales fiscal year 2025",
       "corrections": {
         "line": "lane"
       },
       "rewrite_input_tokens": 302,
-      "rewrite_output_tokens": 20,
-      "answer": "Kestrel's fiscal year 2025 total revenue was $412.6 million, up 18% from $349.7 million in fiscal year 2024.",
+      "rewrite_output_tokens": 26,
+      "answer": "Kestrel's total revenue for fiscal year 2025 was $412.6 million, up 18% from $349.7 million in fiscal year 2024.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.498,
-      "input_tokens": 1885,
-      "output_tokens": 143
+      "mentions_internals": false,
+      "latency_s": 1.643,
+      "input_tokens": 1888,
+      "output_tokens": 147
     },
     {
       "id": "g001-typo",
@@ -206,7 +205,8 @@
       "answer": "Kestrel's total revenue for fiscal year 2025 was $412.6 million, up 18% from $349.7 million in fiscal year 2024.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.267,
+      "mentions_internals": false,
+      "latency_s": 1.346,
       "input_tokens": 1910,
       "output_tokens": 78
     },
@@ -235,9 +235,10 @@
       "answer": "Kestrel's total revenue for fiscal year 2025 was $412.6 million, up 18% from $349.7 million in fiscal year 2024.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.437,
+      "mentions_internals": false,
+      "latency_s": 1.252,
       "input_tokens": 1916,
-      "output_tokens": 128
+      "output_tokens": 77
     },
     {
       "id": "g001-lower",
@@ -253,16 +254,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "what was kestrels total revenue for fiscal year 2025\nKestrel total revenue fiscal year 2025 net sales total revenues annual",
+      "search_query": "what was kestrels total revenue for fiscal year 2025\nKestrel total revenue fiscal year 2025 net sales total revenues annual report",
       "corrections": {},
       "rewrite_input_tokens": 310,
-      "rewrite_output_tokens": 29,
-      "answer": "Kestrel's total revenue for fiscal year 2025 was $412.6 million, an 18% increase from $349.7 million in fiscal year 2024.",
+      "rewrite_output_tokens": 30,
+      "answer": "Kestrel's total revenue for fiscal year 2025 was $412.6 million, up 18% from $349.7 million in fiscal year 2024.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.323,
-      "input_tokens": 1902,
-      "output_tokens": 82
+      "mentions_internals": false,
+      "latency_s": 1.302,
+      "input_tokens": 1904,
+      "output_tokens": 81
     },
     {
       "id": "g002",
@@ -282,12 +284,13 @@
       "corrections": {},
       "rewrite_input_tokens": 304,
       "rewrite_output_tokens": 17,
-      "answer": "Kestrel's CEO is Dana Whitfield, according to the 2025 Annual Report and the 2026 Risk Factors document.",
+      "answer": "Kestrel Freight Analytics' CEO is Dana Whitfield, according to the Annual Report 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.296,
+      "mentions_internals": false,
+      "latency_s": 1.376,
       "input_tokens": 1757,
-      "output_tokens": 64
+      "output_tokens": 57
     },
     {
       "id": "g002-reworded",
@@ -303,16 +306,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Who holds the chief executive role at Kestrel?\nKestrel chief executive officer CEO name appointment",
+      "search_query": "Who holds the chief executive role at Kestrel?\nKestrel chief executive officer name principal executive officer appointment",
       "corrections": {},
       "rewrite_input_tokens": 308,
-      "rewrite_output_tokens": 20,
-      "answer": "Dana Whitfield serves as Chief Executive Officer (CEO) of Kestrel Freight Analytics, according to the 2025 Annual Report.",
+      "rewrite_output_tokens": 23,
+      "answer": "Dana Whitfield serves as Chief Executive Officer (CEO) of Kestrel Freight Analytics, according to the Annual Report 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.359,
-      "input_tokens": 1765,
-      "output_tokens": 74
+      "mentions_internals": false,
+      "latency_s": 1.343,
+      "input_tokens": 1779,
+      "output_tokens": 76
     },
     {
       "id": "g002-casual",
@@ -328,16 +332,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Kestrel boss?\nKestrel chief executive officer name leadership",
+      "search_query": "Kestrel boss?\nKestrel chief executive officer CEO president leadership",
       "corrections": {},
       "rewrite_input_tokens": 299,
-      "rewrite_output_tokens": 17,
-      "answer": "Kestrel's Chief Executive Officer is Dana Whitfield, according to the 2025 Annual Report. Its Chief Financial Officer is Marcus Oyelaran.",
+      "rewrite_output_tokens": 20,
+      "answer": "Kestrel's boss is Chief Executive Officer Dana Whitfield, according to the 2025 Annual Report. Marcus Oyelaran is the Chief Financial Officer.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.826,
-      "input_tokens": 1761,
-      "output_tokens": 189
+      "mentions_internals": false,
+      "latency_s": 1.723,
+      "input_tokens": 1747,
+      "output_tokens": 168
     },
     {
       "id": "g002-typo",
@@ -358,12 +363,13 @@
       },
       "rewrite_input_tokens": 303,
       "rewrite_output_tokens": 16,
-      "answer": "Kestrel's CEO is Dana Whitfield, according to the Kestrel Freight Analytics Annual Report 2025.",
+      "answer": "Kestrel's CEO is Dana Whitfield, according to the 2025 Annual Report.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.457,
+      "mentions_internals": false,
+      "latency_s": 1.518,
       "input_tokens": 1881,
-      "output_tokens": 126
+      "output_tokens": 112
     },
     {
       "id": "g002-typos3",
@@ -384,12 +390,13 @@
       },
       "rewrite_input_tokens": 305,
       "rewrite_output_tokens": 18,
-      "answer": "Kestrel's CEO is Dana Whitfield, according to the Kestrel Freight Analytics Annual Report 2025.",
+      "answer": "Kestrel Freight Analytics' Chief Executive Officer is Dana Whitfield.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.628,
+      "mentions_internals": false,
+      "latency_s": 1.461,
       "input_tokens": 1885,
-      "output_tokens": 126
+      "output_tokens": 102
     },
     {
       "id": "g002-lower",
@@ -405,16 +412,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "who is kestrels ceo\nKestrel chief executive officer name, chief executive officer, president, principal executive officer",
+      "search_query": "who is kestrels ceo\nKestrel chief executive officer name, CEO, principal executive officer",
       "corrections": {},
       "rewrite_input_tokens": 300,
-      "rewrite_output_tokens": 30,
+      "rewrite_output_tokens": 25,
       "answer": "Dana Whitfield serves as Kestrel Freight Analytics' Chief Executive Officer (CEO), according to the 2025 Annual Report.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.363,
+      "mentions_internals": false,
+      "latency_s": 1.294,
       "input_tokens": 1749,
-      "output_tokens": 83
+      "output_tokens": 78
     },
     {
       "id": "g003",
@@ -439,7 +447,8 @@
       "answer": "Kestrel Freight Analytics, Inc. is headquartered in Omaha, Nebraska.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.297,
+      "mentions_internals": false,
+      "latency_s": 1.294,
       "input_tokens": 1777,
       "output_tokens": 62
     },
@@ -457,16 +466,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Which city is Kestrel Freight Analytics based in?\nKestrel Freight Analytics headquarters location city",
-      "corrections": {},
+      "search_query": "Which city is Kestrel Freight Analytics based in?\nKestrel Freight Analytics headquarters location city principal executive offices",
+      "corrections": {
+        "offices": "officer"
+      },
       "rewrite_input_tokens": 310,
-      "rewrite_output_tokens": 20,
+      "rewrite_output_tokens": 26,
       "answer": "Kestrel Freight Analytics is headquartered in Omaha, Nebraska.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.242,
-      "input_tokens": 1762,
-      "output_tokens": 51
+      "mentions_internals": false,
+      "latency_s": 1.335,
+      "input_tokens": 1775,
+      "output_tokens": 57
     },
     {
       "id": "g003-casual",
@@ -491,7 +503,8 @@
       "answer": "Kestrel Freight Analytics, Inc. is headquartered in Omaha, Nebraska.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.312,
+      "mentions_internals": false,
+      "latency_s": 1.238,
       "input_tokens": 1773,
       "output_tokens": 55
     },
@@ -519,7 +532,8 @@
       "answer": "Kestrel Freight Analytics, Inc. is headquartered in Omaha, Nebraska.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.155,
+      "mentions_internals": false,
+      "latency_s": 1.242,
       "input_tokens": 1779,
       "output_tokens": 62
     },
@@ -537,7 +551,7 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Where is Kestrel Freiggt Analtics heaadquartered?\nKestrel Freight Analytics headquarters location principal executive offices address",
+      "search_query": "Where is Kestrel Freiggt Analtics heaadquartered?\nKestrel Freight Analytics headquarters principal executive offices location address",
       "corrections": {
         "freiggt": "freight",
         "analtics": "analytics",
@@ -545,13 +559,14 @@
         "offices": "officer"
       },
       "rewrite_input_tokens": 315,
-      "rewrite_output_tokens": 26,
+      "rewrite_output_tokens": 107,
       "answer": "Kestrel Freight Analytics is headquartered in Omaha, Nebraska.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.321,
+      "mentions_internals": false,
+      "latency_s": 1.716,
       "input_tokens": 1785,
-      "output_tokens": 57
+      "output_tokens": 188
     },
     {
       "id": "g003-lower",
@@ -567,18 +582,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "where is kestrel freight analytics headquartered\nKestrel Freight Analytics headquarters location principal executive offices address",
+      "search_query": "where is kestrel freight analytics headquartered\nkestrel freight analytics headquarters principal executive offices location",
       "corrections": {
         "offices": "officer"
       },
       "rewrite_input_tokens": 306,
-      "rewrite_output_tokens": 26,
+      "rewrite_output_tokens": 22,
       "answer": "Kestrel Freight Analytics, Inc. is headquartered in Omaha, Nebraska.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.251,
+      "mentions_internals": false,
+      "latency_s": 1.278,
       "input_tokens": 1767,
-      "output_tokens": 62
+      "output_tokens": 58
     },
     {
       "id": "g004",
@@ -594,16 +610,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How many full-time employees did Kestrel have at the end of 2025?\nKestrel full-time employees headcount end of fiscal year 2025 December 31, 2025 total number of employees",
+      "search_query": "How many full-time employees did Kestrel have at the end of 2025?\nKestrel full-time employees headcount end of fiscal year 2025 December 31, 2025 number of employees",
       "corrections": {},
       "rewrite_input_tokens": 313,
-      "rewrite_output_tokens": 39,
+      "rewrite_output_tokens": 38,
       "answer": "Kestrel had 1,240 full-time employees as of December 31, 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.303,
-      "input_tokens": 1910,
-      "output_tokens": 67
+      "mentions_internals": false,
+      "latency_s": 1.351,
+      "input_tokens": 1904,
+      "output_tokens": 66
     },
     {
       "id": "g004-reworded",
@@ -619,16 +636,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How large was Kestrel's full-time workforce at the close of 2025?\nKestrel full-time employees headcount December 31, 2025 total workforce number of employees",
+      "search_query": "How large was Kestrel's full-time workforce at the close of 2025?\nKestrel full-time employees headcount December 31, 2025 total workforce",
       "corrections": {},
       "rewrite_input_tokens": 314,
-      "rewrite_output_tokens": 31,
+      "rewrite_output_tokens": 27,
       "answer": "Kestrel had 1,240 full-time employees as of December 31, 2025, according to the 2025 Annual Report.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.295,
+      "mentions_internals": false,
+      "latency_s": 1.279,
       "input_tokens": 1826,
-      "output_tokens": 72
+      "output_tokens": 68
     },
     {
       "id": "g004-casual",
@@ -644,16 +662,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Kestrel employee count end of 2025?\nKestrel number of employees headcount December 31, 2025 full-time employees",
+      "search_query": "Kestrel employee count end of 2025?\nKestrel total employees headcount December 31, 2025 number of full-time employees",
       "corrections": {},
       "rewrite_input_tokens": 305,
-      "rewrite_output_tokens": 27,
+      "rewrite_output_tokens": 28,
       "answer": "Kestrel had 1,240 full-time employees as of December 31, 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.351,
+      "mentions_internals": false,
+      "latency_s": 1.434,
       "input_tokens": 1808,
-      "output_tokens": 55
+      "output_tokens": 56
     },
     {
       "id": "g004-typo",
@@ -669,18 +688,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How mayn full-time employees did Kestrel have at the end of 2025?\nKestrel full-time employees headcount end of fiscal 2025 December 31, 2025 number of employees full-time",
+      "search_query": "How mayn full-time employees did Kestrel have at the end of 2025?\nKestrel full-time employees headcount end of fiscal 2025 December 31 2025 number of employees full-time",
       "corrections": {
         "mayn": "many"
       },
       "rewrite_input_tokens": 315,
-      "rewrite_output_tokens": 40,
+      "rewrite_output_tokens": 39,
       "answer": "Kestrel had 1,240 full-time employees as of December 31, 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.544,
+      "mentions_internals": false,
+      "latency_s": 1.435,
       "input_tokens": 1822,
-      "output_tokens": 68
+      "output_tokens": 67
     },
     {
       "id": "g004-typos3",
@@ -696,20 +716,21 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How manyy fyll-tmie employees did Kestrel have at the end of 2025?\nKestrel full-time employees end of fiscal 2025 headcount number of full-time employees December 31, 2025",
+      "search_query": "How manyy fyll-tmie employees did Kestrel have at the end of 2025?\nKestrel full-time employees end of fiscal year 2025 headcount total number of full-time employees December 31, 2025",
       "corrections": {
         "manyy": "many",
         "fyll": "full",
         "tmie": "time"
       },
       "rewrite_input_tokens": 319,
-      "rewrite_output_tokens": 39,
-      "answer": "Kestrel had 1,240 full-time employees as of December 31, 2025.",
+      "rewrite_output_tokens": 41,
+      "answer": "Kestrel had 1,240 full-time employees as of December 31, 2025, according to the 2025 Annual Report.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.31,
-      "input_tokens": 1830,
-      "output_tokens": 67
+      "mentions_internals": false,
+      "latency_s": 1.526,
+      "input_tokens": 1922,
+      "output_tokens": 134
     },
     {
       "id": "g004-lower",
@@ -725,16 +746,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "how many full-time employees did kestrel have at the end of 2025\nKestrel full-time employees headcount number total at end of fiscal year 2025 December 31, 2025",
+      "search_query": "how many full-time employees did kestrel have at the end of 2025\nKestrel full-time employees headcount end of fiscal year 2025 December 31, 2025 total number of employees",
       "corrections": {},
       "rewrite_input_tokens": 311,
-      "rewrite_output_tokens": 36,
+      "rewrite_output_tokens": 39,
       "answer": "Kestrel had 1,240 full-time employees as of December 31, 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.248,
+      "mentions_internals": false,
+      "latency_s": 1.336,
       "input_tokens": 1906,
-      "output_tokens": 64
+      "output_tokens": 67
     },
     {
       "id": "g005",
@@ -750,16 +772,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What percentage of 2025 revenue came from the Route Optimization Software segment?\npercentage of total revenue 2025 \"Route Optimization Software\" segment revenue share annual report",
+      "search_query": "What percentage of 2025 revenue came from the Route Optimization Software segment?\npercentage of 2025 total revenue from Route Optimization Software segment; segment revenue fiscal year 2025; segment net sales as a percent of consolidated net sales",
       "corrections": {},
       "rewrite_input_tokens": 317,
-      "rewrite_output_tokens": 33,
-      "answer": "The Route Optimization Software segment contributed 62% of total revenue in 2025.",
+      "rewrite_output_tokens": 57,
+      "answer": "The Route Optimization Software segment contributed 62% of total revenue in 2025 (the Data Services segment contributed the remaining 38%).",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.229,
-      "input_tokens": 1945,
-      "output_tokens": 62
+      "mentions_internals": false,
+      "latency_s": 1.489,
+      "input_tokens": 1935,
+      "output_tokens": 105
     },
     {
       "id": "g005-reworded",
@@ -779,12 +802,13 @@
       "corrections": {},
       "rewrite_input_tokens": 321,
       "rewrite_output_tokens": 32,
-      "answer": "Route Optimization Software made up 62% of Kestrel's total revenue in 2025, according to the 2025 Annual Report.",
+      "answer": "Route Optimization Software contributed 62% of Kestrel's total revenue in 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.885,
+      "mentions_internals": false,
+      "latency_s": 1.312,
       "input_tokens": 1953,
-      "output_tokens": 191
+      "output_tokens": 64
     },
     {
       "id": "g005-casual",
@@ -804,12 +828,13 @@
       "corrections": {},
       "rewrite_input_tokens": 308,
       "rewrite_output_tokens": 32,
-      "answer": "Route Optimization Software contributed 62% of total 2025 revenue. Applied to the $412.6 million total, that is about $255.8 million.",
+      "answer": "Route Optimization Software contributed 62% of Kestrel's 2025 total revenue. Applied to the $412.6 million total, that is about $255.8 million.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.922,
+      "mentions_internals": false,
+      "latency_s": 2.039,
       "input_tokens": 1917,
-      "output_tokens": 208
+      "output_tokens": 191
     },
     {
       "id": "g005-typo",
@@ -825,16 +850,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What percentage of 2025 revenue caame from the Route Optimization Software segment?\npercentage of 2025 total revenue from Route Optimization Software segment; segment revenue share fiscal year 2025",
+      "search_query": "What percentage of 2025 revenue caame from the Route Optimization Software segment?\npercentage of total revenue 2025 \"Route Optimization Software\" segment revenue fiscal year 2025 segment reporting",
       "corrections": {},
       "rewrite_input_tokens": 318,
-      "rewrite_output_tokens": 40,
-      "answer": "The Route Optimization Software segment contributed 62% of total revenue in 2025, according to the 2025 Annual Report.",
+      "rewrite_output_tokens": 43,
+      "answer": "The Route Optimization Software segment contributed 62% of Kestrel's total 2025 revenue, according to the 2025 Annual Report. The Data Services segment contributed the remaining 38%.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.248,
-      "input_tokens": 1939,
-      "output_tokens": 82
+      "mentions_internals": false,
+      "latency_s": 1.728,
+      "input_tokens": 1950,
+      "output_tokens": 174
     },
     {
       "id": "g005-typos3",
@@ -850,19 +876,20 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What percentage of 2025 revenue camw from the Roue Optimization Software segmetn?\npercentage of 2025 revenue from Route Optimization Software segment; share of total revenue fiscal year 2025",
+      "search_query": "What percentage of 2025 revenue camw from the Roue Optimization Software segmetn?\npercentage of 2025 revenue from Route Optimization Software segment",
       "corrections": {
         "roue": "route",
         "segmetn": "segment"
       },
       "rewrite_input_tokens": 321,
-      "rewrite_output_tokens": 39,
-      "answer": "The Route Optimization Software segment contributed 62% of total revenue in 2025, according to the Kestrel Freight Analytics Annual Report 2025.",
+      "rewrite_output_tokens": 24,
+      "answer": "The Route Optimization Software segment contributed 62% of total revenue in 2025, according to the 2025 Annual Report.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.547,
-      "input_tokens": 1945,
-      "output_tokens": 145
+      "mentions_internals": false,
+      "latency_s": 1.627,
+      "input_tokens": 1951,
+      "output_tokens": 122
     },
     {
       "id": "g005-lower",
@@ -878,14 +905,15 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "what percentage of 2025 revenue came from the route optimization software segment\npercentage of 2025 revenue from route optimization software segment; segment revenue as share of total net revenue; fiscal year 2025 segment reporting",
+      "search_query": "what percentage of 2025 revenue came from the route optimization software segment\npercentage of 2025 revenue from route optimization software segment; segment revenue as share of total net revenue fiscal year 2025",
       "corrections": {},
       "rewrite_input_tokens": 313,
-      "rewrite_output_tokens": 50,
-      "answer": "The Route Optimization Software segment contributed 62% of total revenue in 2025, per the 2025 Annual Report.",
+      "rewrite_output_tokens": 43,
+      "answer": "The Route Optimization Software segment contributed 62% of total revenue in 2025 (the Data Services segment contributed the remaining 38%).",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.491,
+      "mentions_internals": false,
+      "latency_s": 1.349,
       "input_tokens": 1929,
       "output_tokens": 91
     },
@@ -910,7 +938,8 @@
       "answer": "Kestrel's Q1 2026 revenue was $108.3 million, up 21% year over year from $89.5 million in Q1 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.19,
+      "mentions_internals": false,
+      "latency_s": 1.354,
       "input_tokens": 1873,
       "output_tokens": 80
     },
@@ -934,7 +963,8 @@
       "answer": "Kestrel's Q1 2026 revenue was $108.3 million, up 21% from $89.5 million in Q1 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.307,
+      "mentions_internals": false,
+      "latency_s": 1.43,
       "input_tokens": 1879,
       "output_tokens": 77
     },
@@ -958,12 +988,13 @@
       },
       "rewrite_input_tokens": 301,
       "rewrite_output_tokens": 18,
-      "answer": "Kestrel's Q1 2026 revenue was $108.3 million, up 21% year over year from $89.5 million in Q1 2025.",
+      "answer": "Kestrel's Q1 2026 revenue (top line) was $108.3 million, up 21% year over year from $89.5 million in Q1 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.306,
+      "mentions_internals": false,
+      "latency_s": 1.415,
       "input_tokens": 1877,
-      "output_tokens": 66
+      "output_tokens": 70
     },
     {
       "id": "g006-typo",
@@ -979,19 +1010,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's revebue in Q1 2026?\nKestrel revenue first quarter 2026 total net revenues quarterly results",
+      "search_query": "What was Kestrel's revebue in Q1 2026?\nKestrel revenue first quarter 2026 total net revenues three months ended March 31, 2026",
       "corrections": {
-        "revebue": "revenue",
-        "quarterly": "quarter"
+        "revebue": "revenue"
       },
       "rewrite_input_tokens": 310,
-      "rewrite_output_tokens": 28,
-      "answer": "Kestrel's Q1 2026 revenue was $108.3 million, up 21% from $89.5 million in Q1 2025.",
+      "rewrite_output_tokens": 34,
+      "answer": "Kestrel's Q1 2026 revenue was $108.3 million, up 21% year over year from $89.5 million in Q1 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.284,
-      "input_tokens": 1891,
-      "output_tokens": 73
+      "mentions_internals": false,
+      "latency_s": 1.42,
+      "input_tokens": 1883,
+      "output_tokens": 82
     },
     {
       "id": "g006-typos3",
@@ -1016,7 +1047,8 @@
       "answer": "Kestrel's revenue in Q1 2026 was $108.3 million, up 21% from $89.5 million in Q1 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.554,
+      "mentions_internals": false,
+      "latency_s": 1.511,
       "input_tokens": 1885,
       "output_tokens": 131
     },
@@ -1034,16 +1066,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "what was kestrels revenue in q1 2026\nKestrel revenue first quarter 2026 net sales total revenues three months ended March 31, 2026",
-      "corrections": {},
+      "search_query": "what was kestrels revenue in q1 2026\nKestrel revenue first quarter 2026 net sales total revenues quarterly results",
+      "corrections": {
+        "quarterly": "quarter"
+      },
       "rewrite_input_tokens": 306,
-      "rewrite_output_tokens": 36,
+      "rewrite_output_tokens": 30,
       "answer": "Kestrel's Q1 2026 revenue was $108.3 million, up 21% year over year from $89.5 million in Q1 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.278,
-      "input_tokens": 1875,
-      "output_tokens": 84
+      "mentions_internals": false,
+      "latency_s": 1.372,
+      "input_tokens": 1883,
+      "output_tokens": 78
     },
     {
       "id": "g007",
@@ -1062,10 +1097,11 @@
       "corrections": {},
       "rewrite_input_tokens": 311,
       "rewrite_output_tokens": 32,
-      "answer": "Kestrel's gross margin for Q1 2026 was 71.4%, up from 69.8% in Q1 2025.",
+      "answer": "Kestrel's gross margin in Q1 2026 was 71.4%, up from 69.8% in Q1 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.419,
+      "mentions_internals": false,
+      "latency_s": 1.363,
       "input_tokens": 1847,
       "output_tokens": 74
     },
@@ -1087,12 +1123,13 @@
       "corrections": {},
       "rewrite_input_tokens": 319,
       "rewrite_output_tokens": 35,
-      "answer": "Kestrel's gross margin for Q1 2026 was 71.4%, up from 69.8% in Q1 2025.",
+      "answer": "Kestrel's gross margin in the first quarter of 2026 was 71.4%, up from 69.8% in Q1 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.379,
+      "mentions_internals": false,
+      "latency_s": 1.405,
       "input_tokens": 1866,
-      "output_tokens": 132
+      "output_tokens": 80
     },
     {
       "id": "g007-casual",
@@ -1107,16 +1144,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Q1 2026 GM%?\nQ1 2026 gross margin percentage gross profit as a percentage of revenue gross margin",
+      "search_query": "Q1 2026 GM%?\nQ1 2026 gross margin percentage gross profit as a percentage of revenue",
       "corrections": {},
       "rewrite_input_tokens": 302,
-      "rewrite_output_tokens": 33,
+      "rewrite_output_tokens": 29,
       "answer": "Kestrel's gross margin for Q1 2026 was 71.4%, compared with 69.8% in Q1 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.235,
+      "mentions_internals": false,
+      "latency_s": 1.331,
       "input_tokens": 1829,
-      "output_tokens": 76
+      "output_tokens": 72
     },
     {
       "id": "g007-typo",
@@ -1127,23 +1165,23 @@
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "annual_report_2025.md",
         "q1_2026_earnings.md",
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's gross marggin in Q1 2026?\nKestrel gross margin first quarter 2026 gross profit as a percentage of revenue cost of revenue",
+      "search_query": "What was Kestrel's gross marggin in Q1 2026?\nKestrel gross margin first quarter 2026 gross profit as a percentage of revenue",
       "corrections": {
         "marggin": "margin"
       },
       "rewrite_input_tokens": 312,
-      "rewrite_output_tokens": 38,
-      "answer": "Kestrel's gross margin in Q1 2026 was 71.4%, up from 69.8% in Q1 2025.",
+      "rewrite_output_tokens": 32,
+      "answer": "Kestrel's gross margin for Q1 2026 was 71.4%, compared with 69.8% in Q1 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.252,
-      "input_tokens": 1852,
-      "output_tokens": 80
+      "mentions_internals": false,
+      "latency_s": 1.359,
+      "input_tokens": 1849,
+      "output_tokens": 75
     },
     {
       "id": "g007-typos3",
@@ -1158,19 +1196,20 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's grross margi in Q1 2026?\nKestrel gross margin first quarter 2026 gross profit as a percentage of revenue cost of sales",
+      "search_query": "What was Kestrel's grross margi in Q1 2026?\nKestrel gross margin first quarter 2026 gross profit as percentage of revenue",
       "corrections": {
         "grross": "gross",
         "margi": "margin"
       },
       "rewrite_input_tokens": 311,
-      "rewrite_output_tokens": 37,
-      "answer": "Kestrel's gross margin for Q1 2026 was 71.4%, according to the Q1 2026 earnings release.",
+      "rewrite_output_tokens": 31,
+      "answer": "Kestrel's gross margin for Q1 2026 was 71.4%, compared with 69.8% in Q1 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.546,
+      "mentions_internals": false,
+      "latency_s": 1.411,
       "input_tokens": 1847,
-      "output_tokens": 157
+      "output_tokens": 74
     },
     {
       "id": "g007-lower",
@@ -1181,19 +1220,21 @@
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
+        "annual_report_2025.md",
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
-      "search_query": "what was kestrels gross margin in q1 2026\nKestrel gross margin gross profit first quarter 2026 three months ended March 31, 2026 cost of revenue",
+      "search_query": "what was kestrels gross margin in q1 2026\nKestrel gross margin gross profit three months ended March 31, 2026 first quarter 2026",
       "corrections": {},
       "rewrite_input_tokens": 307,
-      "rewrite_output_tokens": 41,
-      "answer": "Kestrel's gross margin in Q1 2026 was 71.4%, compared with 69.8% in Q1 2025.",
+      "rewrite_output_tokens": 34,
+      "answer": "Kestrel's gross margin for Q1 2026 was 71.4%, up from 69.8% in Q1 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.296,
-      "input_tokens": 1824,
-      "output_tokens": 84
+      "mentions_internals": false,
+      "latency_s": 1.541,
+      "input_tokens": 1832,
+      "output_tokens": 76
     },
     {
       "id": "g008",
@@ -1209,16 +1250,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What product did Kestrel launch in February 2026?\nKestrel product launch February 2026 new product introduction announced",
+      "search_query": "What product did Kestrel launch in February 2026?\nKestrel product launch February 2026 new product introduction announcement",
       "corrections": {},
       "rewrite_input_tokens": 307,
-      "rewrite_output_tokens": 22,
+      "rewrite_output_tokens": 23,
       "answer": "Kestrel launched LaneSight in February 2026, a product that predicts freight lane congestion up to 14 days in advance.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.323,
+      "mentions_internals": false,
+      "latency_s": 1.352,
       "input_tokens": 1753,
-      "output_tokens": 65
+      "output_tokens": 66
     },
     {
       "id": "g008-reworded",
@@ -1234,14 +1276,15 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What new offering did Kestrel introduce in February 2026?\nKestrel new product offering launch introduced February 2026",
+      "search_query": "What new offering did Kestrel introduce in February 2026?\nKestrel new product offering launched introduced February 2026",
       "corrections": {},
       "rewrite_input_tokens": 310,
       "rewrite_output_tokens": 20,
       "answer": "Kestrel launched LaneSight in February 2026, a product that predicts freight lane congestion up to 14 days in advance.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.729,
+      "mentions_internals": false,
+      "latency_s": 1.882,
       "input_tokens": 1759,
       "output_tokens": 63
     },
@@ -1259,16 +1302,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "New Kestrel product Feb 2026?\nKestrel new product launch February 2026 product introduction announcement",
+      "search_query": "New Kestrel product Feb 2026?\nNew Kestrel product launch February 2026 new product introduction announcement",
       "corrections": {},
       "rewrite_input_tokens": 305,
-      "rewrite_output_tokens": 23,
-      "answer": "LaneSight, launched in February 2026, predicts freight lane congestion up to 14 days in advance, according to the Q1 2026 Earnings Release.",
+      "rewrite_output_tokens": 24,
+      "answer": "LaneSight, launched in February 2026, predicts freight lane congestion up to 14 days in advance, according to the Q1 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.599,
+      "mentions_internals": false,
+      "latency_s": 1.645,
       "input_tokens": 1749,
-      "output_tokens": 76
+      "output_tokens": 75
     },
     {
       "id": "g008-typo",
@@ -1293,9 +1337,10 @@
       "answer": "Kestrel launched LaneSight in February 2026, a product that predicts freight lane congestion up to 14 days in advance.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.507,
+      "mentions_internals": false,
+      "latency_s": 1.592,
       "input_tokens": 1759,
-      "output_tokens": 127
+      "output_tokens": 130
     },
     {
       "id": "g008-typos3",
@@ -1311,19 +1356,20 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What prdouct did Kestrel lunch in Feburary 2026?\nKestrel product launch February 2026 new product introduction",
+      "search_query": "What prdouct did Kestrel lunch in Feburary 2026?\nKestrel product launch February 2026 new product introduced launched",
       "corrections": {
         "prdouct": "product",
         "feburary": "february"
       },
       "rewrite_input_tokens": 314,
-      "rewrite_output_tokens": 20,
-      "answer": "Kestrel launched LaneSight in February 2026, a product that predicts freight lane congestion up to 14 days in advance.",
+      "rewrite_output_tokens": 22,
+      "answer": "Kestrel launched LaneSight in February 2026, a product that predicts freight lane congestion up to 14 days in advance (per the Q1 2026 Earnings Release).",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.593,
+      "mentions_internals": false,
+      "latency_s": 1.685,
       "input_tokens": 1767,
-      "output_tokens": 127
+      "output_tokens": 156
     },
     {
       "id": "g008-lower",
@@ -1339,16 +1385,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "what product did kestrel launch in february 2026\nKestrel product launch February 2026 new product introduction announced",
+      "search_query": "what product did kestrel launch in february 2026\nKestrel product launch February 2026 new product introduced launched commercially available",
       "corrections": {},
       "rewrite_input_tokens": 305,
-      "rewrite_output_tokens": 22,
-      "answer": "Kestrel launched LaneSight in February 2026, a product that predicts freight lane congestion up to 14 days in advance.",
+      "rewrite_output_tokens": 26,
+      "answer": "LaneSight, a product that predicts freight lane congestion up to 14 days in advance, was launched in February 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.237,
+      "mentions_internals": false,
+      "latency_s": 1.463,
       "input_tokens": 1749,
-      "output_tokens": 65
+      "output_tokens": 66
     },
     {
       "id": "g009",
@@ -1359,21 +1406,21 @@
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "annual_report_2025.md",
         "q1_2026_earnings.md",
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What revenue range did Kestrel expect for Q2 2026?\nKestrel second quarter 2026 revenue guidance outlook range expected",
+      "search_query": "What revenue range did Kestrel expect for Q2 2026?\nKestrel revenue guidance outlook range second quarter 2026 three months ended June 30, 2026",
       "corrections": {},
       "rewrite_input_tokens": 312,
-      "rewrite_output_tokens": 27,
-      "answer": "Kestrel expected Q2 2026 revenue in a range of $112 million to $115 million, according to the Q1 2026 earnings release. Actual Q2 2026 revenue came in at $116.0 million.",
+      "rewrite_output_tokens": 36,
+      "answer": "Kestrel expected Q2 2026 revenue in a range of $112 million to $115 million, according to the Q1 2026 Earnings Release. Its actual Q2 2026 revenue came in at $116.0 million, above that range.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.672,
-      "input_tokens": 1844,
-      "output_tokens": 176
+      "mentions_internals": false,
+      "latency_s": 1.477,
+      "input_tokens": 1907,
+      "output_tokens": 114
     },
     {
       "id": "g009-reworded",
@@ -1389,16 +1436,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What sales range was Kestrel projecting for the second quarter of 2026?\nKestrel second quarter 2026 revenue guidance outlook range net sales forecast",
+      "search_query": "What sales range was Kestrel projecting for the second quarter of 2026?\nKestrel second quarter 2026 revenue guidance outlook range forecast",
       "corrections": {},
       "rewrite_input_tokens": 315,
-      "rewrite_output_tokens": 31,
+      "rewrite_output_tokens": 28,
       "answer": "Kestrel projected Q2 2026 revenue of $112 million to $115 million, according to its Q1 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.764,
-      "input_tokens": 1885,
-      "output_tokens": 232
+      "mentions_internals": false,
+      "latency_s": 1.813,
+      "input_tokens": 1850,
+      "output_tokens": 194
     },
     {
       "id": "g009-casual",
@@ -1409,20 +1457,22 @@
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
+        "annual_report_2025.md",
         "q1_2026_earnings.md",
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Q2 2026 revenue guidance from Q1?\nsecond quarter 2026 revenue guidance outlook; first quarter 2026 earnings release revenue outlook",
+      "search_query": "Q2 2026 revenue guidance from Q1?\nSecond quarter 2026 revenue guidance compared with first quarter 2026 revenue outlook",
       "corrections": {},
       "rewrite_input_tokens": 309,
-      "rewrite_output_tokens": 38,
-      "answer": "Kestrel's Q1 2026 earnings release guided Q2 2026 revenue to a range of $112 million to $115 million.",
+      "rewrite_output_tokens": 34,
+      "answer": "In the Q1 2026 earnings release, Kestrel guided Q2 2026 revenue to a range of $112 million to $115 million.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.709,
-      "input_tokens": 1828,
-      "output_tokens": 187
+      "mentions_internals": false,
+      "latency_s": 1.632,
+      "input_tokens": 1846,
+      "output_tokens": 178
     },
     {
       "id": "g009-typo",
@@ -1438,18 +1488,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What revene range did Kestrel expect for Q2 2026?\nKestrel Q2 2026 revenue guidance range outlook expected revenue",
+      "search_query": "What revene range did Kestrel expect for Q2 2026?\nKestrel second quarter 2026 revenue guidance outlook range expected",
       "corrections": {
         "revene": "revenue"
       },
       "rewrite_input_tokens": 311,
-      "rewrite_output_tokens": 29,
-      "answer": "Kestrel expected Q2 2026 revenue in a range of $112 million to $115 million, according to its Q1 2026 earnings release.",
+      "rewrite_output_tokens": 27,
+      "answer": "Kestrel expected Q2 2026 revenue to be between $112 million and $115 million, according to its Q1 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.933,
+      "mentions_internals": false,
+      "latency_s": 1.919,
       "input_tokens": 1842,
-      "output_tokens": 195
+      "output_tokens": 211
     },
     {
       "id": "g009-typos3",
@@ -1473,12 +1524,13 @@
       },
       "rewrite_input_tokens": 317,
       "rewrite_output_tokens": 26,
-      "answer": "Kestrel expected Q2 2026 revenue in a range of $112 million to $115 million, according to its Q1 2026 earnings release.",
+      "answer": "Kestrel expected Q2 2026 revenue in a range of $112 million to $115 million, according to the Q1 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 2.471,
+      "mentions_internals": false,
+      "latency_s": 2.324,
       "input_tokens": 1827,
-      "output_tokens": 165
+      "output_tokens": 154
     },
     {
       "id": "g009-lower",
@@ -1491,18 +1543,20 @@
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
-      "search_query": "what revenue range did kestrel expect for q2 2026\nKestrel second quarter 2026 revenue guidance outlook range expected revenue Q2 2026 fiscal quarter ended June 30 2026",
+      "search_query": "what revenue range did kestrel expect for q2 2026\nKestrel second quarter 2026 revenue guidance outlook range expected net sales",
       "corrections": {},
       "rewrite_input_tokens": 309,
-      "rewrite_output_tokens": 52,
-      "answer": "Kestrel expected Q2 2026 revenue in a range of $112 million to $115 million, per its Q1 2026 earnings release.",
+      "rewrite_output_tokens": 30,
+      "answer": "Kestrel expected Q2 2026 revenue in a range of $112 million to $115 million, per its Q1 2026 earnings release. Its actual Q2 2026 revenue came in at $116.0 million, above that range.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.844,
-      "input_tokens": 1870,
-      "output_tokens": 99
+      "mentions_internals": false,
+      "latency_s": 1.503,
+      "input_tokens": 1873,
+      "output_tokens": 105
     },
     {
       "id": "g010",
@@ -1513,19 +1567,22 @@
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
+        "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's diluted EPS in Q2 2026?\nKestrel diluted earnings per share second quarter 2026 three months ended",
+      "search_query": "What was Kestrel's diluted EPS in Q2 2026?\nKestrel diluted earnings per share second quarter 2026 three months ended June 30 2026 net income per share diluted",
       "corrections": {},
       "rewrite_input_tokens": 313,
-      "rewrite_output_tokens": 27,
-      "answer": "Kestrel's diluted EPS in Q2 2026 was $0.38.",
+      "rewrite_output_tokens": 41,
+      "answer": "Kestrel's diluted EPS in Q2 2026 was $0.38, on net income of $11.4 million.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.268,
-      "input_tokens": 1851,
-      "output_tokens": 55
+      "mentions_internals": false,
+      "latency_s": 1.433,
+      "input_tokens": 1883,
+      "output_tokens": 80
     },
     {
       "id": "g010-reworded",
@@ -1545,10 +1602,11 @@
       "corrections": {},
       "rewrite_input_tokens": 318,
       "rewrite_output_tokens": 42,
-      "answer": "Kestrel's diluted earnings per share in Q2 2026 were $0.38.",
+      "answer": "Kestrel's diluted earnings per share for Q2 2026 were $0.38.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.206,
+      "mentions_internals": false,
+      "latency_s": 1.298,
       "input_tokens": 1891,
       "output_tokens": 72
     },
@@ -1565,16 +1623,19 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
-      "search_query": "EPS Q2 2026?\nEarnings per share diluted basic second quarter fiscal 2026",
-      "corrections": {},
+      "search_query": "EPS Q2 2026?\nearnings per share diluted basic second quarter fiscal 2026 quarterly results",
+      "corrections": {
+        "quarterly": "quarter"
+      },
       "rewrite_input_tokens": 301,
-      "rewrite_output_tokens": 24,
+      "rewrite_output_tokens": 29,
       "answer": "Kestrel's diluted EPS for Q2 2026 was $0.38, on net income of $11.4 million.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.316,
+      "mentions_internals": false,
+      "latency_s": 1.329,
       "input_tokens": 1854,
-      "output_tokens": 63
+      "output_tokens": 68
     },
     {
       "id": "g010-typo",
@@ -1595,12 +1656,13 @@
       },
       "rewrite_input_tokens": 313,
       "rewrite_output_tokens": 38,
-      "answer": "Kestrel's diluted EPS in Q2 2026 was $0.38, according to the Q2 2026 earnings release.",
+      "answer": "Kestrel's diluted EPS in Q2 2026 was $0.38.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.504,
+      "mentions_internals": false,
+      "latency_s": 1.418,
       "input_tokens": 1878,
-      "output_tokens": 134
+      "output_tokens": 114
     },
     {
       "id": "g010-typos3",
@@ -1615,18 +1677,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's diluetd EPS in Q2 2026?\nKestrel diluted earnings per share Q2 2026 quarter ended June 30 2026 three months",
+      "search_query": "What was Kestrel's diluetd EPS in Q2 2026?\nKestrel diluted EPS second quarter 2026 diluted earnings per share three months ended June 30, 2026",
       "corrections": {
         "diluetd": "diluted"
       },
       "rewrite_input_tokens": 314,
-      "rewrite_output_tokens": 36,
-      "answer": "Kestrel's diluted EPS in Q2 2026 was $0.38, according to the Q2 2026 earnings release.",
+      "rewrite_output_tokens": 40,
+      "answer": "Kestrel's diluted EPS in Q2 2026 was $0.38.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.315,
+      "mentions_internals": false,
+      "latency_s": 1.425,
       "input_tokens": 1888,
-      "output_tokens": 79
+      "output_tokens": 68
     },
     {
       "id": "g010-lower",
@@ -1649,7 +1712,8 @@
       "answer": "Kestrel's diluted EPS in Q2 2026 was $0.38, according to the Q2 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.354,
+      "mentions_internals": false,
+      "latency_s": 1.251,
       "input_tokens": 1841,
       "output_tokens": 71
     },
@@ -1666,16 +1730,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Which company did Kestrel acquire in June 2026?\nKestrel acquisition June 2026 acquired company business combination purchase agreement",
+      "search_query": "Which company did Kestrel acquire in June 2026?\nKestrel acquisition June 2026 acquired company business combination completed",
       "corrections": {},
       "rewrite_input_tokens": 309,
-      "rewrite_output_tokens": 29,
+      "rewrite_output_tokens": 25,
       "answer": "Kestrel acquired Bramblecote Telematics, a provider of in-truck sensor data, on June 12, 2026, for $64 million in cash.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.27,
+      "mentions_internals": false,
+      "latency_s": 1.436,
       "input_tokens": 1832,
-      "output_tokens": 81
+      "output_tokens": 77
     },
     {
       "id": "g011-reworded",
@@ -1690,16 +1755,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Which firm did Kestrel purchase in June 2026?\nKestrel acquisition completed June 2026 acquired company business combination",
+      "search_query": "Which firm did Kestrel purchase in June 2026?\nKestrel acquisition June 2026 acquired company purchase business combination",
       "corrections": {},
       "rewrite_input_tokens": 310,
-      "rewrite_output_tokens": 25,
-      "answer": "Kestrel purchased Bramblecote Telematics, a provider of in-truck sensor data, on June 12, 2026, for $64 million in cash.",
+      "rewrite_output_tokens": 26,
+      "answer": "Kestrel acquired Bramblecote Telematics, a provider of in-truck sensor data, on June 12, 2026, for $64 million in cash.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.35,
+      "mentions_internals": false,
+      "latency_s": 1.403,
       "input_tokens": 1834,
-      "output_tokens": 77
+      "output_tokens": 78
     },
     {
       "id": "g011-casual",
@@ -1721,9 +1787,10 @@
       "answer": "Yes. On June 12, 2026, Kestrel completed its acquisition of Bramblecote Telematics, a provider of in-truck sensor data, for $64 million in cash.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.522,
+      "mentions_internals": false,
+      "latency_s": 1.579,
       "input_tokens": 1767,
-      "output_tokens": 161
+      "output_tokens": 158
     },
     {
       "id": "g011-typo",
@@ -1745,7 +1812,8 @@
       "answer": "Kestrel acquired Bramblecote Telematics, a provider of in-truck sensor data, on June 12, 2026, for $64 million in cash.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.28,
+      "mentions_internals": false,
+      "latency_s": 1.317,
       "input_tokens": 1834,
       "output_tokens": 75
     },
@@ -1762,19 +1830,20 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Which compay did Kestrel acquirr in Jume 2026?\nKestrel acquisition June 2026 company acquired merger agreement",
+      "search_query": "Which compay did Kestrel acquirr in Jume 2026?\nKestrel acquisition June 2026 company acquired merger",
       "corrections": {
         "compay": "company",
         "jume": "june"
       },
       "rewrite_input_tokens": 313,
-      "rewrite_output_tokens": 25,
+      "rewrite_output_tokens": 22,
       "answer": "Kestrel acquired Bramblecote Telematics, a provider of in-truck sensor data, on June 12, 2026, for $64 million in cash.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.61,
+      "mentions_internals": false,
+      "latency_s": 1.319,
       "input_tokens": 1840,
-      "output_tokens": 180
+      "output_tokens": 74
     },
     {
       "id": "g011-lower",
@@ -1789,16 +1858,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "which company did kestrel acquire in june 2026\nKestrel acquisition completed June 2026 business combination purchase company name",
+      "search_query": "which company did kestrel acquire in june 2026\nKestrel acquisition June 2026 acquired company business combination completed",
       "corrections": {},
       "rewrite_input_tokens": 306,
-      "rewrite_output_tokens": 26,
+      "rewrite_output_tokens": 25,
       "answer": "Kestrel acquired Bramblecote Telematics, a provider of in-truck sensor data, on June 12, 2026, for $64 million in cash.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.334,
+      "mentions_internals": false,
+      "latency_s": 1.323,
       "input_tokens": 1826,
-      "output_tokens": 78
+      "output_tokens": 77
     },
     {
       "id": "g012",
@@ -1814,16 +1884,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How much did Kestrel pay to acquire Bramblecote Telematics?\nKestrel acquisition Bramblecote Telematics purchase price consideration paid business combination",
+      "search_query": "How much did Kestrel pay to acquire Bramblecote Telematics?\nKestrel Bramblecote Telematics acquisition purchase price consideration paid",
       "corrections": {},
       "rewrite_input_tokens": 316,
-      "rewrite_output_tokens": 33,
+      "rewrite_output_tokens": 30,
       "answer": "Kestrel paid $64 million in cash to acquire Bramblecote Telematics, completed on June 12, 2026, according to the Q2 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.875,
+      "mentions_internals": false,
+      "latency_s": 1.791,
       "input_tokens": 1778,
-      "output_tokens": 90
+      "output_tokens": 87
     },
     {
       "id": "g012-reworded",
@@ -1839,16 +1910,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What price did Kestrel pay for Bramblecote Telematics?\nKestrel acquisition purchase price Bramblecote Telematics consideration paid business combination",
+      "search_query": "What price did Kestrel pay for Bramblecote Telematics?\nKestrel acquisition purchase price Bramblecote Telematics consideration paid",
       "corrections": {},
       "rewrite_input_tokens": 313,
-      "rewrite_output_tokens": 33,
+      "rewrite_output_tokens": 30,
       "answer": "Kestrel paid $64 million in cash for Bramblecote Telematics, in an acquisition completed on June 12, 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.531,
+      "mentions_internals": false,
+      "latency_s": 1.852,
       "input_tokens": 1772,
-      "output_tokens": 78
+      "output_tokens": 75
     },
     {
       "id": "g012-casual",
@@ -1863,16 +1935,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Bramblecote deal size?\nBramblecote deal size transaction value acquisition purchase price",
+      "search_query": "Bramblecote deal size?\nBramblecote deal size transaction value acquisition purchase price consideration",
       "corrections": {},
       "rewrite_input_tokens": 301,
-      "rewrite_output_tokens": 23,
-      "answer": "The Bramblecote Telematics acquisition was for $64 million in cash, completed on June 12, 2026.",
+      "rewrite_output_tokens": 26,
+      "answer": "The Bramblecote Telematics acquisition was $64 million in cash, completed on June 12, 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.278,
+      "mentions_internals": false,
+      "latency_s": 1.336,
       "input_tokens": 1839,
-      "output_tokens": 61
+      "output_tokens": 63
     },
     {
       "id": "g012-typo",
@@ -1894,12 +1967,13 @@
       },
       "rewrite_input_tokens": 318,
       "rewrite_output_tokens": 33,
-      "answer": "Kestrel paid $64 million in cash to acquire Bramblecote Telematics, completed on June 12, 2026, according to the Q2 2026 earnings release.",
+      "answer": "Kestrel paid $64 million in cash to acquire Bramblecote Telematics, completing the deal on June 12, 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.854,
+      "mentions_internals": false,
+      "latency_s": 2.095,
       "input_tokens": 1782,
-      "output_tokens": 90
+      "output_tokens": 142
     },
     {
       "id": "g012-typos3",
@@ -1922,12 +1996,13 @@
       },
       "rewrite_input_tokens": 319,
       "rewrite_output_tokens": 30,
-      "answer": "Kestrel paid $64 million in cash for Bramblecote Telematics, completing the acquisition on June 12, 2026, according to the Q2 2026 earnings release.",
+      "answer": "Kestrel paid $64 million in cash for Bramblecote Telematics, a provider of in-truck sensor data, when the acquisition closed on June 12, 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.997,
+      "mentions_internals": false,
+      "latency_s": 1.902,
       "input_tokens": 1784,
-      "output_tokens": 176
+      "output_tokens": 137
     },
     {
       "id": "g012-lower",
@@ -1947,12 +2022,13 @@
       "corrections": {},
       "rewrite_input_tokens": 312,
       "rewrite_output_tokens": 28,
-      "answer": "Kestrel paid $64 million in cash to acquire Bramblecote Telematics, completing the deal on June 12, 2026.",
+      "answer": "Kestrel paid $64 million in cash to acquire Bramblecote Telematics, completed on June 12, 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.842,
+      "mentions_internals": false,
+      "latency_s": 1.833,
       "input_tokens": 1770,
-      "output_tokens": 73
+      "output_tokens": 70
     },
     {
       "id": "g013",
@@ -1968,16 +2044,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What is Kestrel's updated full-year 2026 revenue guidance?\nKestrel updated full-year 2026 revenue guidance outlook forecast fiscal year 2026 net sales",
+      "search_query": "What is Kestrel's updated full-year 2026 revenue guidance?\nKestrel full-year 2026 revenue guidance updated outlook forecast fiscal year 2026 net revenue",
       "corrections": {},
       "rewrite_input_tokens": 315,
-      "rewrite_output_tokens": 40,
+      "rewrite_output_tokens": 41,
       "answer": "Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million, per the Q2 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.41,
+      "mentions_internals": false,
+      "latency_s": 1.47,
       "input_tokens": 1912,
-      "output_tokens": 89
+      "output_tokens": 90
     },
     {
       "id": "g013-reworded",
@@ -1993,16 +2070,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What does Kestrel now expect its total 2026 revenue to be?\nKestrel 2026 full-year revenue guidance outlook expectation forecast",
+      "search_query": "What does Kestrel now expect its total 2026 revenue to be?\nKestrel 2026 full year revenue guidance outlook expectation forecast total net revenue",
       "corrections": {},
       "rewrite_input_tokens": 313,
-      "rewrite_output_tokens": 29,
-      "answer": "Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million, according to the Q2 2026 earnings release.",
+      "rewrite_output_tokens": 33,
+      "answer": "Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million, per the Q2 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.592,
+      "mentions_internals": false,
+      "latency_s": 1.396,
       "input_tokens": 1908,
-      "output_tokens": 152
+      "output_tokens": 82
     },
     {
       "id": "g013-casual",
@@ -2018,16 +2096,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "FY2026 revenue outlook?\nfiscal year 2026 revenue outlook guidance expected net sales forecast",
+      "search_query": "FY2026 revenue outlook?\nfiscal year 2026 revenue outlook guidance forecast",
       "corrections": {},
       "rewrite_input_tokens": 303,
-      "rewrite_output_tokens": 28,
-      "answer": "Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million, according to the Q2 2026 earnings release.",
+      "rewrite_output_tokens": 23,
+      "answer": "Kestrel's full-year 2026 revenue guidance is between $470 million and $480 million, raised in the Q2 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.461,
+      "mentions_internals": false,
+      "latency_s": 1.586,
       "input_tokens": 1861,
-      "output_tokens": 144
+      "output_tokens": 138
     },
     {
       "id": "g013-typo",
@@ -2043,18 +2122,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What is Kestrel's updated full-yearr 2026 revenue guidance?\nKestrel full-year 2026 revenue guidance updated outlook revenue forecast fiscal 2026",
+      "search_query": "What is Kestrel's updated full-yearr 2026 revenue guidance?\nKestrel full-year 2026 revenue guidance updated outlook forecast",
       "corrections": {
         "yearr": "year"
       },
       "rewrite_input_tokens": 317,
-      "rewrite_output_tokens": 38,
-      "answer": "Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million, as stated in the Q2 2026 earnings release.",
+      "rewrite_output_tokens": 28,
+      "answer": "Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million, per the Q2 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.333,
+      "mentions_internals": false,
+      "latency_s": 1.342,
       "input_tokens": 1916,
-      "output_tokens": 90
+      "output_tokens": 77
     },
     {
       "id": "g013-typos3",
@@ -2081,7 +2161,8 @@
       "answer": "Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million, according to the Q2 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.567,
+      "mentions_internals": false,
+      "latency_s": 1.764,
       "input_tokens": 1922,
       "output_tokens": 146
     },
@@ -2099,14 +2180,15 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "what is kestrels updated full-year 2026 revenue guidance\nKestrel full-year 2026 revenue guidance outlook updated forecast fiscal 2026 net sales",
+      "search_query": "what is kestrels updated full-year 2026 revenue guidance\nKestrel full-year 2026 revenue guidance updated outlook fiscal 2026 net sales forecast",
       "corrections": {},
       "rewrite_input_tokens": 312,
       "rewrite_output_tokens": 39,
       "answer": "Kestrel raised its full-year 2026 revenue guidance to between $470 million and $480 million, per the Q2 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.454,
+      "mentions_internals": false,
+      "latency_s": 1.38,
       "input_tokens": 1906,
       "output_tokens": 88
     },
@@ -2124,16 +2206,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How many enterprise customers did Kestrel have at the end of Q2 2026?\nKestrel enterprise customers number end of second quarter 2026 Q2 2026 total customer count enterprise customers",
+      "search_query": "How many enterprise customers did Kestrel have at the end of Q2 2026?\nKestrel enterprise customers count end of second quarter 2026 Q2 2026 total customers number",
       "corrections": {},
       "rewrite_input_tokens": 317,
-      "rewrite_output_tokens": 41,
+      "rewrite_output_tokens": 35,
       "answer": "Kestrel ended Q2 2026 with 3,120 enterprise customers.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.287,
+      "mentions_internals": false,
+      "latency_s": 1.44,
       "input_tokens": 1809,
-      "output_tokens": 70
+      "output_tokens": 64
     },
     {
       "id": "g014-reworded",
@@ -2148,16 +2231,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How many enterprise accounts did Kestrel have on June 30, 2026?\nKestrel enterprise accounts number June 30, 2026 enterprise customers count",
+      "search_query": "How many enterprise accounts did Kestrel have on June 30, 2026?\nKestrel enterprise accounts June 30, 2026 number of enterprise customers",
       "corrections": {},
       "rewrite_input_tokens": 316,
       "rewrite_output_tokens": 30,
-      "answer": "Kestrel ended Q2 2026 (June 30, 2026) with 3,120 enterprise customers, according to the Q2 2026 earnings release.",
+      "answer": "Kestrel ended Q2 2026 with 3,120 enterprise customers, per the Q2 2026 earnings release (June 30, 2026 is the end of Q2).",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.4,
+      "mentions_internals": false,
+      "latency_s": 1.419,
       "input_tokens": 1828,
-      "output_tokens": 83
+      "output_tokens": 89
     },
     {
       "id": "g014-casual",
@@ -2173,16 +2257,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Enterprise customers Q2 2026?\nEnterprise customers second quarter 2026 customer count, customers, clients",
+      "search_query": "Enterprise customers Q2 2026?\nEnterprise customers second quarter 2026 customer count, customers, clients, enterprise accounts",
       "corrections": {},
       "rewrite_input_tokens": 305,
-      "rewrite_output_tokens": 26,
+      "rewrite_output_tokens": 34,
       "answer": "Kestrel ended Q2 2026 with 3,120 enterprise customers, according to the Q2 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.459,
+      "mentions_internals": false,
+      "latency_s": 1.407,
       "input_tokens": 1836,
-      "output_tokens": 70
+      "output_tokens": 78
     },
     {
       "id": "g014-typo",
@@ -2198,18 +2283,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How maany enterprise customers did Kestrel have at the end of Q2 2026?\nKestrel enterprise customers end of second quarter 2026 number of customers total count",
+      "search_query": "How maany enterprise customers did Kestrel have at the end of Q2 2026?\nKestrel enterprise customers number end of second quarter 2026 (Q2 2026) \"enterprise customers\" count",
       "corrections": {
         "maany": "many"
       },
       "rewrite_input_tokens": 318,
-      "rewrite_output_tokens": 29,
+      "rewrite_output_tokens": 41,
       "answer": "Kestrel ended Q2 2026 with 3,120 enterprise customers.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.175,
-      "input_tokens": 1862,
-      "output_tokens": 58
+      "mentions_internals": false,
+      "latency_s": 1.425,
+      "input_tokens": 1811,
+      "output_tokens": 70
     },
     {
       "id": "g014-typos3",
@@ -2225,20 +2311,21 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How maany enterpride cutsomers did Kestrel have at the end of Q2 2026?\nKestrel enterprise customers end of second quarter 2026 number of enterprise customers",
+      "search_query": "How maany enterpride cutsomers did Kestrel have at the end of Q2 2026?\nKestrel enterprise customers number end of second quarter 2026 fiscal quarter Q2 2026 enterprise clients total count",
       "corrections": {
         "maany": "many",
         "enterpride": "enterprise",
         "cutsomers": "customers"
       },
       "rewrite_input_tokens": 321,
-      "rewrite_output_tokens": 31,
-      "answer": "Kestrel ended Q2 2026 with 3,120 enterprise customers.",
+      "rewrite_output_tokens": 46,
+      "answer": "Kestrel ended Q2 2026 with 3,120 enterprise customers, according to the Q2 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.407,
-      "input_tokens": 1868,
-      "output_tokens": 60
+      "mentions_internals": false,
+      "latency_s": 1.684,
+      "input_tokens": 1890,
+      "output_tokens": 136
     },
     {
       "id": "g014-lower",
@@ -2250,20 +2337,20 @@
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
-        "q1_2026_earnings.md",
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "how many enterprise customers did kestrel have at the end of q2 2026\nKestrel enterprise customers count end of second quarter 2026 Q2 2026 \"enterprise customers\" customer count",
+      "search_query": "how many enterprise customers did kestrel have at the end of q2 2026\nKestrel enterprise customers number end of second quarter 2026 (Q2 2026), enterprise clients, customer count, June 30, 2026",
       "corrections": {},
       "rewrite_input_tokens": 314,
-      "rewrite_output_tokens": 42,
+      "rewrite_output_tokens": 50,
       "answer": "Kestrel ended Q2 2026 with 3,120 enterprise customers.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.25,
-      "input_tokens": 1803,
-      "output_tokens": 71
+      "mentions_internals": false,
+      "latency_s": 1.445,
+      "input_tokens": 1857,
+      "output_tokens": 79
     },
     {
       "id": "g015",
@@ -2279,16 +2366,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What share of Kestrel's 2025 revenue came from its largest customer?\nKestrel 2025 revenue percentage from largest customer concentration major customer accounted for net sales",
+      "search_query": "What share of Kestrel's 2025 revenue came from its largest customer?\nKestrel 2025 revenue percentage largest customer concentration major customer accounted for net sales",
       "corrections": {},
       "rewrite_input_tokens": 315,
-      "rewrite_output_tokens": 35,
-      "answer": "The largest customer accounted for 9% of Kestrel's total revenue in 2025, according to the Risk Factors 2026 document.",
+      "rewrite_output_tokens": 34,
+      "answer": "Kestrel's largest customer accounted for 9% of total revenue in 2025, according to the 2026 Risk Factors document.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.545,
+      "mentions_internals": false,
+      "latency_s": 1.709,
       "input_tokens": 1904,
-      "output_tokens": 166
+      "output_tokens": 181
     },
     {
       "id": "g015-reworded",
@@ -2304,19 +2392,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How dependent was Kestrel's 2025 revenue on its top customer, as a percentage?\nKestrel 2025 revenue concentration top customer percentage of total revenue major customer dependence annual report",
+      "search_query": "How dependent was Kestrel's 2025 revenue on its top customer, as a percentage?\nKestrel 2025 revenue concentration top customer percentage of total net revenue, major customer disclosure, fiscal 2025",
       "corrections": {
-        "dependent": "dependency",
-        "dependence": "dependency"
+        "dependent": "dependency"
       },
       "rewrite_input_tokens": 321,
-      "rewrite_output_tokens": 37,
-      "answer": "Kestrel's largest customer accounted for 9% of total revenue in 2025, according to the 2026 risk factors. The company has said that losing this customer would materially reduce revenue.",
+      "rewrite_output_tokens": 45,
+      "answer": "Kestrel's largest customer accounted for 9% of total revenue in 2025, according to the 2026 Risk Factors. The company notes that losing this customer would materially reduce revenue.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.657,
+      "mentions_internals": false,
+      "latency_s": 1.847,
       "input_tokens": 1920,
-      "output_tokens": 182
+      "output_tokens": 219
     },
     {
       "id": "g015-casual",
@@ -2332,16 +2420,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Top customer % of 2025 revenue?\nlargest customer percentage of total revenue fiscal 2025 concentration of customers",
+      "search_query": "Top customer % of 2025 revenue?\nlargest customer percentage of total revenue fiscal year 2025 concentration of customers",
       "corrections": {},
       "rewrite_input_tokens": 305,
-      "rewrite_output_tokens": 28,
-      "answer": "Kestrel's largest customer accounted for 9% of total revenue in 2025, according to the 2026 Risk Factors document.",
+      "rewrite_output_tokens": 29,
+      "answer": "The largest customer accounted for 9% of Kestrel's total revenue in 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.285,
-      "input_tokens": 1839,
-      "output_tokens": 72
+      "mentions_internals": false,
+      "latency_s": 1.207,
+      "input_tokens": 1884,
+      "output_tokens": 59
     },
     {
       "id": "g015-typo",
@@ -2357,17 +2446,18 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What shhare of Kestrel's 2025 revenue came from its largest customer?\nKestrel 2025 revenue percentage largest customer concentration major customer share of net sales",
+      "search_query": "What shhare of Kestrel's 2025 revenue came from its largest customer?\nKestrel 2025 revenue percentage from largest customer concentration major customer 10% of net sales",
       "corrections": {
         "shhare": "share"
       },
       "rewrite_input_tokens": 317,
-      "rewrite_output_tokens": 32,
-      "answer": "Kestrel's largest customer accounted for 9% of total revenue in 2025, according to the Kestrel Freight Analytics Risk Factors 2026.",
+      "rewrite_output_tokens": 35,
+      "answer": "Kestrel's largest customer accounted for 9% of total revenue in 2025, according to the 2026 Risk Factors document.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.49,
-      "input_tokens": 1907,
+      "mentions_internals": false,
+      "latency_s": 1.527,
+      "input_tokens": 1908,
       "output_tokens": 131
     },
     {
@@ -2384,20 +2474,21 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What shate of Kestrel's 2025 revvenue came from its largest custoemr?\nKestrel 2025 revenue share largest customer percentage of total revenue concentration major customer",
+      "search_query": "What shate of Kestrel's 2025 revvenue came from its largest custoemr?\nKestrel 2025 revenue percentage from largest customer concentration share total net revenues major customer 10% of revenues fiscal 2025",
       "corrections": {
         "shate": "share",
         "revvenue": "revenue",
         "custoemr": "customer"
       },
       "rewrite_input_tokens": 319,
-      "rewrite_output_tokens": 33,
+      "rewrite_output_tokens": 48,
       "answer": "Kestrel's largest customer accounted for 9% of total revenue in 2025, according to the 2026 Risk Factors document.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.544,
+      "mentions_internals": false,
+      "latency_s": 1.81,
       "input_tokens": 1911,
-      "output_tokens": 147
+      "output_tokens": 157
     },
     {
       "id": "g015-lower",
@@ -2413,16 +2504,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "what share of kestrels 2025 revenue came from its largest customer\nKestrel 2025 revenue percentage largest customer concentration major customer share of net sales",
+      "search_query": "what share of kestrels 2025 revenue came from its largest customer\nlargest customer share of revenue concentration major customer percentage of net sales Kestrel fiscal 2025 annual report",
       "corrections": {},
       "rewrite_input_tokens": 312,
-      "rewrite_output_tokens": 32,
-      "answer": "Kestrel's largest customer accounted for 9% of total revenue in 2025, according to the 2026 Risk Factors document.",
+      "rewrite_output_tokens": 40,
+      "answer": "Kestrel's largest customer accounted for 9% of total revenue in 2025, according to the Risk Factors 2026 document.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.333,
+      "mentions_internals": false,
+      "latency_s": 1.953,
       "input_tokens": 1897,
-      "output_tokens": 76
+      "output_tokens": 183
     },
     {
       "id": "g016",
@@ -2438,16 +2530,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How large is Kestrel's revolving credit facility?\nKestrel revolving credit facility size total commitment borrowing capacity",
+      "search_query": "How large is Kestrel's revolving credit facility?\nKestrel revolving credit facility size total commitments borrowing capacity revolver",
       "corrections": {},
       "rewrite_input_tokens": 308,
-      "rewrite_output_tokens": 26,
+      "rewrite_output_tokens": 29,
       "answer": "Kestrel's revolving credit facility is $150 million, and as of June 30, 2026, $40 million of it was drawn.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.297,
+      "mentions_internals": false,
+      "latency_s": 1.53,
       "input_tokens": 1816,
-      "output_tokens": 69
+      "output_tokens": 72
     },
     {
       "id": "g016-reworded",
@@ -2463,18 +2556,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How much can Kestrel borrow in total under its revolving credit line?\nKestrel revolving credit facility total borrowing capacity maximum amount available under revolving line of credit",
+      "search_query": "How much can Kestrel borrow in total under its revolving credit line?\nKestrel revolving credit facility total borrowing capacity maximum amount available under revolver credit agreement",
       "corrections": {
         "line": "lane"
       },
       "rewrite_input_tokens": 313,
-      "rewrite_output_tokens": 36,
-      "answer": "Kestrel can borrow up to $150 million in total under its revolving credit facility, and $40 million was drawn as of June 30, 2026.",
+      "rewrite_output_tokens": 37,
+      "answer": "Kestrel's revolving credit facility totals $150 million. As of June 30, 2026, $40 million was drawn, leaving $110 million available.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 2.04,
-      "input_tokens": 1826,
-      "output_tokens": 234
+      "mentions_internals": false,
+      "latency_s": 1.753,
+      "input_tokens": 1830,
+      "output_tokens": 151
     },
     {
       "id": "g016-casual",
@@ -2490,18 +2584,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Size of Kestrel's credit line?\nKestrel credit line size credit facility revolving credit facility borrowing capacity",
+      "search_query": "Size of Kestrel's credit line?\nKestrel revolving credit facility size borrowing capacity credit line maximum amount",
       "corrections": {
         "line": "lane"
       },
       "rewrite_input_tokens": 304,
-      "rewrite_output_tokens": 29,
+      "rewrite_output_tokens": 30,
       "answer": "Kestrel's revolving credit facility is $150 million, of which $40 million was drawn as of June 30, 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.431,
+      "mentions_internals": false,
+      "latency_s": 1.39,
       "input_tokens": 1793,
-      "output_tokens": 70
+      "output_tokens": 71
     },
     {
       "id": "g016-typo",
@@ -2517,18 +2612,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How large is Kestrel's revolving crediit facility?\nKestrel revolving credit facility size total commitments borrowing capacity",
+      "search_query": "How large is Kestrel's revolving crediit facility?\nKestrel revolving credit facility size total commitments borrowing capacity revolver",
       "corrections": {
         "crediit": "credit"
       },
       "rewrite_input_tokens": 309,
-      "rewrite_output_tokens": 26,
-      "answer": "Kestrel's revolving credit facility is $150 million, with $40 million drawn as of June 30, 2026.",
+      "rewrite_output_tokens": 29,
+      "answer": "Kestrel's revolving credit facility is $150 million, and as of June 30, 2026, $40 million of it was drawn.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.226,
+      "mentions_internals": false,
+      "latency_s": 1.471,
       "input_tokens": 1818,
-      "output_tokens": 65
+      "output_tokens": 72
     },
     {
       "id": "g016-typos3",
@@ -2544,19 +2640,20 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How larg is Kestrel's revolving credut faccility?\nKestrel revolving credit facility size borrowing capacity commitment amount",
+      "search_query": "How larg is Kestrel's revolving credut faccility?\nKestrel revolving credit facility size borrowing capacity total commitments",
       "corrections": {
         "credut": "credit",
         "faccility": "facility"
       },
       "rewrite_input_tokens": 310,
-      "rewrite_output_tokens": 27,
-      "answer": "Kestrel's revolving credit facility is $150 million.",
+      "rewrite_output_tokens": 26,
+      "answer": "Kestrel's revolving credit facility is $150 million, per the 2026 Risk Factors document.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.278,
-      "input_tokens": 1805,
-      "output_tokens": 48
+      "mentions_internals": false,
+      "latency_s": 1.356,
+      "input_tokens": 1820,
+      "output_tokens": 61
     },
     {
       "id": "g016-lower",
@@ -2572,16 +2669,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "how large is kestrels revolving credit facility\nKestrel revolving credit facility size maximum borrowing capacity aggregate commitments revolving credit agreement",
+      "search_query": "how large is kestrels revolving credit facility\nKestrel revolving credit facility size maximum borrowing capacity aggregate commitments",
       "corrections": {},
       "rewrite_input_tokens": 305,
-      "rewrite_output_tokens": 40,
+      "rewrite_output_tokens": 32,
       "answer": "Kestrel's revolving credit facility is $150 million, of which $40 million was drawn as of June 30, 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.343,
+      "mentions_internals": false,
+      "latency_s": 1.355,
       "input_tokens": 1795,
-      "output_tokens": 81
+      "output_tokens": 73
     },
     {
       "id": "g017",
@@ -2606,7 +2704,8 @@
       "answer": "As of June 30, 2026, Kestrel had drawn $40 million on its $150 million revolving credit facility.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.33,
+      "mentions_internals": false,
+      "latency_s": 1.432,
       "input_tokens": 1801,
       "output_tokens": 79
     },
@@ -2628,12 +2727,13 @@
       "corrections": {},
       "rewrite_input_tokens": 319,
       "rewrite_output_tokens": 39,
-      "answer": "At June 30, 2026, $40 million was drawn on Kestrel's $150 million revolving credit facility.",
+      "answer": "$40 million was drawn on Kestrel's $150 million revolving credit facility as of June 30, 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.327,
+      "mentions_internals": false,
+      "latency_s": 1.623,
       "input_tokens": 1803,
-      "output_tokens": 77
+      "output_tokens": 132
     },
     {
       "id": "g017-casual",
@@ -2644,20 +2744,21 @@
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "q1_2026_earnings.md",
+        "annual_report_2025.md",
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How much debt was drawn at June 30, 2026?\nJune 30, 2026 debt drawn outstanding borrowings balance sheet credit facility",
+      "search_query": "How much debt was drawn at June 30, 2026?\nJune 30, 2026 debt drawn outstanding borrowings balance total debt drawn credit facility term loan",
       "corrections": {},
       "rewrite_input_tokens": 308,
-      "rewrite_output_tokens": 32,
+      "rewrite_output_tokens": 38,
       "answer": "As of June 30, 2026, $40 million was drawn on Kestrel's $150 million revolving credit facility.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.246,
-      "input_tokens": 1773,
-      "output_tokens": 71
+      "mentions_internals": false,
+      "latency_s": 1.426,
+      "input_tokens": 1816,
+      "output_tokens": 77
     },
     {
       "id": "g017-typo",
@@ -2673,18 +2774,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How much had Kestrel drawn on its crdeit facility as of June 30, 2026?\nKestrel credit facility outstanding borrowings drawn June 30, 2026",
+      "search_query": "How much had Kestrel drawn on its crdeit facility as of June 30, 2026?\nKestrel credit facility borrowings outstanding June 30, 2026 revolving credit facility drawn amount",
       "corrections": {
         "crdeit": "credit"
       },
       "rewrite_input_tokens": 320,
-      "rewrite_output_tokens": 29,
+      "rewrite_output_tokens": 39,
       "answer": "As of June 30, 2026, Kestrel had drawn $40 million on its $150 million revolving credit facility.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.458,
+      "mentions_internals": false,
+      "latency_s": 1.334,
       "input_tokens": 1805,
-      "output_tokens": 121
+      "output_tokens": 78
     },
     {
       "id": "g017-typos3",
@@ -2700,20 +2802,21 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How much had Kestrel dran on its crdeit facility as of Juen 30, 2026?\nKestrel credit facility borrowings outstanding June 30, 2026 revolving credit facility drawn amount",
+      "search_query": "How much had Kestrel dran on its crdeit facility as of Juen 30, 2026?\nKestrel credit facility outstanding borrowings drawn June 30, 2026",
       "corrections": {
         "dran": "drawn",
         "crdeit": "credit",
         "juen": "june"
       },
       "rewrite_input_tokens": 321,
-      "rewrite_output_tokens": 39,
+      "rewrite_output_tokens": 29,
       "answer": "As of June 30, 2026, Kestrel had drawn $40 million on its $150 million revolving credit facility.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.458,
+      "mentions_internals": false,
+      "latency_s": 1.509,
       "input_tokens": 1807,
-      "output_tokens": 132
+      "output_tokens": 113
     },
     {
       "id": "g017-lower",
@@ -2729,18 +2832,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "how much had kestrel drawn on its credit facility as of june 30 2026\nkestrel credit facility outstanding borrowings revolving line of credit drawn as of June 30, 2026",
-      "corrections": {
-        "line": "lane"
-      },
+      "search_query": "how much had kestrel drawn on its credit facility as of june 30 2026\nKestrel credit facility outstanding borrowings drawn amount as of June 30, 2026 revolving credit agreement",
+      "corrections": {},
       "rewrite_input_tokens": 315,
-      "rewrite_output_tokens": 37,
+      "rewrite_output_tokens": 42,
       "answer": "As of June 30, 2026, Kestrel had drawn $40 million on its $150 million revolving credit facility.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.391,
+      "mentions_internals": false,
+      "latency_s": 1.448,
       "input_tokens": 1795,
-      "output_tokens": 76
+      "output_tokens": 81
     },
     {
       "id": "g018",
@@ -2752,19 +2854,21 @@
       "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md",
-        "risk_factors_2026.md"
+        "q2_2026_earnings.md"
       ],
-      "search_query": "Did Kestrel's Q2 2026 revenue come in above the Q2 revenue range it expected in its Q1 2026 outlook?\nKestrel second quarter 2026 revenue actual versus guidance range expected in first quarter 2026 outlook",
-      "corrections": {},
+      "search_query": "Did Kestrel's Q2 2026 revenue come in above the Q2 revenue range it expected in its Q1 2026 outlook?\nKestrel second quarter 2026 revenue actual versus guidance outlook range provided in first quarter 2026 earnings release",
+      "corrections": {
+        "provided": "provider"
+      },
       "rewrite_input_tokens": 337,
-      "rewrite_output_tokens": 40,
-      "answer": "Yes. Kestrel reported Q2 2026 revenue of $116.0 million, which is above the $112 million to $115 million range it had expected in its Q1 2026 earnings release outlook.",
+      "rewrite_output_tokens": 44,
+      "answer": "Yes. Kestrel's Q1 2026 outlook expected Q2 2026 revenue of $112 million to $115 million, and it reported Q2 2026 revenue of $116.0 million, which is above that range.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.547,
-      "input_tokens": 1884,
-      "output_tokens": 106
+      "mentions_internals": false,
+      "latency_s": 1.495,
+      "input_tokens": 1899,
+      "output_tokens": 117
     },
     {
       "id": "g018-reworded",
@@ -2778,16 +2882,17 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
-      "search_query": "Was Kestrel's Q2 2026 revenue higher than the Q2 range it had projected in its Q1 2026 release?\nKestrel second quarter 2026 revenue actual versus guidance range projected in first quarter 2026 earnings release",
+      "search_query": "Was Kestrel's Q2 2026 revenue higher than the Q2 range it had projected in its Q1 2026 release?\nKestrel second quarter 2026 revenue actual versus guidance outlook range projected in first quarter 2026 earnings release",
       "corrections": {},
       "rewrite_input_tokens": 333,
-      "rewrite_output_tokens": 41,
-      "answer": "Yes. Kestrel reported Q2 2026 revenue of $116.0 million, which was above the $112 million to $115 million range it had projected in its Q1 2026 earnings release.",
+      "rewrite_output_tokens": 44,
+      "answer": "Yes. Kestrel's Q2 2026 revenue was $116.0 million, above the $112 million to $115 million range it projected in its Q1 2026 release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.682,
+      "mentions_internals": false,
+      "latency_s": 1.775,
       "input_tokens": 1891,
-      "output_tokens": 177
+      "output_tokens": 184
     },
     {
       "id": "g018-casual",
@@ -2803,16 +2908,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Did Q2 2026 revenue exceed guidance?\nQ2 2026 revenue compared with guidance outlook; actual revenue versus expected revenue guidance; second quarter fiscal 2026 net sales",
-      "corrections": {},
+      "search_query": "Did Q2 2026 revenue exceed guidance?\nQ2 2026 revenue compared with guidance outlook expectations; actual revenue versus forecast range; quarterly results second quarter fiscal 2026",
+      "corrections": {
+        "quarterly": "quarter"
+      },
       "rewrite_input_tokens": 310,
       "rewrite_output_tokens": 53,
       "answer": "Yes. Q2 2026 revenue was $116.0 million, above the $112 million to $115 million range Kestrel gave in its Q1 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.73,
-      "input_tokens": 1875,
-      "output_tokens": 188
+      "mentions_internals": false,
+      "latency_s": 1.742,
+      "input_tokens": 1857,
+      "output_tokens": 193
     },
     {
       "id": "g018-typo",
@@ -2824,21 +2932,21 @@
       "passage_hit": true,
       "retrieved_sources": [
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md",
-        "risk_factors_2026.md"
+        "q2_2026_earnings.md"
       ],
-      "search_query": "Did Kestrel's Q2 2026 revenue comme in above the Q2 revenue range it expected in its Q1 2026 outlook?\nKestrel second quarter 2026 revenue actual results compared to second quarter 2026 revenue guidance range outlook provided in first quarter 2026 earnings release",
+      "search_query": "Did Kestrel's Q2 2026 revenue comme in above the Q2 revenue range it expected in its Q1 2026 outlook?\nKestrel second quarter 2026 revenue actual versus guidance range outlook provided in first quarter 2026 earnings release",
       "corrections": {
         "provided": "provider"
       },
       "rewrite_input_tokens": 338,
-      "rewrite_output_tokens": 57,
-      "answer": "Yes. Kestrel's Q2 2026 revenue was $116.0 million, which is $1.0 million above the top of the $112 million to $115 million range it gave in its Q1 2026 outlook.",
+      "rewrite_output_tokens": 44,
+      "answer": "Yes. Kestrel reported Q2 2026 revenue of $116.0 million, which was above the $112 million to $115 million range it had projected in its Q1 2026 outlook.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.87,
-      "input_tokens": 1886,
-      "output_tokens": 223
+      "mentions_internals": false,
+      "latency_s": 1.74,
+      "input_tokens": 1901,
+      "output_tokens": 182
     },
     {
       "id": "g018-typos3",
@@ -2860,12 +2968,13 @@
       },
       "rewrite_input_tokens": 339,
       "rewrite_output_tokens": 39,
-      "answer": "Yes. Kestrel reported Q2 2026 revenue of $116.0 million, which was above the $112 million to $115 million range it had expected in its Q1 2026 earnings release.",
+      "answer": "Yes. Kestrel's Q2 2026 revenue was $116.0 million, which is $1.0 million above the $112 million to $115 million range it expected in its Q1 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.826,
+      "mentions_internals": false,
+      "latency_s": 1.758,
       "input_tokens": 1888,
-      "output_tokens": 173
+      "output_tokens": 166
     },
     {
       "id": "g018-lower",
@@ -2880,18 +2989,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "did kestrels q2 2026 revenue come in above the q2 revenue range it expected in its q1 2026 outlook\nKestrel second quarter 2026 revenue actual versus guidance range for second quarter 2026 revenue provided in first quarter 2026 earnings release outlook",
+      "search_query": "did kestrels q2 2026 revenue come in above the q2 revenue range it expected in its q1 2026 outlook\nKestrel second quarter 2026 revenue actual compared to second quarter 2026 revenue guidance range provided in first quarter 2026 earnings release outlook",
       "corrections": {
         "provided": "provider"
       },
       "rewrite_input_tokens": 330,
       "rewrite_output_tokens": 56,
-      "answer": "Yes. Kestrel reported Q2 2026 revenue of $116.0 million, which is above the $112 million to $115 million range it gave in its Q1 2026 outlook.",
+      "answer": "Yes. Kestrel reported Q2 2026 revenue of $116.0 million, which was $1.0 million above the top of its $112 million to $115 million outlook from the Q1 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.577,
+      "mentions_internals": false,
+      "latency_s": 1.808,
       "input_tokens": 1870,
-      "output_tokens": 117
+      "output_tokens": 197
     },
     {
       "id": "g019",
@@ -2914,7 +3024,8 @@
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 1.304,
+      "mentions_internals": false,
+      "latency_s": 1.463,
       "input_tokens": 1773,
       "output_tokens": 42
     },
@@ -2932,16 +3043,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What symbol is Kestrel listed under on the stock exchange?\nKestrel stock exchange listing ticker symbol trading symbol common stock exchange",
+      "search_query": "What symbol is Kestrel listed under on the stock exchange?\nKestrel stock exchange listing ticker symbol trading symbol common stock",
       "corrections": {},
       "rewrite_input_tokens": 312,
-      "rewrite_output_tokens": 31,
+      "rewrite_output_tokens": 28,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 1.247,
+      "mentions_internals": false,
+      "latency_s": 1.262,
       "input_tokens": 1781,
-      "output_tokens": 45
+      "output_tokens": 42
     },
     {
       "id": "g019-casual",
@@ -2957,16 +3069,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Kestrel stock symbol?\nKestrel ticker symbol stock trading symbol",
+      "search_query": "Kestrel stock symbol?\nKestrel ticker symbol stock trading",
       "corrections": {},
       "rewrite_input_tokens": 302,
-      "rewrite_output_tokens": 20,
+      "rewrite_output_tokens": 17,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 1.216,
+      "mentions_internals": false,
+      "latency_s": 1.271,
       "input_tokens": 1761,
-      "output_tokens": 34
+      "output_tokens": 31
     },
     {
       "id": "g019-typo",
@@ -2989,9 +3102,10 @@
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 1.271,
+      "mentions_internals": false,
+      "latency_s": 1.549,
       "input_tokens": 1775,
-      "output_tokens": 34
+      "output_tokens": 104
     },
     {
       "id": "g019-typos3",
@@ -3014,9 +3128,10 @@
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 1.411,
+      "mentions_internals": false,
+      "latency_s": 1.702,
       "input_tokens": 1775,
-      "output_tokens": 102
+      "output_tokens": 137
     },
     {
       "id": "g019-lower",
@@ -3032,16 +3147,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "what is kestrels stock ticker symbol\nKestrel stock ticker symbol trading symbol common stock exchange listing",
+      "search_query": "what is kestrels stock ticker symbol\nKestrel stock ticker symbol trading exchange common stock listing",
       "corrections": {},
       "rewrite_input_tokens": 305,
-      "rewrite_output_tokens": 28,
+      "rewrite_output_tokens": 25,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 1.206,
+      "mentions_internals": false,
+      "latency_s": 1.221,
       "input_tokens": 1767,
-      "output_tokens": 42
+      "output_tokens": 39
     },
     {
       "id": "g020",
@@ -3056,16 +3172,17 @@
         "q1_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Who will succeed Dana Whitfield as CEO in 2027?\nsucceed Dana Whitfield chief executive officer CEO successor appointment 2027 succession planning leadership transition",
+      "search_query": "Who will succeed Dana Whitfield as CEO in 2027?\nDana Whitfield chief executive officer successor appointment 2027 succession plan",
       "corrections": {},
       "rewrite_input_tokens": 314,
-      "rewrite_output_tokens": 40,
+      "rewrite_output_tokens": 29,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 1.497,
+      "mentions_internals": false,
+      "latency_s": 1.533,
       "input_tokens": 1903,
-      "output_tokens": 117
+      "output_tokens": 122
     },
     {
       "id": "g020-reworded",
@@ -3080,16 +3197,17 @@
         "q1_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Who has been named as Dana Whitfield's successor as CEO in 2027?\nDana Whitfield successor chief executive officer appointed 2027 succession CEO",
+      "search_query": "Who has been named as Dana Whitfield's successor as CEO in 2027?\nDana Whitfield successor chief executive officer appointed 2027 CEO succession",
       "corrections": {},
       "rewrite_input_tokens": 317,
       "rewrite_output_tokens": 30,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 2.281,
+      "mentions_internals": false,
+      "latency_s": 1.871,
       "input_tokens": 1909,
-      "output_tokens": 310
+      "output_tokens": 209
     },
     {
       "id": "g020-casual",
@@ -3105,16 +3223,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Who takes over as CEO in 2027?\nchief executive officer succession appointment 2027 new CEO named successor",
+      "search_query": "Who takes over as CEO in 2027?\nchief executive officer succession 2027 appointment new CEO successor",
       "corrections": {},
       "rewrite_input_tokens": 305,
-      "rewrite_output_tokens": 24,
+      "rewrite_output_tokens": 23,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 2.296,
+      "mentions_internals": false,
+      "latency_s": 1.855,
       "input_tokens": 1935,
-      "output_tokens": 284
+      "output_tokens": 196
     },
     {
       "id": "g020-typo",
@@ -3129,16 +3248,17 @@
         "q1_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Who will scceed Dana Whitfield as CEO in 2027?\nDana Whitfield chief executive officer successor appointment 2027 succession plan",
+      "search_query": "Who will scceed Dana Whitfield as CEO in 2027?\nDana Whitfield chief executive officer succession successor 2027",
       "corrections": {},
       "rewrite_input_tokens": 314,
-      "rewrite_output_tokens": 29,
+      "rewrite_output_tokens": 23,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 1.615,
+      "mentions_internals": false,
+      "latency_s": 1.608,
       "input_tokens": 1903,
-      "output_tokens": 171
+      "output_tokens": 121
     },
     {
       "id": "g020-typos3",
@@ -3153,18 +3273,19 @@
         "q1_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Who wlil suceced Dnaa Whitfield as CEO in 2027?\nDana Whitfield chief executive officer successor appointment 2027",
+      "search_query": "Who wlil suceced Dnaa Whitfield as CEO in 2027?\nDnaa Whitfield CEO successor 2027 chief executive officer succession appointment",
       "corrections": {
         "dnaa": "dana"
       },
       "rewrite_input_tokens": 318,
-      "rewrite_output_tokens": 24,
+      "rewrite_output_tokens": 32,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 1.821,
+      "mentions_internals": false,
+      "latency_s": 1.915,
       "input_tokens": 1911,
-      "output_tokens": 192
+      "output_tokens": 202
     },
     {
       "id": "g020-lower",
@@ -3186,7 +3307,8 @@
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 1.362,
+      "mentions_internals": false,
+      "latency_s": 1.236,
       "input_tokens": 1895,
       "output_tokens": 48
     },
@@ -3204,16 +3326,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's net profit margin for fiscal year 2025?\nKestrel net profit margin fiscal year 2025 net income total revenue net sales percentage",
+      "search_query": "What was Kestrel's net profit margin for fiscal year 2025?\nKestrel net profit margin fiscal year 2025 net income total revenue net sales",
       "corrections": {},
       "rewrite_input_tokens": 314,
-      "rewrite_output_tokens": 33,
-      "answer": "Kestrel's net profit margin for fiscal year 2025 was about 9.4%, calculated as $38.9 million in net income divided by $412.6 million in total revenue.",
+      "rewrite_output_tokens": 30,
+      "answer": "Kestrel's net profit margin for fiscal year 2025 was about 9.4%, calculated as $38.9 million in net income on $412.6 million in total revenue.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.679,
+      "mentions_internals": false,
+      "latency_s": 1.595,
       "input_tokens": 1885,
-      "output_tokens": 183
+      "output_tokens": 176
     },
     {
       "id": "g021-reworded",
@@ -3233,12 +3356,13 @@
       "corrections": {},
       "rewrite_input_tokens": 324,
       "rewrite_output_tokens": 32,
-      "answer": "Kestrel turned about 9.4% of its fiscal 2025 revenue into net income: $38.9 million of net income on $412.6 million of revenue.",
+      "answer": "Kestrel's fiscal 2025 net income of $38.9 million was about 9.4% of its $412.6 million total revenue.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.727,
+      "mentions_internals": false,
+      "latency_s": 1.717,
       "input_tokens": 1929,
-      "output_tokens": 167
+      "output_tokens": 169
     },
     {
       "id": "g021-casual",
@@ -3254,16 +3378,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "FY2025 net profit margin?\nfiscal year 2025 net profit margin net income as a percentage of total revenue net margin",
+      "search_query": "FY2025 net profit margin?\nfiscal year 2025 net profit margin net income as a percentage of total revenue",
       "corrections": {},
       "rewrite_input_tokens": 302,
-      "rewrite_output_tokens": 31,
-      "answer": "Kestrel's FY2025 net profit margin was about 9.4%, calculated from net income of $38.9 million on total revenue of $412.6 million.",
+      "rewrite_output_tokens": 28,
+      "answer": "Kestrel's FY2025 net profit margin was about 9.4%, calculated as net income of $38.9 million divided by total revenue of $412.6 million.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.602,
+      "mentions_internals": false,
+      "latency_s": 1.674,
       "input_tokens": 1861,
-      "output_tokens": 191
+      "output_tokens": 181
     },
     {
       "id": "g021-typo",
@@ -3276,18 +3401,20 @@
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's net profti margin for fiscal year 2025?\nKestrel net profit margin net income revenue fiscal year 2025 annual report",
+      "search_query": "What was Kestrel's net profti margin for fiscal year 2025?\nKestrel net profit margin fiscal year 2025 net income net margin revenue",
       "corrections": {},
       "rewrite_input_tokens": 314,
       "rewrite_output_tokens": 29,
       "answer": "Kestrel's net profit margin for fiscal year 2025 was about 9.4%, calculated as $38.9 million net income divided by $412.6 million total revenue.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.601,
-      "input_tokens": 1889,
-      "output_tokens": 176
+      "mentions_internals": false,
+      "latency_s": 1.605,
+      "input_tokens": 1885,
+      "output_tokens": 182
     },
     {
       "id": "g021-typos3",
@@ -3310,12 +3437,13 @@
       },
       "rewrite_input_tokens": 316,
       "rewrite_output_tokens": 32,
-      "answer": "Kestrel's net profit margin for fiscal year 2025 was about 9.4%, calculated as $38.9 million in net income divided by $412.6 million in total revenue.",
+      "answer": "Kestrel's net profit margin for fiscal year 2025 was about 9.4%, calculated from net income of $38.9 million on total revenue of $412.6 million.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.744,
+      "mentions_internals": false,
+      "latency_s": 1.641,
       "input_tokens": 1889,
-      "output_tokens": 218
+      "output_tokens": 154
     },
     {
       "id": "g021-lower",
@@ -3328,20 +3456,22 @@
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
-      "search_query": "what was kestrels net profit margin for fiscal year 2025\nKestrel net profit margin fiscal year 2025 net income divided by net sales revenue annual report",
+      "search_query": "what was kestrels net profit margin for fiscal year 2025\nkestrel net profit margin fiscal year 2025 net income divided by total revenue",
       "corrections": {
         "divided": "dividend"
       },
       "rewrite_input_tokens": 311,
-      "rewrite_output_tokens": 35,
-      "answer": "Kestrel's net profit margin for fiscal year 2025 was about 9.4%, calculated as $38.9 million in net income divided by $412.6 million in total revenue (Annual Report 2025).",
+      "rewrite_output_tokens": 29,
+      "answer": "Kestrel's net profit margin for fiscal year 2025 was about 9.4%, calculated as $38.9 million in net income divided by $412.6 million in total revenue.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.641,
-      "input_tokens": 1883,
-      "output_tokens": 178
+      "mentions_internals": false,
+      "latency_s": 1.591,
+      "input_tokens": 1879,
+      "output_tokens": 177
     },
     {
       "id": "g022",
@@ -3357,16 +3487,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's combined revenue for the first half of 2026?\nKestrel revenue first half 2026 combined; quarter ended March 31, 2026 net revenue; quarter ended June 30, 2026 net revenue; six months ended June 30, 2026 total revenue",
+      "search_query": "What was Kestrel's combined revenue for the first half of 2026?\nKestrel revenue first half 2026 combined; Q1 2026 net revenue; Q2 2026 net revenue; six months ended June 30, 2026 total revenues",
       "corrections": {},
       "rewrite_input_tokens": 313,
-      "rewrite_output_tokens": 71,
+      "rewrite_output_tokens": 59,
       "answer": "Kestrel's combined revenue for the first half of 2026 was $224.3 million: $108.3 million in Q1 2026 plus $116.0 million in Q2 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.704,
-      "input_tokens": 1921,
-      "output_tokens": 213
+      "mentions_internals": false,
+      "latency_s": 1.585,
+      "input_tokens": 1889,
+      "output_tokens": 171
     },
     {
       "id": "g022-reworded",
@@ -3382,16 +3513,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What did Kestrel's Q1 2026 and Q2 2026 revenue add up to?\nKestrel first quarter 2026 revenue; Kestrel second quarter 2026 revenue; total revenue three months ended March 31, 2026 and June 30, 2026",
+      "search_query": "What did Kestrel's Q1 2026 and Q2 2026 revenue add up to?\nKestrel first quarter 2026 revenue; Kestrel second quarter 2026 revenue; Kestrel three months ended March 31, 2026 net revenue; Kestrel three months ended June 30, 2026 net revenue",
       "corrections": {},
       "rewrite_input_tokens": 321,
-      "rewrite_output_tokens": 60,
-      "answer": "Kestrel's Q1 2026 and Q2 2026 revenue together totaled $224.3 million: $108.3 million in Q1 and $116.0 million in Q2.",
+      "rewrite_output_tokens": 79,
+      "answer": "Kestrel's Q1 2026 and Q2 2026 revenue added up to $224.3 million ($108.3 million in Q1 plus $116.0 million in Q2).",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.515,
-      "input_tokens": 1913,
-      "output_tokens": 180
+      "mentions_internals": false,
+      "latency_s": 1.73,
+      "input_tokens": 1905,
+      "output_tokens": 187
     },
     {
       "id": "g022-casual",
@@ -3400,23 +3532,24 @@
       "category": "calculation",
       "question": "Kestrel revenue Jan-Jun 2026 total?",
       "retrieval_hit": true,
-      "passage_hit": false,
+      "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Kestrel revenue Jan-Jun 2026 total?\nKestrel total revenue January through June 2026 six months ended June 30, 2026 net sales",
+      "search_query": "Kestrel revenue Jan-Jun 2026 total?\nKestrel revenue January 2026 February 2026 March 2026 April 2026 May 2026 June 2026 total net sales six months ended June 30, 2026",
       "corrections": {},
       "rewrite_input_tokens": 312,
-      "rewrite_output_tokens": 33,
-      "answer": "Kestrel's Q1 2026 revenue was $108.3 million, but the material doesn't give Q2 2026 revenue, so I can't state a January-June 2026 total.",
-      "passed": false,
-      "reason": "missing numbers [224.3]",
-      "latency_s": 2.43,
-      "input_tokens": 1889,
-      "output_tokens": 313
+      "rewrite_output_tokens": 55,
+      "answer": "Kestrel's revenue for January through June 2026 totaled $224.3 million: $108.3 million in Q1 2026 plus $116.0 million in Q2 2026.",
+      "passed": true,
+      "reason": "all expected values present",
+      "mentions_internals": false,
+      "latency_s": 1.593,
+      "input_tokens": 1929,
+      "output_tokens": 151
     },
     {
       "id": "g022-typo",
@@ -3432,16 +3565,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's combine revenue for the first half of 2026?\nKestrel combined revenue six months ended June 30, 2026 first half 2026 Q1 2026 Q2 2026 total net revenues",
+      "search_query": "What was Kestrel's combine revenue for the first half of 2026?\nKestrel combined revenue three months ended March 31, 2026; three months ended June 30, 2026; six months ended June 30, 2026; consolidated total revenue net sales",
       "corrections": {},
       "rewrite_input_tokens": 313,
-      "rewrite_output_tokens": 333,
-      "answer": "Kestrel's combined revenue for the first half of 2026 was $224.3 million: $108.3 million in Q1 2026 plus $116.0 million in Q2 2026.",
+      "rewrite_output_tokens": 273,
+      "answer": "Kestrel's combined revenue for the first half of 2026 was $224.3 million: $108.3 million in Q1 plus $116.0 million in Q2.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 2.531,
-      "input_tokens": 1897,
-      "output_tokens": 468
+      "mentions_internals": false,
+      "latency_s": 2.414,
+      "input_tokens": 1919,
+      "output_tokens": 368
     },
     {
       "id": "g022-typos3",
@@ -3457,18 +3591,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's comibned rveenue for the first halff of 2026?\nKestrel combined revenue first half 2026 six months ended June 30, 2026 total net revenue",
+      "search_query": "What was Kestrel's comibned rveenue for the first halff of 2026?\nKestrel combined revenue first half 2026 six months ended June 30, 2026 first quarter 2026 second quarter 2026 total net revenue",
       "corrections": {
         "rveenue": "revenue"
       },
       "rewrite_input_tokens": 316,
-      "rewrite_output_tokens": 35,
+      "rewrite_output_tokens": 51,
       "answer": "Kestrel's combined revenue for the first half of 2026 was $224.3 million: $108.3 million in Q1 2026 plus $116.0 million in Q2 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.434,
+      "mentions_internals": false,
+      "latency_s": 1.746,
       "input_tokens": 1938,
-      "output_tokens": 161
+      "output_tokens": 174
     },
     {
       "id": "g022-lower",
@@ -3484,16 +3619,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "what was kestrels combined revenue for the first half of 2026\nKestrel total revenue first half 2026 six months ended June 30, 2026 first quarter 2026 second quarter 2026 net sales",
+      "search_query": "what was kestrels combined revenue for the first half of 2026\nKestrel combined revenue first half 2026 six months ended June 30, 2026 quarter ended March 31, 2026 quarter ended June 30, 2026 total revenues net sales",
       "corrections": {},
       "rewrite_input_tokens": 310,
-      "rewrite_output_tokens": 48,
-      "answer": "Kestrel's combined revenue for the first half of 2026 was $224.3 million: $108.3 million in Q1 2026 plus $116.0 million in Q2 2026.",
+      "rewrite_output_tokens": 63,
+      "answer": "Kestrel's combined first-half 2026 revenue was $224.3 million: $108.3 million in Q1 2026 plus $116.0 million in Q2 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.671,
-      "input_tokens": 1915,
-      "output_tokens": 175
+      "mentions_internals": false,
+      "latency_s": 1.806,
+      "input_tokens": 1884,
+      "output_tokens": 204
     },
     {
       "id": "g023",
@@ -3507,16 +3643,17 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
-      "search_query": "By how many percentage points did Kestrel's gross margin change from Q1 2026 to Q2 2026?\nKestrel gross margin percentage change Q1 2026 Q2 2026 quarter ended three months ended percentage points gross profit net revenue cost of revenue",
+      "search_query": "By how many percentage points did Kestrel's gross margin change from Q1 2026 to Q2 2026?\nKestrel gross margin percentage change Q1 2026 Q2 2026 gross profit as a percentage of net revenue percentage points",
       "corrections": {},
       "rewrite_input_tokens": 326,
-      "rewrite_output_tokens": 56,
+      "rewrite_output_tokens": 47,
       "answer": "Kestrel's gross margin rose by 0.7 percentage points, from 71.4% in Q1 2026 to 72.1% in Q2 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.659,
+      "mentions_internals": false,
+      "latency_s": 1.654,
       "input_tokens": 1862,
-      "output_tokens": 163
+      "output_tokens": 155
     },
     {
       "id": "g023-reworded",
@@ -3531,19 +3668,20 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How many percentage points did Kestrel's gross margin rise or fall from Q1 2026 to Q2 2026?\nKestrel gross margin percentage three months ended March 31, 2026 and three months ended June 30, 2026 change in basis points percentage points",
+      "search_query": "How many percentage points did Kestrel's gross margin rise or fall from Q1 2026 to Q2 2026?\nKestrel gross margin percentage three months ended March 31, 2026 versus three months ended June 30, 2026 change in basis points percentage points",
       "corrections": {
         "rise": "risk",
         "fall": "full"
       },
       "rewrite_input_tokens": 329,
-      "rewrite_output_tokens": 48,
+      "rewrite_output_tokens": 49,
       "answer": "Kestrel's gross margin rose by 0.7 percentage points, from 71.4% in Q1 2026 to 72.1% in Q2 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.497,
+      "mentions_internals": false,
+      "latency_s": 1.582,
       "input_tokens": 1794,
-      "output_tokens": 146
+      "output_tokens": 147
     },
     {
       "id": "g023-casual",
@@ -3557,16 +3695,17 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
-      "search_query": "GM change Q1 vs Q2 2026, in points?\ngross margin percentage first quarter 2026 second quarter 2026 change in percentage points",
+      "search_query": "GM change Q1 vs Q2 2026, in points?\ngross margin percentage first quarter 2026 second quarter 2026 change percentage points",
       "corrections": {},
       "rewrite_input_tokens": 310,
-      "rewrite_output_tokens": 184,
+      "rewrite_output_tokens": 207,
       "answer": "Gross margin rose by 0.7 percentage points, from 71.4% in Q1 2026 to 72.1% in Q2 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 2.19,
+      "mentions_internals": false,
+      "latency_s": 2.191,
       "input_tokens": 1830,
-      "output_tokens": 311
+      "output_tokens": 334
     },
     {
       "id": "g023-typo",
@@ -3589,7 +3728,8 @@
       "answer": "Kestrel's gross margin rose by 0.7 percentage points, from 71.4% in Q1 2026 to 72.1% in Q2 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.529,
+      "mentions_internals": false,
+      "latency_s": 1.604,
       "input_tokens": 1864,
       "output_tokens": 154
     },
@@ -3605,18 +3745,19 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
-      "search_query": "By how many percnetage poitns did Kestrel's grross margin change from Q1 2026 to Q2 2026?\nKestrel gross margin percentage change Q1 2026 Q2 2026 gross profit as a percentage of revenue basis points",
+      "search_query": "By how many percnetage poitns did Kestrel's grross margin change from Q1 2026 to Q2 2026?\nKestrel gross margin percentage change Q1 2026 Q2 2026 gross profit as percentage of revenue basis points",
       "corrections": {
         "grross": "gross"
       },
       "rewrite_input_tokens": 329,
-      "rewrite_output_tokens": 45,
+      "rewrite_output_tokens": 44,
       "answer": "Kestrel's gross margin rose by 0.7 percentage points, from 71.4% in Q1 2026 to 72.1% in Q2 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.522,
+      "mentions_internals": false,
+      "latency_s": 1.651,
       "input_tokens": 1868,
-      "output_tokens": 153
+      "output_tokens": 169
     },
     {
       "id": "g023-lower",
@@ -3630,18 +3771,17 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
-      "search_query": "by how many percentage points did kestrels gross margin change from q1 2026 to q2 2026\nKestrel gross margin percentage Q1 2026 Q2 2026 change percentage points gross profit net revenue quarterly earnings release",
-      "corrections": {
-        "quarterly": "quarter"
-      },
+      "search_query": "by how many percentage points did kestrels gross margin change from q1 2026 to q2 2026\nKestrel gross margin percentage Q1 2026 Q2 2026 change percentage points gross profit net revenue",
+      "corrections": {},
       "rewrite_input_tokens": 321,
-      "rewrite_output_tokens": 49,
+      "rewrite_output_tokens": 41,
       "answer": "Kestrel's gross margin rose by 0.7 percentage points, from 71.4% in Q1 2026 to 72.1% in Q2 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.61,
+      "mentions_internals": false,
+      "latency_s": 1.551,
       "input_tokens": 1852,
-      "output_tokens": 157
+      "output_tokens": 149
     },
     {
       "id": "g024",
@@ -3657,16 +3797,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How many enterprise customers did Kestrel add between the end of 2025 and the end of Q2 2026?\nKestrel enterprise customers added end of fiscal year 2025 December 31 2025 end of second quarter 2026 June 30 2026 increase number of enterprise customers",
+      "search_query": "How many enterprise customers did Kestrel add between the end of 2025 and the end of Q2 2026?\nKestrel enterprise customers added end of fiscal year 2025 December 31, 2025 end of second quarter 2026 June 30, 2026 net increase number of customers",
       "corrections": {},
       "rewrite_input_tokens": 325,
-      "rewrite_output_tokens": 59,
-      "answer": "Kestrel added 270 enterprise customers, rising from 2,850 at the end of 2025 to 3,120 at the end of Q2 2026.",
+      "rewrite_output_tokens": 58,
+      "answer": "Kestrel added 270 enterprise customers, growing from 2,850 at the end of 2025 to 3,120 at the end of Q2 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.505,
+      "mentions_internals": false,
+      "latency_s": 1.839,
       "input_tokens": 1917,
-      "output_tokens": 110
+      "output_tokens": 155
     },
     {
       "id": "g024-reworded",
@@ -3685,12 +3826,13 @@
       "corrections": {},
       "rewrite_input_tokens": 328,
       "rewrite_output_tokens": 42,
-      "answer": "Kestrel's enterprise customer count grew by 270, from 2,850 at December 31, 2025 to 3,120 at the end of Q2 2026 (June 30, 2026).",
+      "answer": "Kestrel's enterprise customer count grew by 270, from 2,850 at December 31, 2025 to 3,120 at the end of Q2 2026 (June 30, 2026), an increase of about 9.5%.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.668,
+      "mentions_internals": false,
+      "latency_s": 1.991,
       "input_tokens": 1857,
-      "output_tokens": 185
+      "output_tokens": 267
     },
     {
       "id": "g024-casual",
@@ -3706,16 +3848,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Net enterprise customer adds, end of 2025 to Q2 2026?\nNet enterprise customer additions, net customer adds, customer count; fiscal 2025 fourth quarter; fiscal 2026 first quarter; fiscal 2026 second quarter",
+      "search_query": "Net enterprise customer adds, end of 2025 to Q2 2026?\nnet enterprise customer additions net increase in enterprise customers fourth quarter 2025 first quarter 2026 second quarter 2026",
       "corrections": {},
       "rewrite_input_tokens": 316,
-      "rewrite_output_tokens": 63,
-      "answer": "Kestrel had 2,850 enterprise customers at the end of 2025 and 3,120 at the end of Q2 2026, a net increase of 270.",
+      "rewrite_output_tokens": 46,
+      "answer": "Kestrel added a net 270 enterprise customers between the end of 2025 (2,850) and Q2 2026 (3,120).",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.688,
+      "mentions_internals": false,
+      "latency_s": 1.656,
       "input_tokens": 1901,
-      "output_tokens": 167
+      "output_tokens": 124
     },
     {
       "id": "g024-typo",
@@ -3727,22 +3870,22 @@
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
-        "q1_2026_earnings.md",
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How many enterprise customers did Kestrel add betweenn the end of 2025 and the end of Q2 2026?\nKestrel enterprise customers added end of 2025 end of Q2 2026 net increase customer count fiscal year quarter ended June 30, 2026 December 31, 2025",
+      "search_query": "How many enterprise customers did Kestrel add betweenn the end of 2025 and the end of Q2 2026?\nKestrel enterprise customers added between end of fiscal 2025 and end of second quarter 2026 number of customers",
       "corrections": {
         "betweenn": "between"
       },
       "rewrite_input_tokens": 328,
-      "rewrite_output_tokens": 60,
+      "rewrite_output_tokens": 40,
       "answer": "Kestrel added 270 enterprise customers, growing from 2,850 at the end of 2025 to 3,120 at the end of Q2 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.608,
-      "input_tokens": 1923,
-      "output_tokens": 159
+      "mentions_internals": false,
+      "latency_s": 1.581,
+      "input_tokens": 1879,
+      "output_tokens": 137
     },
     {
       "id": "g024-typos3",
@@ -3754,22 +3897,24 @@
       "passage_hit": true,
       "retrieved_sources": [
         "annual_report_2025.md",
+        "q1_2026_earnings.md",
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How mny enteprise cstomers did Kestrel add between the end of 2025 and the end of Q2 2026?\nKestrel enterprise customers added between December 31, 2025 and June 30, 2026 net increase in number of enterprise customers quarter ended June 30, 2026",
+      "search_query": "How mny enteprise cstomers did Kestrel add between the end of 2025 and the end of Q2 2026?\nKestrel enterprise customers added 2025 year end to Q2 2026 quarter end, number of enterprise customers, customer count growth",
       "corrections": {
         "enteprise": "enterprise",
         "cstomers": "customers"
       },
       "rewrite_input_tokens": 328,
-      "rewrite_output_tokens": 56,
+      "rewrite_output_tokens": 47,
       "answer": "Kestrel added 270 enterprise customers, growing from 2,850 at the end of 2025 to 3,120 at the end of Q2 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.565,
-      "input_tokens": 1930,
-      "output_tokens": 159
+      "mentions_internals": false,
+      "latency_s": 1.758,
+      "input_tokens": 1901,
+      "output_tokens": 151
     },
     {
       "id": "g024-lower",
@@ -3785,16 +3930,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "how many enterprise customers did kestrel add between the end of 2025 and the end of q2 2026\nKestrel enterprise customers added end of fiscal 2025 end of second quarter 2026 net customer count increase",
+      "search_query": "how many enterprise customers did kestrel add between the end of 2025 and the end of q2 2026\nKestrel enterprise customers added end of fiscal 2025 end of second quarter 2026 net increase number of customers",
       "corrections": {},
       "rewrite_input_tokens": 322,
-      "rewrite_output_tokens": 40,
+      "rewrite_output_tokens": 41,
       "answer": "Kestrel added 270 enterprise customers, growing from 2,850 at the end of 2025 to 3,120 at the end of Q2 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.361,
+      "mentions_internals": false,
+      "latency_s": 1.519,
       "input_tokens": 1911,
-      "output_tokens": 125
+      "output_tokens": 126
     },
     {
       "id": "g025",
@@ -3810,16 +3956,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How much undrawn capacity remained on Kestrel's credit facility as of June 30, 2026?\nKestrel credit facility undrawn availability remaining capacity unused commitments as of June 30, 2026",
+      "search_query": "How much undrawn capacity remained on Kestrel's credit facility as of June 30, 2026?\nKestrel credit facility undrawn availability remaining capacity unused commitments June 30, 2026 revolving credit facility borrowing capacity",
       "corrections": {},
       "rewrite_input_tokens": 323,
-      "rewrite_output_tokens": 37,
-      "answer": "As of June 30, 2026, $110 million remained undrawn on Kestrel's $150 million revolving credit facility, since $40 million was drawn.",
+      "rewrite_output_tokens": 50,
+      "answer": "Kestrel had $110 million of undrawn capacity on its $150 million revolving credit facility as of June 30, 2026, since $40 million was drawn.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.547,
+      "mentions_internals": false,
+      "latency_s": 1.877,
       "input_tokens": 1810,
-      "output_tokens": 124
+      "output_tokens": 149
     },
     {
       "id": "g025-reworded",
@@ -3835,18 +3982,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How much borrowing capacity did Kestrel still have left on its credit facility as of June 30, 2026?\nKestrel credit facility unused borrowing capacity availability remaining as of June 30, 2026 revolving credit line",
-      "corrections": {
-        "line": "lane"
-      },
+      "search_query": "How much borrowing capacity did Kestrel still have left on its credit facility as of June 30, 2026?\nKestrel credit facility unused borrowing capacity availability remaining under revolving credit facility as of June 30, 2026",
+      "corrections": {},
       "rewrite_input_tokens": 325,
-      "rewrite_output_tokens": 41,
-      "answer": "Kestrel had $110 million of borrowing capacity left on its $150 million revolving credit facility as of June 30, 2026, since $40 million was drawn.",
+      "rewrite_output_tokens": 42,
+      "answer": "Kestrel had about $110 million of borrowing capacity left on its $150 million revolving credit facility as of June 30, 2026, since $40 million was drawn.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.559,
+      "mentions_internals": false,
+      "latency_s": 1.584,
       "input_tokens": 1814,
-      "output_tokens": 134
+      "output_tokens": 142
     },
     {
       "id": "g025-casual",
@@ -3862,14 +4008,15 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Remaining room on the revolver at June 30, 2026?\nrevolving credit facility availability remaining borrowing capacity undrawn commitments June 30, 2026",
+      "search_query": "Remaining room on the revolver at June 30, 2026?\nremaining availability under revolving credit facility at June 30, 2026 unused borrowing capacity revolver",
       "corrections": {},
       "rewrite_input_tokens": 310,
-      "rewrite_output_tokens": 35,
-      "answer": "Kestrel had about $110 million of room left on its $150 million revolving credit facility at June 30, 2026, since $40 million was drawn.",
+      "rewrite_output_tokens": 36,
+      "answer": "Kestrel had $110 million of room left on its $150 million revolving credit facility at June 30, 2026, since $40 million was drawn.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.482,
+      "mentions_internals": false,
+      "latency_s": 1.662,
       "input_tokens": 1784,
       "output_tokens": 127
     },
@@ -3887,18 +4034,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How much undrawn capacity remained on Kestrel's credit faciliy as of June 30, 2026?\nKestrel undrawn capacity available borrowing credit facility unused commitments as of June 30, 2026",
+      "search_query": "How much undrawn capacity remained on Kestrel's credit faciliy as of June 30, 2026?\nKestrel undrawn capacity available borrowing credit facility unused commitment June 30, 2026",
       "corrections": {
         "faciliy": "facility"
       },
       "rewrite_input_tokens": 325,
-      "rewrite_output_tokens": 37,
+      "rewrite_output_tokens": 35,
       "answer": "Kestrel had $110 million of undrawn capacity on its $150 million revolving credit facility as of June 30, 2026, since $40 million was drawn.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.479,
+      "mentions_internals": false,
+      "latency_s": 1.687,
       "input_tokens": 1814,
-      "output_tokens": 127
+      "output_tokens": 134
     },
     {
       "id": "g025-typos3",
@@ -3914,19 +4062,20 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "How much undrawn capaciity remained on Kestrel's crdit facility as of Jnue 30, 2026?\nKestrel undrawn capacity remaining credit facility as of June 30, 2026 availability under revolving credit facility",
+      "search_query": "How much undrawn capaciity remained on Kestrel's crdit facility as of Jnue 30, 2026?\nKestrel undrawn capacity remaining credit facility June 30, 2026 available borrowing capacity revolving credit facility",
       "corrections": {
         "crdit": "credit",
         "jnue": "june"
       },
       "rewrite_input_tokens": 328,
-      "rewrite_output_tokens": 41,
+      "rewrite_output_tokens": 44,
       "answer": "As of June 30, 2026, $110 million remained undrawn on Kestrel's $150 million revolving credit facility, since $40 million was drawn.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.589,
+      "mentions_internals": false,
+      "latency_s": 1.76,
       "input_tokens": 1820,
-      "output_tokens": 164
+      "output_tokens": 159
     },
     {
       "id": "g025-lower",
@@ -3942,16 +4091,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "how much undrawn capacity remained on kestrels credit facility as of june 30 2026\nkestrel credit facility undrawn capacity available borrowing capacity remaining June 30, 2026",
+      "search_query": "how much undrawn capacity remained on kestrels credit facility as of june 30 2026\nkestrel credit facility undrawn capacity available borrowing capacity June 30, 2026",
       "corrections": {},
       "rewrite_input_tokens": 319,
-      "rewrite_output_tokens": 35,
+      "rewrite_output_tokens": 32,
       "answer": "Kestrel had $110 million of undrawn capacity on its $150 million revolving credit facility as of June 30, 2026, since $40 million was drawn.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.405,
+      "mentions_internals": false,
+      "latency_s": 1.47,
       "input_tokens": 1802,
-      "output_tokens": 134
+      "output_tokens": 122
     },
     {
       "id": "g026",
@@ -3967,18 +4117,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Why did Kestrel's revenue decline in Q2 2026?\nKestrel second quarter 2026 revenue decline reasons; net sales decrease quarter ended June 30, 2026 compared with prior year quarter",
+      "search_query": "Why did Kestrel's revenue decline in Q2 2026?\nKestrel revenue decline second quarter 2026 net sales decrease reasons drivers",
       "corrections": {
         "decrease": "increase"
       },
       "rewrite_input_tokens": 313,
-      "rewrite_output_tokens": 52,
-      "answer": "Kestrel's revenue did not decline in Q2 2026. It rose 19% year over year, from $97.5 million in Q2 2025 to $116.0 million.",
+      "rewrite_output_tokens": 32,
+      "answer": "Kestrel's revenue did not decline in Q2 2026. It rose 19% year over year, from $97.5 million in Q2 2025 to $116.0 million in Q2 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.735,
-      "input_tokens": 1907,
-      "output_tokens": 193
+      "mentions_internals": false,
+      "latency_s": 1.615,
+      "input_tokens": 1881,
+      "output_tokens": 143
     },
     {
       "id": "g026-reworded",
@@ -3989,22 +4140,22 @@
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
+        "annual_report_2025.md",
         "q1_2026_earnings.md",
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Why did Kestrel's sales shrink in Q2 2026?\nKestrel second quarter 2026 revenue decreased; net sales decline reasons; drivers of revenue decrease three months ended June 30, 2026",
-      "corrections": {
-        "decrease": "increase"
-      },
+      "search_query": "Why did Kestrel's sales shrink in Q2 2026?\nKestrel second quarter 2026 revenue decline reasons; net sales decreased quarter over quarter; drivers of lower revenue",
+      "corrections": {},
       "rewrite_input_tokens": 313,
-      "rewrite_output_tokens": 52,
+      "rewrite_output_tokens": 47,
       "answer": "Kestrel's sales did not shrink in Q2 2026. Revenue rose 19% year over year to $116.0 million, up from $97.5 million in Q2 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.807,
-      "input_tokens": 1909,
-      "output_tokens": 201
+      "mentions_internals": false,
+      "latency_s": 1.718,
+      "input_tokens": 1881,
+      "output_tokens": 174
     },
     {
       "id": "g026-casual",
@@ -4019,18 +4170,19 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
-      "search_query": "What made Q2 2026 revenue go down?\nQ2 2026 revenue decline reasons, decrease in net sales, quarter ended June 30, 2026 compared with prior year quarter",
+      "search_query": "What made Q2 2026 revenue go down?\nQ2 2026 revenue decline reasons; second quarter fiscal 2026 net sales decrease drivers; quarter ended June 30, 2026 revenue decreased compared to prior year quarter",
       "corrections": {
         "decrease": "increase"
       },
       "rewrite_input_tokens": 306,
-      "rewrite_output_tokens": 48,
-      "answer": "Q2 2026 revenue did not go down. It rose 19% year over year to $116.0 million, up from $97.5 million in Q2 2025, and the material doesn't state what drove the increase.",
+      "rewrite_output_tokens": 68,
+      "answer": "Q2 2026 revenue did not go down. It rose 19% year over year to $116.0 million from $97.5 million in Q2 2025, and it was also up from $108.3 million in Q1 2026. The material does not give a cause for the increase.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.803,
+      "mentions_internals": true,
+      "latency_s": 1.905,
       "input_tokens": 1864,
-      "output_tokens": 210
+      "output_tokens": 247
     },
     {
       "id": "g026-typo",
@@ -4045,19 +4197,20 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Why did Kestrel's revene decline in Q2 2026?\nKestrel revenue decline second quarter 2026 reasons decrease in net sales three months ended June 30, 2026 compared to 2025",
+      "search_query": "Why did Kestrel's revene decline in Q2 2026?\nKestrel revenue decline second quarter 2026 reasons decrease in net sales three months ended June 30, 2026 compared to three months ended June 30, 2025",
       "corrections": {
         "revene": "revenue",
         "decrease": "increase"
       },
       "rewrite_input_tokens": 312,
-      "rewrite_output_tokens": 48,
-      "answer": "Kestrel's revenue did not decline in Q2 2026. It rose 19% year over year, from $97.5 million in Q2 2025 to $116.0 million, and the material does not give reasons for the increase.",
+      "rewrite_output_tokens": 56,
+      "answer": "Kestrel's revenue did not decline in Q2 2026. It rose 19% year over year, from $97.5 million in Q2 2025 to $116.0 million in Q2 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.672,
-      "input_tokens": 1885,
-      "output_tokens": 174
+      "mentions_internals": false,
+      "latency_s": 1.718,
+      "input_tokens": 1893,
+      "output_tokens": 191
     },
     {
       "id": "g026-typos3",
@@ -4068,24 +4221,24 @@
       "retrieval_hit": true,
       "passage_hit": true,
       "retrieved_sources": [
-        "annual_report_2025.md",
         "q1_2026_earnings.md",
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Why did Kestrel's reveenue dceline in Q2 2026?\nKestrel revenue decline second quarter 2026 net sales decrease reasons",
+      "search_query": "Why did Kestrel's reveenue dceline in Q2 2026?\nKestrel revenue decline second quarter 2026 reasons net sales decrease three months ended June 30, 2026 compared",
       "corrections": {
         "reveenue": "revenue",
         "decrease": "increase"
       },
       "rewrite_input_tokens": 315,
-      "rewrite_output_tokens": 29,
-      "answer": "Kestrel's revenue did not decline in Q2 2026. It rose 19% year over year, from $97.5 million in Q2 2025 to $116.0 million.",
+      "rewrite_output_tokens": 43,
+      "answer": "Kestrel's revenue did not decline in Q2 2026. It rose 19% year over year, from $97.5 million in Q2 2025 to $116.0 million in Q2 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.672,
-      "input_tokens": 1885,
-      "output_tokens": 177
+      "mentions_internals": false,
+      "latency_s": 1.72,
+      "input_tokens": 1906,
+      "output_tokens": 165
     },
     {
       "id": "g026-lower",
@@ -4107,12 +4260,13 @@
       },
       "rewrite_input_tokens": 308,
       "rewrite_output_tokens": 29,
-      "answer": "Kestrel's revenue did not decline in Q2 2026. It rose 19% year over year, from $97.5 million in Q2 2025 to $116.0 million in Q2 2026.",
+      "answer": "Kestrel's revenue did not decline in Q2 2026. It rose 19% year over year to $116.0 million from $97.5 million in Q2 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.714,
+      "mentions_internals": false,
+      "latency_s": 1.685,
       "input_tokens": 1871,
-      "output_tokens": 160
+      "output_tokens": 158
     },
     {
       "id": "g027",
@@ -4131,12 +4285,13 @@
       "corrections": {},
       "rewrite_input_tokens": 310,
       "rewrite_output_tokens": 36,
-      "answer": "Kestrel paid no dividends in 2025, since the material states it does not pay a dividend. The only capital return mentioned is a share buyback program of up to $25 million, authorized by the board in November 2025.",
+      "answer": "Kestrel did not pay a dividend in 2025; the Annual Report 2025 states that the company does not pay a dividend, and in November 2025 the board authorized a share buyback program of up to $25 million instead.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.453,
+      "mentions_internals": false,
+      "latency_s": 1.491,
       "input_tokens": 1916,
-      "output_tokens": 104
+      "output_tokens": 107
     },
     {
       "id": "g027-reworded",
@@ -4155,12 +4310,13 @@
       "corrections": {},
       "rewrite_input_tokens": 316,
       "rewrite_output_tokens": 36,
-      "answer": "Kestrel paid no dividends in 2025; the material states that the company does not pay a dividend, and its only 2025 capital return was the share buyback program of up to $25 million authorized in November 2025.",
+      "answer": "Kestrel paid no dividends in 2025, since the company does not pay a dividend; the board authorized a share buyback program of up to $25 million in November 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.405,
+      "mentions_internals": false,
+      "latency_s": 1.422,
       "input_tokens": 1928,
-      "output_tokens": 102
+      "output_tokens": 90
     },
     {
       "id": "g027-casual",
@@ -4175,16 +4331,17 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
-      "search_query": "2025 dividends paid?\n2025 dividends paid cash dividends declared shareholder distributions fiscal year 2025",
+      "search_query": "2025 dividends paid?\n2025 dividends paid cash dividends declared distributions to shareholders fiscal year 2025",
       "corrections": {},
       "rewrite_input_tokens": 300,
-      "rewrite_output_tokens": 32,
-      "answer": "Kestrel paid no dividends in 2025, since the Annual Report 2025 states that the company does not pay a dividend.",
+      "rewrite_output_tokens": 33,
+      "answer": "Kestrel paid no dividends in 2025, as the company does not pay a dividend. In November 2025 the board authorized a share buyback program of up to $25 million, which is separate from dividends.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.314,
+      "mentions_internals": false,
+      "latency_s": 1.787,
       "input_tokens": 1897,
-      "output_tokens": 74
+      "output_tokens": 208
     },
     {
       "id": "g027-typo",
@@ -4199,18 +4356,19 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
-      "search_query": "How much did Kestrel pay in divvidends in 2025?\nKestrel dividends paid fiscal year 2025 cash flow statement dividends declared per share",
+      "search_query": "How much did Kestrel pay in divvidends in 2025?\nKestrel dividends paid fiscal year 2025 cash dividends declared distributions to shareholders",
       "corrections": {
         "divvidends": "dividend"
       },
       "rewrite_input_tokens": 311,
-      "rewrite_output_tokens": 34,
-      "answer": "Kestrel paid no dividends in 2025; the material states that the company does not pay a dividend.",
+      "rewrite_output_tokens": 36,
+      "answer": "Kestrel does not pay a dividend, so it paid $0 in dividends in 2025. In November 2025 the board authorized a share buyback program of up to $25 million.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.303,
+      "mentions_internals": false,
+      "latency_s": 2.517,
       "input_tokens": 1918,
-      "output_tokens": 67
+      "output_tokens": 342
     },
     {
       "id": "g027-typos3",
@@ -4223,21 +4381,23 @@
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
-      "search_query": "How much did Kestrel pay in dividensd in 2025?\nKestrel dividends paid 2025 cash flow financing activities dividends declared per share fiscal year 2025",
+      "search_query": "How much did Kestrel pay in dividensd in 2025?\nKestrel dividends paid 2025 cash flow financing activities",
       "corrections": {
         "dividensd": "dividend",
         "financing": "financial"
       },
       "rewrite_input_tokens": 311,
-      "rewrite_output_tokens": 39,
-      "answer": "Kestrel did not pay a dividend in 2025, as the Annual Report 2025 states. In November 2025 the board instead authorized a share buyback program of up to $25 million.",
+      "rewrite_output_tokens": 24,
+      "answer": "Kestrel paid no dividend in 2025, since the company does not pay a dividend. In November 2025 its board authorized a share buyback program of up to $25 million.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.957,
-      "input_tokens": 1918,
-      "output_tokens": 244
+      "mentions_internals": false,
+      "latency_s": 1.689,
+      "input_tokens": 1839,
+      "output_tokens": 167
     },
     {
       "id": "g027-lower",
@@ -4252,16 +4412,19 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
-      "search_query": "how much did kestrel pay in dividends in 2025\nkestrel dividends paid 2025 fiscal year cash flow statement; dividends declared per share 2025",
-      "corrections": {},
+      "search_query": "how much did kestrel pay in dividends in 2025\nkestrel dividends paid 2025 fiscal year cash flow financing activities per share",
+      "corrections": {
+        "financing": "financial"
+      },
       "rewrite_input_tokens": 308,
-      "rewrite_output_tokens": 37,
-      "answer": "Kestrel paid no dividends in 2025, as it does not pay a dividend; the board instead authorized a share buyback program of up to $25 million in November 2025.",
+      "rewrite_output_tokens": 30,
+      "answer": "Kestrel did not pay a dividend in 2025, according to the Annual Report 2025.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.348,
+      "mentions_internals": false,
+      "latency_s": 1.322,
       "input_tokens": 1912,
-      "output_tokens": 92
+      "output_tokens": 62
     },
     {
       "id": "g028",
@@ -4276,18 +4439,17 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
-      "search_query": "What was Kestrel's gross margin in Q1 2025?\nKestrel gross margin gross profit first quarter 2025 Q1 2025 quarterly results",
-      "corrections": {
-        "quarterly": "quarter"
-      },
+      "search_query": "What was Kestrel's gross margin in Q1 2025?\nKestrel gross margin gross profit first quarter 1Q 2025 three months ended March 31, 2025",
+      "corrections": {},
       "rewrite_input_tokens": 311,
-      "rewrite_output_tokens": 35,
+      "rewrite_output_tokens": 38,
       "answer": "Kestrel's gross margin in Q1 2025 was 69.8%, according to the Q1 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.266,
-      "input_tokens": 1868,
-      "output_tokens": 77
+      "mentions_internals": false,
+      "latency_s": 1.391,
+      "input_tokens": 1880,
+      "output_tokens": 80
     },
     {
       "id": "g028-reworded",
@@ -4303,16 +4465,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's gross margin in the first quarter of 2025?\nKestrel gross margin first quarter 2025 gross profit as a percentage of revenue",
+      "search_query": "What was Kestrel's gross margin in the first quarter of 2025?\nKestrel gross margin first quarter 2025 gross profit as percentage of revenue",
       "corrections": {},
       "rewrite_input_tokens": 314,
-      "rewrite_output_tokens": 32,
+      "rewrite_output_tokens": 31,
       "answer": "Kestrel's gross margin in the first quarter of 2025 was 69.8%, according to the Q1 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.603,
+      "mentions_internals": false,
+      "latency_s": 1.547,
       "input_tokens": 1893,
-      "output_tokens": 185
+      "output_tokens": 159
     },
     {
       "id": "g028-casual",
@@ -4334,9 +4497,10 @@
       "answer": "Kestrel's gross margin for Q1 2025 was 69.8%, according to the Q1 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.401,
+      "mentions_internals": false,
+      "latency_s": 1.439,
       "input_tokens": 1869,
-      "output_tokens": 120
+      "output_tokens": 107
     },
     {
       "id": "g028-typo",
@@ -4352,18 +4516,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's gross margim in Q1 2025?\nKestrel gross margin first quarter 2025 gross profit as percentage of revenue",
+      "search_query": "What was Kestrel's gross margim in Q1 2025?\nKestrel gross margin first quarter 2025 gross profit as a percentage of revenue",
       "corrections": {
         "margim": "margin"
       },
       "rewrite_input_tokens": 311,
-      "rewrite_output_tokens": 31,
+      "rewrite_output_tokens": 32,
       "answer": "Kestrel's gross margin in Q1 2025 was 69.8%, according to the Q1 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.623,
+      "mentions_internals": false,
+      "latency_s": 1.577,
       "input_tokens": 1874,
-      "output_tokens": 145
+      "output_tokens": 132
     },
     {
       "id": "g028-typos3",
@@ -4386,12 +4551,13 @@
       },
       "rewrite_input_tokens": 313,
       "rewrite_output_tokens": 44,
-      "answer": "Kestrel's gross margin in Q1 2025 was 69.8%, according to the Q1 2026 earnings release.",
+      "answer": "Kestrel's gross margin in Q1 2025 was 69.8%, compared with 71.4% in Q1 2026.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.619,
+      "mentions_internals": false,
+      "latency_s": 1.602,
       "input_tokens": 1878,
-      "output_tokens": 174
+      "output_tokens": 180
     },
     {
       "id": "g028-lower",
@@ -4404,19 +4570,21 @@
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md",
-        "risk_factors_2026.md"
+        "q2_2026_earnings.md"
       ],
-      "search_query": "what was kestrels gross margin in q1 2025\nKestrel gross margin first quarter 2025 gross profit as a percentage of revenue",
-      "corrections": {},
+      "search_query": "what was kestrels gross margin in q1 2025\nKestrel gross margin gross profit three months ended March 31, 2025 quarterly results",
+      "corrections": {
+        "quarterly": "quarter"
+      },
       "rewrite_input_tokens": 307,
       "rewrite_output_tokens": 32,
-      "answer": "Kestrel's gross margin in Q1 2025 was 69.8%, according to the Q1 2026 Earnings Release.",
+      "answer": "Kestrel's gross margin in Q1 2025 was 69.8%, according to the Q1 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.272,
-      "input_tokens": 1866,
-      "output_tokens": 76
+      "mentions_internals": false,
+      "latency_s": 1.295,
+      "input_tokens": 1854,
+      "output_tokens": 74
     },
     {
       "id": "g029",
@@ -4432,18 +4600,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's revenue in Q2 2025?\nKestrel revenue second quarter 2025 net sales quarterly results",
-      "corrections": {
-        "quarterly": "quarter"
-      },
+      "search_query": "What was Kestrel's revenue in Q2 2025?\nKestrel revenue second quarter 2025 net sales three months ended June 30, 2025",
+      "corrections": {},
       "rewrite_input_tokens": 310,
-      "rewrite_output_tokens": 26,
-      "answer": "Kestrel's Q2 2025 revenue was $97.5 million, per the Q2 2026 earnings release, which describes Q2 2026 revenue of $116.0 million as up 19% from that figure.",
+      "rewrite_output_tokens": 32,
+      "answer": "Kestrel's Q2 2025 revenue was $97.5 million, according to the Q2 2026 earnings release, which reports Q2 2026 revenue of $116.0 million as up 19% from that figure.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.418,
-      "input_tokens": 1902,
-      "output_tokens": 96
+      "mentions_internals": false,
+      "latency_s": 1.4,
+      "input_tokens": 1915,
+      "output_tokens": 103
     },
     {
       "id": "g029-reworded",
@@ -4463,12 +4630,13 @@
       "corrections": {},
       "rewrite_input_tokens": 312,
       "rewrite_output_tokens": 32,
-      "answer": "Kestrel's revenue in the second quarter of 2025 was $97.5 million.",
+      "answer": "Kestrel's revenue in the second quarter of 2025 was $97.5 million, according to the Q2 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.289,
+      "mentions_internals": false,
+      "latency_s": 1.649,
       "input_tokens": 1940,
-      "output_tokens": 62
+      "output_tokens": 132
     },
     {
       "id": "g029-casual",
@@ -4484,16 +4652,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "Q2 2025 revenue?\nQ2 2025 revenue, second quarter 2025 net sales total revenues",
+      "search_query": "Q2 2025 revenue?\nQ2 2025 revenue quarter ended June 30, 2025 total revenues net sales second quarter fiscal 2025",
       "corrections": {},
       "rewrite_input_tokens": 302,
-      "rewrite_output_tokens": 28,
-      "answer": "Kestrel's Q2 2025 revenue was $97.5 million, according to the Q2 2026 earnings release.",
+      "rewrite_output_tokens": 43,
+      "answer": "Kestrel's Q2 2025 revenue was $97.5 million, per the Q2 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.354,
-      "input_tokens": 1859,
-      "output_tokens": 69
+      "mentions_internals": false,
+      "latency_s": 1.338,
+      "input_tokens": 1867,
+      "output_tokens": 83
     },
     {
       "id": "g029-typo",
@@ -4509,18 +4678,20 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's rwvenue in Q2 2025?\nKestrel revenue second quarter 2025 three months ended June 30, 2025 net sales total revenues",
+      "search_query": "What was Kestrel's rwvenue in Q2 2025?\nKestrel revenue second quarter 2025 quarterly results net sales total revenues",
       "corrections": {
-        "rwvenue": "revenue"
+        "rwvenue": "revenue",
+        "quarterly": "quarter"
       },
       "rewrite_input_tokens": 312,
-      "rewrite_output_tokens": 37,
+      "rewrite_output_tokens": 30,
       "answer": "Kestrel's revenue in Q2 2025 was $97.5 million, according to the Q2 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.523,
-      "input_tokens": 1887,
-      "output_tokens": 136
+      "mentions_internals": false,
+      "latency_s": 1.519,
+      "input_tokens": 1906,
+      "output_tokens": 123
     },
     {
       "id": "g029-typos3",
@@ -4546,9 +4717,10 @@
       "answer": "Kestrel's revenue in Q2 2025 was $97.5 million, according to the Q2 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.581,
+      "mentions_internals": false,
+      "latency_s": 1.606,
       "input_tokens": 1902,
-      "output_tokens": 139
+      "output_tokens": 145
     },
     {
       "id": "g029-lower",
@@ -4564,16 +4736,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "what was kestrels revenue in q2 2025\nKestrel revenue second quarter 2025 net sales total revenues quarter ended June 30, 2025",
+      "search_query": "what was kestrels revenue in q2 2025\nKestrel revenue second quarter 2025 net sales total revenues three months ended June 30, 2025",
       "corrections": {},
       "rewrite_input_tokens": 306,
-      "rewrite_output_tokens": 37,
+      "rewrite_output_tokens": 36,
       "answer": "Kestrel's Q2 2025 revenue was $97.5 million, according to the Q2 2026 earnings release.",
       "passed": true,
       "reason": "all expected values present",
-      "latency_s": 1.403,
+      "mentions_internals": false,
+      "latency_s": 1.324,
       "input_tokens": 1875,
-      "output_tokens": 78
+      "output_tokens": 77
     },
     {
       "id": "g030",
@@ -4589,16 +4762,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's revenue in Q3 2026?\nKestrel revenue third quarter 2026 net sales total revenues",
-      "corrections": {},
+      "search_query": "What was Kestrel's revenue in Q3 2026?\nKestrel revenue third quarter 2026 net sales quarterly results",
+      "corrections": {
+        "quarterly": "quarter"
+      },
       "rewrite_input_tokens": 310,
-      "rewrite_output_tokens": 25,
+      "rewrite_output_tokens": 26,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 1.806,
+      "mentions_internals": false,
+      "latency_s": 1.516,
       "input_tokens": 1896,
-      "output_tokens": 192
+      "output_tokens": 124
     },
     {
       "id": "g030-reworded",
@@ -4614,16 +4790,17 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What were Kestrel's sales for the third quarter of 2026?\nKestrel net sales revenue third quarter 2026 three months ended September 30, 2026",
+      "search_query": "What were Kestrel's sales for the third quarter of 2026?\nKestrel net sales revenue third quarter 2026 three months ended",
       "corrections": {},
       "rewrite_input_tokens": 312,
-      "rewrite_output_tokens": 32,
+      "rewrite_output_tokens": 25,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 2.129,
-      "input_tokens": 1910,
-      "output_tokens": 298
+      "mentions_internals": false,
+      "latency_s": 2.2,
+      "input_tokens": 1882,
+      "output_tokens": 277
     },
     {
       "id": "g030-casual",
@@ -4646,9 +4823,10 @@
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 3.318,
+      "mentions_internals": false,
+      "latency_s": 2.715,
       "input_tokens": 1888,
-      "output_tokens": 490
+      "output_tokens": 400
     },
     {
       "id": "g030-typo",
@@ -4664,18 +4842,20 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's revenye in Q3 2026?\nKestrel revenue third quarter 2026 net sales",
+      "search_query": "What was Kestrel's revenye in Q3 2026?\nKestrel revenue third quarter 2026 net sales quarterly results",
       "corrections": {
-        "revenye": "revenue"
+        "revenye": "revenue",
+        "quarterly": "quarter"
       },
       "rewrite_input_tokens": 310,
-      "rewrite_output_tokens": 21,
+      "rewrite_output_tokens": 26,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 2.112,
+      "mentions_internals": false,
+      "latency_s": 2.114,
       "input_tokens": 1896,
-      "output_tokens": 256
+      "output_tokens": 273
     },
     {
       "id": "g030-typos3",
@@ -4691,16 +4871,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's revenu in Q3 2026?\nKestrel revenue third quarter 2026 net sales",
-      "corrections": {},
+      "search_query": "What was Kestrel's revenu in Q3 2026?\nKestrel revenue third quarter 2026 net sales quarterly results",
+      "corrections": {
+        "quarterly": "quarter"
+      },
       "rewrite_input_tokens": 310,
-      "rewrite_output_tokens": 21,
+      "rewrite_output_tokens": 26,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 1.896,
+      "mentions_internals": false,
+      "latency_s": 1.992,
       "input_tokens": 1896,
-      "output_tokens": 224
+      "output_tokens": 218
     },
     {
       "id": "g030-lower",
@@ -4716,18 +4899,19 @@
         "q2_2026_earnings.md",
         "risk_factors_2026.md"
       ],
-      "search_query": "what was kestrels revenue in q3 2026\nKestrel revenue third quarter 2026 net sales quarterly results",
+      "search_query": "what was kestrels revenue in q3 2026\nKestrel revenue third quarter 2026 net sales total revenues quarterly results",
       "corrections": {
         "quarterly": "quarter"
       },
       "rewrite_input_tokens": 306,
-      "rewrite_output_tokens": 26,
+      "rewrite_output_tokens": 30,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 2.14,
+      "mentions_internals": false,
+      "latency_s": 2.329,
       "input_tokens": 1888,
-      "output_tokens": 287
+      "output_tokens": 266
     },
     {
       "id": "g031",
@@ -4742,16 +4926,17 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
-      "search_query": "What was Kestrel's net income in fiscal year 2024?\nKestrel net income fiscal year 2024 annual report",
+      "search_query": "What was Kestrel's net income in fiscal year 2024?\nKestrel net income fiscal year 2024 annual report consolidated statements of operations",
       "corrections": {},
       "rewrite_input_tokens": 311,
-      "rewrite_output_tokens": 21,
+      "rewrite_output_tokens": 30,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 1.466,
+      "mentions_internals": false,
+      "latency_s": 1.639,
       "input_tokens": 1912,
-      "output_tokens": 125
+      "output_tokens": 180
     },
     {
       "id": "g031-reworded",
@@ -4766,16 +4951,17 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
-      "search_query": "How much net income did Kestrel earn in fiscal year 2024?\nKestrel net income fiscal year 2024 net earnings annual report",
+      "search_query": "How much net income did Kestrel earn in fiscal year 2024?\nKestrel net income fiscal year 2024 net earnings profit annual results",
       "corrections": {},
       "rewrite_input_tokens": 313,
-      "rewrite_output_tokens": 25,
+      "rewrite_output_tokens": 27,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 2.027,
-      "input_tokens": 1889,
-      "output_tokens": 189
+      "mentions_internals": false,
+      "latency_s": 1.604,
+      "input_tokens": 1856,
+      "output_tokens": 131
     },
     {
       "id": "g031-casual",
@@ -4797,9 +4983,10 @@
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 2.385,
+      "mentions_internals": false,
+      "latency_s": 2.01,
       "input_tokens": 1836,
-      "output_tokens": 341
+      "output_tokens": 256
     },
     {
       "id": "g031-typo",
@@ -4814,18 +5001,19 @@
         "q1_2026_earnings.md",
         "q2_2026_earnings.md"
       ],
-      "search_query": "What was Kestrel's net incomw in fiscal year 2024?\nKestrel net income fiscal year 2024 net earnings",
+      "search_query": "What was Kestrel's net incomw in fiscal year 2024?\nKestrel net income fiscal year 2024 annual report",
       "corrections": {
         "incomw": "income"
       },
       "rewrite_input_tokens": 313,
-      "rewrite_output_tokens": 22,
+      "rewrite_output_tokens": 21,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 1.71,
-      "input_tokens": 1856,
-      "output_tokens": 158
+      "mentions_internals": false,
+      "latency_s": 1.707,
+      "input_tokens": 1916,
+      "output_tokens": 166
     },
     {
       "id": "g031-typos3",
@@ -4838,22 +5026,24 @@
       "retrieved_sources": [
         "annual_report_2025.md",
         "q1_2026_earnings.md",
-        "q2_2026_earnings.md"
+        "q2_2026_earnings.md",
+        "risk_factors_2026.md"
       ],
-      "search_query": "What was Kestrel's net imcome in fisca yesr 2024?\nKestrel net income fiscal year 2024 net earnings",
+      "search_query": "What was Kestrel's net imcome in fisca yesr 2024?\nKestrel net income fiscal year 2024 net income",
       "corrections": {
         "imcome": "income",
         "fisca": "fiscal",
         "yesr": "year"
       },
       "rewrite_input_tokens": 314,
-      "rewrite_output_tokens": 22,
+      "rewrite_output_tokens": 20,
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 1.979,
-      "input_tokens": 1858,
-      "output_tokens": 236
+      "mentions_internals": false,
+      "latency_s": 1.643,
+      "input_tokens": 1875,
+      "output_tokens": 162
     },
     {
       "id": "g031-lower",
@@ -4875,9 +5065,10 @@
       "answer": "I don't know based on the provided documents.",
       "passed": true,
       "reason": "correctly refused",
-      "latency_s": 1.853,
+      "mentions_internals": false,
+      "latency_s": 1.58,
       "input_tokens": 1906,
-      "output_tokens": 212
+      "output_tokens": 149
     }
   ]
 }
