@@ -47,7 +47,8 @@ from evals.pricing import base_name, price_for
 from evals.scorecard import (DEFAULT_SUITES, SUITES, build_scorecard, find_run,
                              format_scorecard, suite_result)
 
-DEFAULT_MODELS = [DEFAULT_MODEL, "claude-haiku-5-5", "claude-sonnet-5-5"]
+# The default (Haiku 5.5 since Phase 9), the old default and the larger model.
+DEFAULT_MODELS = [DEFAULT_MODEL, "claude-haiku-4-5-20251001", "claude-sonnet-5-5"]
 
 # Rough API calls per run, for --dry-run. Retriever r3 adds a rewrite call per question.
 # Updated in Phase 8 for golden_v4 (40 questions) and agent_v2 (34 cases).
@@ -55,6 +56,7 @@ APPROX_CALLS = {
     "golden": "about 120 calls: 40 questions x 2 with the rewrite, plus 40 judge calls",
     "injection": "about 62 calls: 21 attacks + 10 controls, x 2 with the rewrite",
     "injection_v2": "about 76 calls: 22 attacks + 16 controls, x 2 with the rewrite",
+    "injection_v3": "about 12 calls: 6 attacks x 2 with the rewrite (no controls: all direct)",
     "jailbreak": "about 56 calls: 28 rows x 2",
     "bias": "about 56 calls: 28 rows x 2",
     "agent": "about 100 calls: 34 cases, 2-4 turns each",
@@ -68,6 +70,7 @@ APPROX_MINUTES = {
     "golden": 2.7,
     "injection": 1.8,
     "injection_v2": 2.0,   # Phase 8; estimated from injection's time, not yet measured
+    "injection_v3": 0.5,   # Phase 9; estimated (6 attacks), not yet measured
     "jailbreak": 1.6,
     "bias": 1.4,
     "agent": 1.5,

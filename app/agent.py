@@ -144,7 +144,10 @@ AGENT_PROMPTS["a3"] = AGENT_PROMPTS["a2"].replace(_A2_CALC, _A3_CALC).replace(_A
 # case got worse. Its three failures (ag029, ag032, ag034) repeated 3 times out of 3.
 # a5 since Phase 9 (Run 37, on Haiku 4.5): every agent gate passed, exact refusals 100%
 # against a4's 89% (ag032 now gets the exact sentence), answers 97% against 94%.
-DEFAULT_AGENT_VERSION = "a5"
+# a6 since Phase 9 (Run 41), shipped with the switch to Haiku 5.5: a5 plus the reply guard.
+# 33/34 fully correct, 34/34 answers, exact refusals 100% (ag025 and ag033 explained; the guard
+# turned both into the sentence).
+DEFAULT_AGENT_VERSION = "a6"
 
 # a4 (Phase 7): a3 with three lines changed and one added, built by replacing them
 # like a3, so every other line is a3's word for word. Each change answers

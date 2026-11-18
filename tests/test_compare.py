@@ -11,7 +11,7 @@ from app import rag
 from app.rag import REFUSAL
 from evals import compare as c
 from evals import monitors as m
-from tests.test_monitors import rag_trace
+from tests.test_monitors import UNGUARDED_PROMPT, rag_trace
 
 ANSWER = "Kestrel's head office is in Omaha, Nebraska."
 
@@ -56,7 +56,7 @@ def test_a_refusal_with_more_text_still_declined(monkeypatch):
 def test_setup_reads_the_versions_and_spots_a_mixed_file(monkeypatch):
     t = rag_trace(monkeypatch, ANSWER)
     setup = c.setup_of([t])
-    assert setup["app"] == "rag" and f"prompt_version={rag.DEFAULT_PROMPT_VERSION}" in setup["label"]
+    assert setup["app"] == "rag" and f"prompt_version={UNGUARDED_PROMPT}" in setup["label"]
     assert c.setup_of([t, release(t)])["app"] == "mixed"
 
 

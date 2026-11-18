@@ -149,7 +149,7 @@ def test_suite_result_records_gates_cost_and_latency():
     assert r["metrics"]["pass_rate"] == 0.8
     assert "passage_hit_rate" in r["metrics"]   # shown, because the rewrite uses the model
     gates = {g["metric"]: g["passed"] for g in r["gates"]}
-    assert gates == {"pass_rate": False, "judge_faithfulness_rate": True}
+    assert gates == {"pass_rate": False, "judge_faithfulness_rate": True, "refusal_exact_rate": True}
     # 2 cases x (1000 in, 100 out) on Haiku 4.5: 2000 x $1 + 200 x $5 per million.
     assert r["cost_usd"] == pytest.approx(0.003)
     assert r["usage"]["avg_latency_s"] == 1.0
@@ -181,7 +181,7 @@ def test_cheapest_model_that_passes_everything_is_recommended():
     assert card["recommendation"]["model"] == "claude-haiku-4-5"
     by_model = {m["model"]: m for m in card["models"]}
     assert by_model["claude-haiku-5-5"]["failed_gates"] == ["jailbreak: attack_success_rate"]
-    assert by_model["claude-haiku-4-5"]["gates_passed"] == 5   # golden 2, jailbreak 3 (exact refusals since Phase 9)
+    assert by_model["claude-haiku-4-5"]["gates_passed"] == 6   # golden 3, jailbreak 3 (exact refusals since Phase 9)
     assert "claude-sonnet-5-5" in card["recommendation"]["reason"]   # also passing
 
 
@@ -221,9 +221,9 @@ def test_format_scorecard_shows_failures_and_missing_suites():
 # ---- compare_models.py -------------------------------------------------------
 
 def test_default_model_runs_last_so_latest_files_describe_it():
-    order = compare_models.run_order(["claude-haiku-4-5-20251001", "claude-haiku-5-5", "claude-sonnet-5-5"])
-    assert order[-1] == "claude-haiku-4-5-20251001"
-    assert order[:2] == ["claude-haiku-5-5", "claude-sonnet-5-5"]
+    order = compare_models.run_order(["claude-haiku-5-5", "claude-haiku-4-5-20251001", "claude-sonnet-5-5"])
+    assert order[-1] == "claude-haiku-5-5"   # the default since Phase 9
+    assert order[:2] == ["claude-haiku-4-5-20251001", "claude-sonnet-5-5"]
 
 
 def test_robustness_is_opt_in():

@@ -167,11 +167,11 @@ def test_every_version_is_sent_as_written(monkeypatch, version):
     assert REFUSAL in AGENT_PROMPTS[version]
 
 
-def test_default_is_a5_since_phase_9():
+def test_default_is_a6_since_the_switch():
     # Like the RAG prompts: a new version becomes the default only after a run
     # shows it's better. Change this test in the same commit as the default.
-    # a4 since Phase 7 (Run 26); a5 since Phase 9 (Run 37).
-    assert DEFAULT_AGENT_VERSION == "a5"
+    # a4 since Phase 7 (Run 26); a5 since Phase 9 (Run 37); a6 with Haiku 5.5 (Run 41).
+    assert DEFAULT_AGENT_VERSION == "a6"
 
 
 # ---- Prompt a2 (after Run 14) ------------------------------------------------------

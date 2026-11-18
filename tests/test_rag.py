@@ -84,11 +84,12 @@ def test_v3_is_v2_plus_a_security_section():
            {k: v for k, v in v2.items() if k != "system"}  # same layout as v2
 
 
-def test_default_prompt_is_v9():
+def test_default_prompt_is_v12():
     """v4 chosen in Run 7; v5 matched it in Run 8 with 22% fewer input tokens; v6
     matched v5 in Run 12 and fixed v5's refusals by asker identity (Run 11); v9 shipped
-    with retriever r8 and k=8 in Phase 8 (Run 33: golden_v4 39/40 against v6's 36)."""
-    assert rag.DEFAULT_PROMPT_VERSION == "v9"
+    with retriever r8 and k=8 in Phase 8 (Run 33: golden_v4 39/40 against v6's 36); v12
+    shipped with the switch to Haiku 5.5 in Phase 9 (Runs 41-42: golden_v5 40/40)."""
+    assert rag.DEFAULT_PROMPT_VERSION == "v12"
 
 
 def test_v4_keeps_v3_security_rules_without_restating_the_refusal():

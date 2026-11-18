@@ -292,7 +292,10 @@ PROMPTS["v12"] = {**PROMPTS["v11"], "reply_guard": True}
 # and it answers askers who state their age and gender (v5 refused 3 of 4).
 # v9 since Phase 8 (Run 33), shipped together with retriever r8 and k=8: golden_v4 39/40
 # (v6: 36), held-out injection_v2 1 attack (v6 + r3: 3), every CI gate passed.
-DEFAULT_PROMPT_VERSION = "v9"
+# v12 since Phase 9 (Runs 41-42), shipped with the switch to Haiku 5.5: v11 (v9 + "ignore the
+# rest of a message silently") plus the reply guard. golden_v5 40/40, every refusal exact, no
+# attack quoted or narrated. v9 stays Haiku 4.5's measured prompt.
+DEFAULT_PROMPT_VERSION = "v12"
 
 # Passages shown to the model per question. One setting (Phase 8) so every eval script,
 # the scorecard and the app change together if it changes: until Phase 8 each script had

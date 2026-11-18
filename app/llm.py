@@ -18,7 +18,9 @@ from app import tracing
 
 # A small, inexpensive model is plenty for Phase 1. Override it with the
 # LLM_MODEL environment variable or the --model flag on run_evals.py.
-DEFAULT_MODEL = "claude-haiku-4-5-20251001"
+# Haiku 4.5 until Phase 9; Haiku 5.5 since Runs 41-42 (with prompt v12 and agent a6): every CI
+# gate passed at about a seventh of Haiku 4.5's cost per question, with every refusal exact.
+DEFAULT_MODEL = "claude-haiku-5-5"
 
 
 @dataclass

@@ -27,7 +27,8 @@ def golden_run(ts, pass_rate=1.0, n=4, model=DEFAULT_MODEL, prompt=DEFAULT_PROMP
     return {"timestamp": ts, "model": model, "golden_file": "golden_v5.jsonl", **RAG,
             "prompt_version": prompt, "judge_model": DEFAULT_JUDGE_MODEL,
             "judge_prompt_version": DEFAULT_JUDGE_PROMPT,
-            "summary": {"pass_rate": pass_rate, "judge_faithfulness_rate": 1.0, "judge_correct_rate": 1.0},
+            "summary": {"pass_rate": pass_rate, "judge_faithfulness_rate": 1.0, "judge_correct_rate": 1.0,
+                        "refusal_exact_rate": 1.0},
             "cases": cases if cases is not None else [case(i, passed=True) for i in range(n)]}
 
 
@@ -38,13 +39,18 @@ def latest_runs(ts="2026-10-30T03:00:00+00:00"):
         "injection_latest.json": {
             "timestamp": ts, "model": DEFAULT_MODEL, "attacks_file": "injection_v1.jsonl", **RAG,
             "summary": {"attack_success_rate": 1 / 21, "task_preserved_rate": 1.0,
-                        "succeeded_ids": ["inj007"], "mentions_internals_ids": []},
+                        "succeeded_ids": ["inj007"], "mentions_internals_ids": [], "narrated_ids": []},
             "cases": [case(i) for i in range(21)]},
         "injection_v2_latest.json": {
             "timestamp": ts, "model": DEFAULT_MODEL, "attacks_file": "injection_v2.jsonl", **RAG,
             "summary": {"attack_success_rate": 1 / 22, "task_preserved_rate": 0.88,
-                        "succeeded_ids": ["inj125"], "mentions_internals_ids": []},
+                        "succeeded_ids": ["inj125"], "mentions_internals_ids": [], "narrated_ids": []},
             "cases": [case(i) for i in range(22)]},
+        "injection_v3_latest.json": {
+            "timestamp": ts, "model": DEFAULT_MODEL, "attacks_file": "injection_v3.jsonl", **RAG,
+            "summary": {"attack_success_rate": 0.0, "succeeded_ids": [], "mentions_internals_ids": [],
+                        "narrated_ids": []},
+            "cases": [case(i) for i in range(6)]},
         "jailbreak_latest.json": {
             "timestamp": ts, "model": DEFAULT_MODEL, "cases_file": "jailbreak_v1.jsonl", **RAG,
             "summary": {"attack_success_rate": 0.0, "over_refusal_rate": 0.0, "exact_refusal_rate": 1.0,
@@ -84,7 +90,7 @@ def test_every_ci_gate_is_checked(tmp_path):
     gates = gate_status(tmp_path)
     assert [g["suite"] for g in gates] == list(SUITES)
     totals = gate_totals(gates)
-    assert totals == {"passed": 12, "failed": 0, "not_run": 0,
+    assert totals == {"passed": 17, "failed": 0, "not_run": 0,
                       "total": sum(len(s.gates) for s in SUITES.values())}
     assert all(g["default_setup"] for g in gates)
 
@@ -96,7 +102,7 @@ def test_a_failing_gate_is_counted_and_shown(tmp_path):
     data = build_dashboard(tmp_path)
     assert data["gate_totals"]["failed"] == 1
     page = render_html(data, generated_at="test")
-    assert "1 of 12 gates failing" in page
+    assert "1 of 17 gates failing" in page
     assert "✕</span> Fail" in page
 
 
@@ -105,8 +111,8 @@ def test_a_missing_results_file_is_not_run_not_passed(tmp_path):
     del files["robustness_latest.json"]
     write(tmp_path, files)
     totals = gate_totals(gate_status(tmp_path))
-    assert totals["not_run"] == 1 and totals["passed"] == 11
-    assert "11 of 12 gates passing, 1 not run" in render_html(build_dashboard(tmp_path), "test")
+    assert totals["not_run"] == 1 and totals["passed"] == 16
+    assert "16 of 17 gates passing, 1 not run" in render_html(build_dashboard(tmp_path), "test")
 
 
 def test_latest_file_from_a_non_default_setup_is_called_out(tmp_path):
@@ -133,7 +139,8 @@ def test_history_keeps_full_default_model_runs_in_time_order(tmp_path):
         "run_20261005_000000.json": golden_run("2026-10-05T00:00:00+00:00", 0.90, prompt="v1"),
         "run_20261022_000000.json": golden_run("2026-10-22T00:00:00+00:00", 1.0),
         # Another model: belongs to the comparison, not the history.
-        "run_20261030_000000.json": golden_run("2026-10-30T00:00:00+00:00", 0.5, model="claude-haiku-5-5"),
+        "run_20261030_000000.json": golden_run("2026-10-30T00:00:00+00:00", 0.5,
+                                               model="claude-haiku-4-5-20251001"),
         # A 2-question re-run: not the suite's score.
         "run_20261023_000000.json": golden_run("2026-10-23T00:00:00+00:00", 0.0, n=2),
         # Another dataset.
@@ -209,14 +216,14 @@ def comparison_card():
                 "failed_gates": []}
     results = {n: {"golden": {"metrics": {"pass_rate": 1.0}, "gates": [
         {"metric": "pass_rate", "op": ">=", "limit": 0.85, "value": 1.0, "passed": True}]}}
-        for n in ("claude-haiku-5-5", DEFAULT_MODEL)}
+        for n in ("claude-haiku-4-5-20251001", DEFAULT_MODEL)}
     return {"suites": ["golden"], "suite_labels": {"golden": "Golden set"},
             "metric_labels": {"golden": {"pass_rate": {"label": "Rule pass rate", "higher_is_better": True,
                                                        "kind": "rate"}}},
             "prices_checked": "2026-10-29", "timestamp": "2026-10-30T03:46:19+00:00",
-            "models": [model("claude-haiku-5-5", 0.15), model(DEFAULT_MODEL, 1.03)],
+            "models": [model("claude-haiku-4-5-20251001", 0.15), model(DEFAULT_MODEL, 1.03)],
             "results": results,
-            "recommendation": {"model": "claude-haiku-5-5", "reason": "Cheapest that passes."}}
+            "recommendation": {"model": "claude-haiku-4-5-20251001", "reason": "Cheapest that passes."}}
 
 
 def test_page_shows_the_comparison_and_says_when_the_pick_isnt_the_default(tmp_path):
@@ -224,8 +231,9 @@ def test_page_shows_the_comparison_and_says_when_the_pick_isnt_the_default(tmp_p
     files["model_comparison_latest.json"] = comparison_card()
     write(tmp_path, files)
     page = render_html(build_dashboard(tmp_path), "test")
-    assert "Scorecard pick: Haiku 5.5." in page
-    assert "isn't the default model (Haiku 4.5)" in page
+    # Since the switch, Haiku 5.5 is the default, so the made-up pick here is the old default.
+    assert "Scorecard pick: Haiku 4.5." in page
+    assert "isn't the default model (Haiku 5.5)" in page
     assert "$0.15" in page and "$1.03" in page
     assert "doesn't accept temperature=0" in page
 
@@ -261,7 +269,7 @@ def test_cli_writes_the_page(tmp_path, capsys):
     assert dashboard.main(["--results-dir", str(tmp_path), "--out", str(out)]) == 0
     assert out.read_text(encoding="utf-8").startswith("<!DOCTYPE html>")
     printed = capsys.readouterr().out
-    assert "Gates: 12 passed, 0 failed, 0 not run (of 12)" in printed
+    assert "Gates: 17 passed, 0 failed, 0 not run (of 17)" in printed
 
 
 def test_cli_default_output_is_in_the_results_folder(tmp_path):

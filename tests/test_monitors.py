@@ -25,6 +25,11 @@ from tests.test_traces import eval_questions, normalize
 
 # ---- Making traces ----------------------------------------------------------------
 
+# v11 is v12 without the reply guard (Phase 9). The monitors are tested on what a model writes,
+# so the guard, part of the default since the switch to Haiku 5.5, mustn't clean it up first.
+UNGUARDED_PROMPT = "v11"
+
+
 def rag_trace(monkeypatch, answer, question="What was Kestrel's revenue in Q1 2026?",
               rewrite="revenue first quarter 2026", case_id="t001", capture=True, k=4):
     def fake(system, user, model=None, **kwargs):
@@ -36,7 +41,8 @@ def rag_trace(monkeypatch, answer, question="What was Kestrel's revenue in Q1 20
 
     monkeypatch.setattr(rag, "generate", fake)
     exporter = tracing.MemoryExporter()
-    handle(question, rag.RagAssistant(k=k), exporter=exporter, capture_content=capture,
+    handle(question, rag.RagAssistant(k=k, prompt_version=UNGUARDED_PROMPT), exporter=exporter,
+           capture_content=capture,
            extra={"traffic.case_id": case_id})
     return exporter.traces[0]
 
