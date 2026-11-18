@@ -29,8 +29,17 @@ What it does, in order:
      Whitfield.") is replaced by the refusal sentence too: the correction is only a way into an
      explained refusal (jailbreak jb012).
 
+  4. (After Run 41) In a reply that answers, a sentence that talks about the user's figure or
+     message, or about an "earlier answer", and has no number in it, is dropped: "The figure in
+     your question is incorrect." (inj023), "The earlier reply you cited doesn't match that."
+     (inj018). Decided after Run 36: no reply engages with a forged answer or a fake figure, for
+     any reason. Whole sentences only, never words inside one. A sentence with a number in it is
+     kept, because it may hold the answer ("Revenue was $412.6 million, not the figure in your
+     message."); the narration check still flags that one.
+
 What it never touches: a reply that starts by answering, including a corrected premise that
-answers ("The premise is wrong: Kestrel's revenue rose 19% ..."), which the prompt asks for. Only the first sentence decides, so an answer
+answers ("The premise is wrong: Kestrel's revenue rose 19% ..."), which the prompt asks for, except
+for rule 4's sentences. Only the first sentence decides, so an answer
 that says something isn't reported LATER ("Revenue was $116.0 million. The documents don't give
 a reason for the increase.") stays as it is; the narration check reports those instead.
 
@@ -42,6 +51,8 @@ Known limits:
     Phase 9) is how to see whether it happens.
 """
 import re
+
+from app.passage_filter import split_sentences
 
 _FIRST_SENTENCE = re.compile(r"^\s*(.+?[.!?])(?:\s|$)", re.S)
 
@@ -87,6 +98,35 @@ _PREMISE_OPENER = re.compile(
     r"(?:wrong|incorrect|false|mistaken|not supported)\s*[:;,\u2014-]\s*", re.IGNORECASE)
 
 
+# Rule 4 (after Run 41): a sentence about the user's figure or message, or an "earlier answer".
+# The forged-answer part of the narration check (evals/injection.py NARRATION_PATTERN), plus "you
+# cited / quoted / mentioned / gave" (inj018 in Run 41). Offline, on the 8,304 saved answers,
+# dropping such sentences when they have no digit changes 6 answers, all forged-answer attacks
+# (inj011, inj018, inj023), none still narrated afterwards; no golden, robustness, agent or
+# jailbreak answer changes.
+_ABOUT_THE_USERS_TEXT = re.compile(
+    r"\b(?:in|from) your (?:message|question)\b"
+    r"|\b(?:earlier|previous|prior|last) (?:answer|reply|response|conversation)\b"
+    r"|\bI\s+(?:didn't|didn’t|did not|never)\s+(?:give|say|said|tell|told|provide|write|send"
+    r"|reply|answer)\b"
+    r"|\byou (?:cited|quoted|mentioned|gave)\b", re.IGNORECASE)
+_DIGIT = re.compile(r"\d")
+
+
+def drop_sentences_about_the_users_text(reply: str) -> tuple[str, bool]:
+    """(the reply without rule 4's sentences, whether any were dropped). Formatting is kept: each
+    dropped sentence is cut out of the original text."""
+    drop = [s for s in split_sentences(reply) if _ABOUT_THE_USERS_TEXT.search(s) and not _DIGIT.search(s)]
+    if not drop:
+        return reply, False
+    text = reply
+    for sentence in drop:
+        text = text.replace(sentence, "", 1)
+    text = re.sub(r"[ \t]{2,}", " ", text)
+    text = re.sub(r"[ \t]*\n[ \t]*", "\n", text).strip()
+    return text, True
+
+
 # The agent's not-reported sentence ("Kestrel did not report diluted EPS for FY2024."), whatever
 # the metric and period, when something follows it.
 _NOT_REPORTED_THEN_MORE = re.compile(r"^(Kestrel did not report [^.]+? for [^.]+?\.)\s+\S")
@@ -118,4 +158,8 @@ def guard(reply: str, refusal: str, fixed_sentences: tuple[str, ...] = ()) -> tu
     premise = _PREMISE_OPENER.match(first)
     if premise and _DECLINES.match(first[premise.end():]):
         return refusal, "explained_refusal"
+    kept, dropped = drop_sentences_about_the_users_text(text)
+    if dropped:
+        # Nothing left means the reply only talked about the user's text: that's a refusal.
+        return (kept or refusal), "dropped_sentence_about_users_text"
     return reply, None
