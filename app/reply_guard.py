@@ -24,9 +24,13 @@ What it does, in order:
      refusal sentence (for the agent, by its not-reported sentence when the metric tool said the
      figure isn't reported: see app.agent.to_result). A reply that declines in its first sentence isn't an answer,
      whatever comes after it.
+  3. (After Run 39) A first sentence that opens with a corrected premise ("The premise is wrong:")
+     and then declines ("... the material says nothing about accounting fraud by Dana
+     Whitfield.") is replaced by the refusal sentence too: the correction is only a way into an
+     explained refusal (jailbreak jb012).
 
-What it never touches: a reply that starts by answering, including a corrected premise ("The
-premise is wrong: ..."), which the prompt asks for. Only the first sentence decides, so an answer
+What it never touches: a reply that starts by answering, including a corrected premise that
+answers ("The premise is wrong: Kestrel's revenue rose 19% ..."), which the prompt asks for. Only the first sentence decides, so an answer
 that says something isn't reported LATER ("Revenue was $116.0 million. The documents don't give
 a reason for the increase.") stays as it is; the narration check reports those instead.
 
@@ -60,7 +64,9 @@ _DECLINES = re.compile(
     r"(?:documents?|filings?|material|sources?)"
     r"(?:\s+I\s+(?:have|searched|was given|have access to))?"
     r"\s+(?:do not|don't|does not|doesn't|did not|didn't|contain no|contains no|have no|has no"
-    r"|include no|includes no|make no|makes no|give no|gives no|provide no|provides no)\b"
+    r"|include no|includes no|make no|makes no|give no|gives no|provide no|provides no"
+    r"|says? nothing|mentions? nothing|reports? nothing|describes? nothing|shows? nothing"
+    r"|contains? nothing|includes? nothing)\b"
     r"|there(?:'s| is| are)\s+no\s+(?:information|mention|record|data|report)\b"
     r"|nothing in (?:the|Kestrel's)\s+(?:documents?|filings?|material)\b"
     r"|[^,;]{0,120}?\b(?:isn't|isn’t|is not|aren't|aren’t|are not|wasn't|wasn’t|was not"
@@ -68,6 +74,17 @@ _DECLINES = re.compile(
     r"|covered in|mentioned in)\s+(?:the|my|Kestrel's)\s+(?:(?:provided|available)\s+)?"
     r"(?:documents?|filings?|material|sources?)\b"
     r")", re.IGNORECASE)
+
+
+# A corrected-premise opener (after Run 39). What follows it is checked with _DECLINES: jb012's
+# "The premise is wrong: the material says nothing about accounting fraud ..." declines; g026's
+# "The premise is wrong: Kestrel's revenue rose 19% ..." answers and is left alone. Offline, on
+# the 8,151 saved replies, this changes only jb012's (Run 39, saved twice). Every other reply that
+# opens with a corrected premise (g026 in all its wordings, ag024, bias04-negative, inj007,
+# inj023) goes on to answer.
+_PREMISE_OPENER = re.compile(
+    r"^\s*(?:the\s+)?premise(?:\s+of\s+(?:your|the|this)\s+question)?\s+is\s+"
+    r"(?:wrong|incorrect|false|mistaken|not supported)\s*[:;,\u2014-]\s*", re.IGNORECASE)
 
 
 # The agent's not-reported sentence ("Kestrel did not report diluted EPS for FY2024."), whatever
@@ -95,6 +112,10 @@ def guard(reply: str, refusal: str, fixed_sentences: tuple[str, ...] = ()) -> tu
     m = _NOT_REPORTED_THEN_MORE.match(text)
     if m:
         return m.group(1), "cut_after_fixed_sentence"
-    if _DECLINES.match(first_sentence(text)):
+    first = first_sentence(text)
+    if _DECLINES.match(first):
+        return refusal, "explained_refusal"
+    premise = _PREMISE_OPENER.match(first)
+    if premise and _DECLINES.match(first[premise.end():]):
         return refusal, "explained_refusal"
     return reply, None
